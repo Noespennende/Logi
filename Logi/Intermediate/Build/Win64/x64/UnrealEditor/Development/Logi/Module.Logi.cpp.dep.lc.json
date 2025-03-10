@@ -1,0 +1,20 @@
+{
+    "Version": "1.2",
+    "Data": {
+        "Source": "d:\\google drive\\skole\\6 semester\\batchelor\\logi-ir\\logi_ir\\plugins\\logi\\intermediate\\build\\win64\\x64\\unrealeditor\\development\\logi\\module.logi.cpp",
+        "ProvidedModule": "",
+        "PCH": "d:\\google drive\\skole\\6 semester\\batchelor\\logi-ir\\logi_ir\\intermediate\\build\\win64\\x64\\logi_ireditor\\development\\engine\\sharedpch.engine.cpp20.h.pch",
+        "Includes": [
+            "d:\\google drive\\skole\\6 semester\\batchelor\\logi-ir\\logi_ir\\plugins\\logi\\intermediate\\build\\win64\\x64\\unrealeditor\\development\\logi\\definitions.logi.h",
+            "d:\\google drive\\skole\\6 semester\\batchelor\\logi-ir\\logi_ir\\plugins\\logi\\intermediate\\build\\win64\\unrealeditor\\inc\\logi\\uht\\logi.init.gen.cpp",
+            "d:\\google drive\\skole\\6 semester\\batchelor\\logi-ir\\logi_ir\\plugins\\logi\\intermediate\\build\\win64\\unrealeditor\\inc\\logi\\uht\\logibplibrary.gen.cpp",
+            "d:\\google drive\\skole\\6 semester\\batchelor\\logi-ir\\logi_ir\\plugins\\logi\\source\\logi\\public\\logibplibrary.h",
+            "d:\\google drive\\skole\\6 semester\\batchelor\\logi-ir\\logi_ir\\plugins\\logi\\intermediate\\build\\win64\\unrealeditor\\inc\\logi\\uht\\logibplibrary.generated.h",
+            "d:\\google drive\\skole\\6 semester\\batchelor\\logi-ir\\logi_ir\\plugins\\logi\\source\\logi\\private\\logi.cpp",
+            "d:\\google drive\\skole\\6 semester\\batchelor\\logi-ir\\logi_ir\\plugins\\logi\\source\\logi\\public\\logi.h",
+            "d:\\google drive\\skole\\6 semester\\batchelor\\logi-ir\\logi_ir\\plugins\\logi\\source\\logi\\private\\logibplibrary.cpp"
+        ],
+        "ImportedModules": [],
+        "ImportedHeaderUnits": []
+    }
+}
