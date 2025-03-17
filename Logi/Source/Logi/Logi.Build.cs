@@ -1,4 +1,4 @@
-// Some copyright should be here...
+// Copyright Epic Games, Inc. All Rights Reserved.
 
 using UnrealBuildTool;
 
@@ -34,10 +34,19 @@ public class Logi : ModuleRules
 		PrivateDependencyModuleNames.AddRange(
 			new string[]
 			{
+				"Projects",
+				"InputCore",
+				"EditorFramework",
+				"UnrealEd",
+				"ToolMenus",
 				"CoreUObject",
 				"Engine",
 				"Slate",
 				"SlateCore",
+				"Core",
+                "AssetTools",
+				
+
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);

@@ -75,5 +75,5 @@
 /DPROJECT_COPYRIGHT_STRING="Fill out your copyright notice in the Description page of Project Settings."
 /DPROJECT_PRODUCT_NAME="Third Person Game Template"
 /DPROJECT_PRODUCT_IDENTIFIER=Logi_IR
-/fo "D:\Google Drive\Skole\6 semester\Batchelor\Logi-ir\Logi_IR\Plugins\Logi\Intermediate\Build\Win64\x64\UnrealEditor\Development\Logi\Default.rc2.res"
+/fo "D:\SkoleLocal\6_semester\batchelor\Logi-ir\Logi_IR\Plugins\Logi\Intermediate\Build\Win64\x64\UnrealEditor\Development\Logi\Default.rc2.res"
 "..\Build\Windows\Resources\Default.rc2"

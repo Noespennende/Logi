@@ -3,22 +3,22 @@
 	"Version": 1,
 	"VersionName": "1.0",
 	"FriendlyName": "Logi",
-	"Description": "Blueprint class to set up project for thermal Camera simulation",
+	"Description": "Thermal camera simulation",
 	"Category": "Other",
-	"CreatedBy": "Andreas Berg, Mathilde Olesen, Michael Karlsrud",
+	"CreatedBy": "Andreas Berg, Michael Karlsrud, Mathilde Olesen",
 	"CreatedByURL": "",
 	"DocsURL": "",
 	"MarketplaceURL": "",
 	"SupportURL": "",
-	"CanContainContent": true,
+	"CanContainContent": false,
 	"IsBetaVersion": false,
 	"IsExperimentalVersion": false,
 	"Installed": false,
 	"Modules": [
 		{
 			"Name": "Logi",
-			"Type": "Runtime",
-			"LoadingPhase": "PreLoadingScreen"
+			"Type": "Editor",
+			"LoadingPhase": "Default"
 		}
 	]
 }

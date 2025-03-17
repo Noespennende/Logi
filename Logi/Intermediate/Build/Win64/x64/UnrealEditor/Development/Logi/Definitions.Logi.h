@@ -1,4 +1,4 @@
-#include "D:/Google Drive/Skole/6 semester/Batchelor/Logi-ir/Logi_IR/Intermediate/Build/Win64/x64/Logi_IREditor/Development/Engine/SharedDefinitions.Engine.Cpp20.h"
+#include "D:/SkoleLocal/6_semester/batchelor/Logi-ir/Logi_IR/Intermediate/Build/Win64/x64/Logi_IREditor/Development/UnrealEd/SharedDefinitions.UnrealEd.Cpp20.h"
 #undef UE_IS_ENGINE_MODULE
 #undef DEPRECATED_FORGAME
 #define DEPRECATED_FORGAME DEPRECATED
