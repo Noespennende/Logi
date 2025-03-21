@@ -47,6 +47,8 @@ void FLogiModule::ShutdownModule()
 	FLogiCommands::Unregister();
 }
 
+// Declare before
+void CreateFolderStructure(bool& folderCreated, FString& statusMessage);
 
 void FLogiModule::PluginButtonClicked()
 {
@@ -89,13 +91,18 @@ void FLogiModule::RegisterMenus()
 //Suport functions
 void CreateFolder(FString FolderPath, bool& folderCreated, FString& statusMessage) {
 
+	/*
 	// Convert project path to absolute path
+
 	FString AbsoluteFolderPath;
 	if (!FPackageName::TryConvertLongPackageNameToFilename(FolderPath, AbsoluteFolderPath)) {
 		folderCreated = false;
 		statusMessage = FString::Printf(TEXT("Creating folders failed - Failed to convert folder path to absolute path: '% s'"), *AbsoluteFolderPath);
 		return;
 	}
+	*/
+
+	FString AbsoluteFolderPath = FPaths::ProjectDir() + FolderPath;
 
 	// Create a new folder
 	if (!IFileManager::Get().MakeDirectory(*AbsoluteFolderPath, true)) {
@@ -111,10 +118,11 @@ void CreateFolder(FString FolderPath, bool& folderCreated, FString& statusMessag
 }
 
 void CreateFolderStructure(bool& folderCreated, FString& statusMessage) {
-	CreateFolder("content/Logi_ThermalCamera", folderCreated, statusMessage);
+	CreateFolder("Content/Logi_ThermalCamera", folderCreated, statusMessage);
 
+	// "/Game" because SetPathColor needs Unreal package path (asset path), not filesystem path
+	AssetViewUtils::SetPathColor("/Game/Logi_ThermalCamera", FLinearColor(FColor::Blue));
 
-	AssetViewUtils::SetPathColor("content/Logi_ThermalCamera", FColor::Blue);
 }
 
 
