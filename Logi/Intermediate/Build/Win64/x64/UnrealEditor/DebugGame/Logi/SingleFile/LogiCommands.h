@@ -1,1 +1,0 @@
-#include "D:/SkoleLocal/6_semester/batchelor/Logi-ir/Logi_IR/Plugins/Logi/Source/Logi/Public/LogiCommands.h"

@@ -44,9 +44,7 @@ public class Logi : ModuleRules
 				"Slate",
 				"SlateCore",
 				"Core",
-                "AssetTools",
-				
-
+				"AssetTools",
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);

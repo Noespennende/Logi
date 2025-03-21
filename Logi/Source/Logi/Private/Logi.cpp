@@ -14,62 +14,6 @@ static const FName LogiTabName("Logi");
 
 #define LOCTEXT_NAMESPACE "FLogiModule"
 
-//Suport functions
-void CreateFolder(FString FolderPath, bool& folderCreated, FString& statusMessage) {
-
-	// Convert project path to absolute path
-	FString AbsoluteFolderPath;
-	if (!FPackageName::TryConvertLongPackageNameToFilename(FolderPath, AbsoluteFolderPath)) {
-		folderCreated = false;
-		statusMessage = FString::Printf(TEXT("Creating folders failed - Failed to convert folder path to absolute path: '% s'"), *AbsoluteFolderPath);
-		return;
-	}
-
-	//Check if folder already exists
-	if (IFileManager::Get().DirectoryExists(*AbsoluteFolderPath)) {
-		folderCreated = false;
-		statusMessage = FString::Printf(TEXT("Folder aldready exist: '% s'"), *AbsoluteFolderPath);
-		return;
-	}
-
-	// Create a new folder
-	if (!IFileManager::Get().MakeDirectory(*AbsoluteFolderPath, true)) {
-		folderCreated = false;
-		statusMessage = FString::Printf(TEXT("Creating folders failed - Failed to create folder: '% s'"), *AbsoluteFolderPath);
-		return;
-	}
-
-	//return success
-	folderCreated = true;
-	statusMessage = FString::Printf(TEXT("Creating folders succeeded - Folder created: '% s'"), *AbsoluteFolderPath);
-
-}
-
-void CreateFolderStructure(bool& folderCreated, FString& statusMessage) {
-
-	// Create Logi_ThermalCamera folder
-	CreateFolder("/Game/Logi_ThermalCamera", folderCreated, statusMessage);
-	//Print status
-	UE_LOG(LogTemp, Warning, TEXT("%s"), *statusMessage);
-
-	// Create Actor folder
-	CreateFolder("/Game/Logi_ThermalCamera/Actors", folderCreated, statusMessage);
-	//Print status
-	UE_LOG(LogTemp, Warning, TEXT("%s"), *statusMessage);
-
-
-	//Create Material folder
-	CreateFolder("/Game/Logi_ThermalCamera/Materials", folderCreated, statusMessage);
-	// Print status
-	UE_LOG(LogTemp, Warning, TEXT("%s"), *statusMessage);
-
-	// Set the folder color
-	AssetViewUtils::SetPathColor("/Game/Logi_ThermalCamera", TOptional<FLinearColor>(FLinearColor(FColor::Cyan)));
-
-}
-
-//Plugin functions
-
 void FLogiModule::StartupModule()
 {
 	// This code will execute after your module is loaded into memory; the exact timing is specified in the .uplugin file per-module
@@ -140,6 +84,37 @@ void FLogiModule::RegisterMenus()
 			}
 		}
 	}
+}
+
+//Suport functions
+void CreateFolder(FString FolderPath, bool& folderCreated, FString& statusMessage) {
+
+	// Convert project path to absolute path
+	FString AbsoluteFolderPath;
+	if (!FPackageName::TryConvertLongPackageNameToFilename(FolderPath, AbsoluteFolderPath)) {
+		folderCreated = false;
+		statusMessage = FString::Printf(TEXT("Creating folders failed - Failed to convert folder path to absolute path: '% s'"), *AbsoluteFolderPath);
+		return;
+	}
+
+	// Create a new folder
+	if (!IFileManager::Get().MakeDirectory(*AbsoluteFolderPath, true)) {
+		folderCreated = false;
+		statusMessage = FString::Printf(TEXT("Creating folders failed - Failed to create folder: '% s'"), *AbsoluteFolderPath);
+		return;
+	}
+
+	//return success
+	folderCreated = true;
+	statusMessage = FString::Printf(TEXT("Creating folders succeeded - Folder created: '% s'"), *AbsoluteFolderPath);
+
+}
+
+void CreateFolderStructure(bool& folderCreated, FString& statusMessage) {
+	CreateFolder("content/Logi_ThermalCamera", folderCreated, statusMessage);
+
+
+	AssetViewUtils::SetPathColor("content/Logi_ThermalCamera", FColor::Blue);
 }
 
 
