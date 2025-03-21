@@ -1,0 +1,24 @@
+# Ignore build-related and intermediate files
+**/Intermediate/
+**/Binaries/
+**/Saved/
+
+# Ignore automatically generated files
+*.generated.h
+*.generated.cpp
+
+# Ignore config files that are user or machine specific
+**/Config/*.ini
+!.gitignore
+
+# Ignore IDE specific files (Visual Studio, JetBrains)
+.vs/
+.idea/
+*.vsconfig
+
+# Ignore OS-specific files (macOS, Windows)
+.DS_Store
+Thumbs.db
+
+# Ignore log files
+*.log
