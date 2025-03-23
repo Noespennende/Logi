@@ -1,0 +1,24 @@
+{
+	"FileVersion": 3,
+	"Version": 1,
+	"VersionName": "1.0",
+	"FriendlyName": "Logi",
+	"Description": "Thermal camera simulation",
+	"Category": "Other",
+	"CreatedBy": "Andreas Berg, Michael Karlsrud, Mathilde Olesen",
+	"CreatedByURL": "",
+	"DocsURL": "",
+	"MarketplaceURL": "",
+	"SupportURL": "",
+	"CanContainContent": false,
+	"IsBetaVersion": false,
+	"IsExperimentalVersion": false,
+	"Installed": false,
+	"Modules": [
+		{
+			"Name": "Logi",
+			"Type": "Editor",
+			"LoadingPhase": "Default"
+		}
+	]
+}
