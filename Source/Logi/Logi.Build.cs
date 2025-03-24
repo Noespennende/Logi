@@ -44,7 +44,15 @@ public class Logi : ModuleRules
 				"Slate",
 				"SlateCore",
 				"Core",
-				"AssetTools",
+                "AssetTools",
+				"UnrealEd",
+                "MaterialEditor",
+                "Kismet",
+                "KismetCompiler",
+                "AssetRegistry",
+                "BlueprintGraph",
+				
+
 				// ... add private dependencies that you statically link with here ...	
 			}
 			);
