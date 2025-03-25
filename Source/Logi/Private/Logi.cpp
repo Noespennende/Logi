@@ -404,7 +404,7 @@ void CreateThermalCameraControllerNodeSetup(UBlueprint* blueprint) {
 
 
 	//Create Scalar parameter nodes
-	TArray<FString> scalarParams = { "BackgroundTemperature", "Blur", "NoiseAmount"};
+	TArray<FString> scalarParams = { "BackgroundTemperature","SkyTemperature", "Blur", "NoiseAmount"};
 	for (const FString& Param : scalarParams) {
 
 		//Create a scalar parameter node
@@ -425,7 +425,7 @@ void CreateThermalCameraControllerNodeSetup(UBlueprint* blueprint) {
 		UEdGraphPin* rangeMaxPin = normalizeToRangeNode->FindPin(FName("RangeMax"));
 
 		//Spawn getter node for camera range and add them to the background temparature's normalize node
-		if (Param == "BackgroundTemperature") {
+		if (Param == "BackgroundTemperature" || Param == "SkyTemperature") {
 			//Spawn thermal camera range getters
 			UK2Node_VariableGet* thermalCameraRangeMinNode = createBPGetterNode(eventGraph, FName("ThermalCameraRangeMin"), getNode->NodePosX-150, (nodePosition.Y + 400));
 			UK2Node_VariableGet* thermalCameraRangeMaxNode = createBPGetterNode(eventGraph, FName("ThermalCameraRangeMax"), getNode->NodePosX-150, (nodePosition.Y + 500));
@@ -551,6 +551,7 @@ void CreateThermalController(bool& success, FString& statusMessage) {
 	AddVariableToBlueprintClass(thermalControllerBp, "ThermalCameraRangeMin", FloatType, true, "0.0");
 	AddVariableToBlueprintClass(thermalControllerBp, "ThermalCameraRangeMax", FloatType, true, "25.0");
 	AddVariableToBlueprintClass(thermalControllerBp, "BackgroundTemperature", FloatType, true, "5.0");
+	AddVariableToBlueprintClass(thermalControllerBp, "SkyTemperature", FloatType, true, "5.0");
 	AddVariableToBlueprintClass(thermalControllerBp, "Blur", FloatType, true, "100");
 	AddVariableToBlueprintClass(thermalControllerBp, "NoiseSize", FloatType, true, "1.0");
 	AddVariableToBlueprintClass(thermalControllerBp, "NoiseAmount", FloatType, true, "5.0");
