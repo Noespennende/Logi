@@ -31,6 +31,8 @@
 #include "K2Node_VariableSet.h"
 #include "K2Node_MakeStruct.h"
 
+#include "MF_Logi_ThermalMaterialFunction.h"
+
 
 static const FName LogiTabName("Logi");
 
@@ -694,6 +696,12 @@ void FLogiModule::PluginButtonClicked()
 
 	//Create Thermal Controller blueprint
 	CreateThermalController(success, statusMessage);
+
+	//Log status
+	UE_LOG(LogTemp, Warning, TEXT("%s"), *statusMessage);
+
+	// Create Thermal MaterialFunction
+	FMF_ThermalMaterialFunction::CreateMaterialFunction(success, statusMessage);
 
 	//Log status
 	UE_LOG(LogTemp, Warning, TEXT("%s"), *statusMessage);
