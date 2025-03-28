@@ -30,6 +30,13 @@
 #include "Kismet/KismetMathLibrary.h"
 #include "K2Node_VariableSet.h"
 #include "K2Node_MakeStruct.h"
+#include "Materials/MaterialParameterCollection.h"
+#include "Materials/MaterialParameterCollectionInstance.h"
+#include "AssetRegistry/AssetRegistryModule.h"
+#include "Editor.h"
+#include "ObjectTools.h"
+#include "PackageTools.h"
+
 
 #include "MF_Logi_ThermalMaterialFunction.h"
 
@@ -694,11 +701,21 @@ void FLogiModule::PluginButtonClicked()
 	//Log status
 	UE_LOG(LogTemp, Warning, TEXT("%s"), *statusMessage);
 
+	UWorld* World = GEditor->GetEditorWorldContext().World();
+	if (World) {
+		SetupThermalSettings(World);
+	}
+	else {
+		UE_LOG(LogTemp, Error, TEXT("Failed to get UWorld!"));
+	}
+
 	//Create Thermal Controller blueprint
 	CreateThermalController(success, statusMessage);
 
 	//Log status
 	UE_LOG(LogTemp, Warning, TEXT("%s"), *statusMessage);
+
+	
 
 	// Create Thermal MaterialFunction
 	FMF_ThermalMaterialFunction::CreateMaterialFunction(success, statusMessage);
@@ -731,6 +748,109 @@ void FLogiModule::RegisterMenus()
 				Entry.SetCommandList(PluginCommands);
 			}
 		}
+	}
+}
+
+UMaterialParameterCollection* FLogiModule::EnsureThermalSettingsExist(UWorld* World)
+{
+	if (!World) return nullptr;
+
+	FString AssetPath = TEXT("/Game/IR_Materials/MPC_ThermalSettings");
+	UMaterialParameterCollection* ThermalSettings = LoadObject<UMaterialParameterCollection>(nullptr, *AssetPath);
+
+	if (!ThermalSettings)
+	{
+		UE_LOG(LogTemp, Error, TEXT("MPC_LogiThermalSettings does not exist!"));
+	}
+
+	return ThermalSettings;
+}
+
+void FLogiModule::SetupThermalSettings(UWorld* World)
+{
+	if (!World) return;
+
+	// Checks if MPC exists
+	UMaterialParameterCollection* ThermalSettings = EnsureThermalSettingsExist(World);
+	if (!ThermalSettings) return;
+
+	// Checks if MPc has required parameters
+	bool bUpdated = false;
+
+	// checks if mpc has required scalar parameters if not add them
+	TArray<FName> ScalarsRequired = {
+		FName("ThermalCameraToggle"),
+		FName("BackgroundTemperature"),
+		FName("Blur"),
+		FName("NoiseAmount"),
+		FName("SkyTemperature"),
+	};
+
+	for (const FName& ScalarName : ScalarsRequired)
+	{
+		bool bExists = ThermalSettings->ScalarParameters.ContainsByPredicate(
+			[&ScalarName](const FCollectionScalarParameter& Param) { return Param.ParameterName == ScalarName; });
+
+		if (!bExists)
+		{
+			FCollectionScalarParameter NewScalar;
+			NewScalar.ParameterName = ScalarName;
+			NewScalar.DefaultValue = (ScalarName == FName("NoiseAmount")) ? 0.05f : 0.0f;  
+			ThermalSettings->ScalarParameters.Add(NewScalar);
+			bUpdated = true;
+		}
+	}
+
+	// checks if mpc has required vector parameters if not add them
+	TArray<TPair<FName, FLinearColor>> VectorsRequired = {
+		{ FName("Cold"), FLinearColor(1, 1, 1, 1) },
+		{ FName("Mid"), FLinearColor(0, 1, 0, 1) },
+		{ FName("Hot"), FLinearColor(1, 0, 0, 1) },
+		{ FName("NoiseSize"), FLinearColor(0, 0, 0, 0) }
+	};
+
+	for (const auto& VectorPair : VectorsRequired)
+	{
+		bool bExists = ThermalSettings->VectorParameters.ContainsByPredicate(
+			[&VectorPair](const FCollectionVectorParameter& Param) { return Param.ParameterName == VectorPair.Key; });
+
+		if (!bExists)
+		{
+			FCollectionVectorParameter NewVector;
+			NewVector.ParameterName = VectorPair.Key;
+			NewVector.DefaultValue = VectorPair.Value;
+			ThermalSettings->VectorParameters.Add(NewVector);
+			bUpdated = true;
+		}
+	}
+
+	// save the parameters that were added
+	if (bUpdated)
+	{
+		ThermalSettings->MarkPackageDirty();
+		FAssetRegistryModule::AssetCreated(ThermalSettings);
+		FString AssetPath = TEXT("/Game/IR_Materials/MPC_LogiThermalSettings");
+		FString FilePath = FPackageName::LongPackageNameToFilename(AssetPath, FPackageName::GetAssetPackageExtension());
+		UPackage::SavePackage(ThermalSettings->GetOutermost(), ThermalSettings, EObjectFlags::RF_Public | EObjectFlags::RF_Standalone, *FilePath);
+		UE_LOG(LogTemp, Warning, TEXT("Added missing parameters to MPC_LogiThermalSettings"));
+	}
+
+	// set values of MPC asset
+	UMaterialParameterCollectionInstance* Instance = World->GetParameterCollectionInstance(ThermalSettings);
+	if (Instance)
+	{
+		Instance->SetScalarParameterValue(FName("ThermalCameraToggle"), 0);
+		Instance->SetScalarParameterValue(FName("BackgroundTemperature"), 0);
+		Instance->SetScalarParameterValue(FName("Blur"), 0);
+		Instance->SetScalarParameterValue(FName("NoiseAmount"), 0.05);
+		Instance->SetScalarParameterValue(FName("SkyTemperature"), 5);
+
+		Instance->SetVectorParameterValue(FName("Cold"), FLinearColor(1, 1, 1, 1));
+		Instance->SetVectorParameterValue(FName("Mid"), FLinearColor(0, 1, 0, 1));
+		Instance->SetVectorParameterValue(FName("Hot"), FLinearColor(1, 0, 0, 1));
+		Instance->SetVectorParameterValue(FName("NoiseSize"), FLinearColor(0, 0, 0, 0));
+
+		UE_LOG(LogTemp, Warning, TEXT("Thermal settings applied."));
 	}
 }
 
