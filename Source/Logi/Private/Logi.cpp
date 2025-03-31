@@ -38,6 +38,9 @@
 #include "PackageTools.h"
 #include <functional>
 
+#include "Engine/Blueprint.h"
+#include "GameFramework/Actor.h"
+#include "K2Node_FunctionEntry.h"
 
 #include "MF_Logi_ThermalMaterialFunction.h"
 
@@ -151,6 +154,12 @@ auto AddVariableToBlueprintClass(UBlueprint* blueprint, FName varName, FEdGraphP
 		return;
 	}
 
+	// Check if the variable already exists, if so it skips the creation
+	if (FBlueprintEditorUtils::FindNewVariableIndex(blueprint, varName) != INDEX_NONE) {
+		UE_LOG(LogTemp, Warning, TEXT("Variable '%s' already exists in the blueprint '%s', skipping the creation of variable."), *varName.ToString(), *blueprint->GetName());
+		return;
+	}
+
 
 	FBlueprintEditorUtils::AddMemberVariable(blueprint, varName, pinType, defaultValue);
 
@@ -163,6 +172,90 @@ auto AddVariableToBlueprintClass(UBlueprint* blueprint, FName varName, FEdGraphP
 		FBlueprintEditorUtils::SetBlueprintVariableMetaData(blueprint, varName, nullptr, FBlueprintMetadata::MD_ExposeOnSpawn, TEXT("true"));
 
 	}
+}
+
+auto AddThermalControlerReferenceToBlueprint(UBlueprint* blueprint, FName varName, bool bInstanceEditable) {
+
+	if (!blueprint) {
+		UE_LOG(LogTemp, Error, TEXT("Blueprint is null, can't add reference"));
+		return;
+	}
+
+	if (FBlueprintEditorUtils::FindNewVariableIndex(blueprint, varName) != INDEX_NONE) {
+		UE_LOG(LogTemp, Warning, TEXT("Variable '%s' already exists in blueprint '%s'"), *varName.ToString(), *blueprint->GetName());
+		return;
+	}
+
+	// Load the blueprint asset (not just the generated class directly)
+	UBlueprint* controllerBP = Cast<UBlueprint>(StaticLoadObject(UBlueprint::StaticClass(), nullptr, TEXT("/Game/Logi_ThermalCamera/Actors/BP_Logi_ThermalController.BP_Logi_ThermalController")));
+	if (!controllerBP || !controllerBP->GeneratedClass) {
+		UE_LOG(LogTemp, Error, TEXT("Could not load BP_Logi_ThermalController Blueprint or its GeneratedClass"));
+		return;
+	}
+
+	// Use the generated class (this ensures Blueprint properties are recognized)
+	UClass* controllerClass = controllerBP->GeneratedClass;
+
+	// Create pin type
+	FEdGraphPinType controllerRefType;
+	controllerRefType.PinCategory = UEdGraphSchema_K2::PC_Object;
+	controllerRefType.PinSubCategoryObject = controllerClass;
+
+	// Add the variable
+	FBlueprintEditorUtils::AddMemberVariable(blueprint, varName, controllerRefType);
+
+	// Make it instance editable
+	if (bInstanceEditable) {
+		FBlueprintEditorUtils::SetBlueprintOnlyEditableFlag(blueprint, varName, !bInstanceEditable);
+		FBlueprintEditorUtils::SetBlueprintVariableMetaData(blueprint, varName, nullptr, FBlueprintMetadata::MD_Private, TEXT("false"));
+		FBlueprintEditorUtils::SetBlueprintVariableMetaData(blueprint, varName, nullptr, TEXT("EditAnywhere"), TEXT("true"));
+		FBlueprintEditorUtils::SetBlueprintVariableMetaData(blueprint, varName, nullptr, FBlueprintMetadata::MD_ExposeOnSpawn, TEXT("true"));
+	}
+
+	/*
+	//Validate blueprint
+	if (!blueprint) {
+		UE_LOG(LogTemp, Error, TEXT("Blueprint is null, can't add referense to Thermal Controller in blueprint"));
+		return;
+	}
+
+	// Checking if the variable already exists in blueprint
+	if (FBlueprintEditorUtils::FindNewVariableIndex(blueprint, varName) != INDEX_NONE) {
+		UE_LOG(LogTemp, Warning, TEXT("Variable '%s' already exists in the blueprint '%s', skipping the creation of variable."), *varName.ToString(), *blueprint->GetName());
+		return;
+	}
+
+	//Finds the thermal controller blueprint class filepath
+	const FString controllerPath = TEXT("/Game/Logi_ThermalCamera/Actors/BP_Logi_ThermalController.BP_Logi_ThermalController_C");
+
+	//Loads the thermal controller blueprint class from the filepath
+	UClass* controllerClass = LoadObject<UClass>(nullptr, *controllerPath);
+
+	//Validates the thermal controller class
+	if (!controllerClass || !controllerClass->IsChildOf<AActor>()) {
+		UE_LOG(LogTemp, Error, TEXT("Failed to load generated class for BP_Logi_ThermalController from path: %s"), *controllerPath);
+		return;
+	}
+
+	//Creates the variable type as an object referense to the thermal controller blueprint
+	FEdGraphPinType controllerRefType;
+	controllerRefType.PinCategory = UEdGraphSchema_K2::PC_Object;
+	controllerRefType.PinSubCategoryObject = controllerClass;
+
+
+	//Adds the variable to the blueprint
+	FBlueprintEditorUtils::AddMemberVariable(blueprint, varName, controllerRefType);
+
+	//Sets innstance editable
+	if (bInstanceEditable) {
+		FBlueprintEditorUtils::SetBlueprintOnlyEditableFlag(blueprint, varName, !bInstanceEditable);
+		FBlueprintEditorUtils::SetBlueprintVariableMetaData(blueprint, varName, nullptr, FBlueprintMetadata::MD_Private, TEXT("false"));
+		FBlueprintEditorUtils::SetBlueprintVariableMetaData(blueprint, varName, nullptr, "MD_EditAnywhere", TEXT("true"));
+		FBlueprintEditorUtils::SetBlueprintVariableMetaData(blueprint, varName, nullptr, FBlueprintMetadata::MD_ExposeOnSpawn, TEXT("true"));
+
+	}
+
+	*/
 }
 
 UEdGraphNode* AddNodeToBlueprint(UBlueprint* Blueprint, FName FunctionName, UClass* Class, FVector Location)
@@ -655,6 +748,206 @@ void CreateThermalController(bool& success, FString& statusMessage) {
 	statusMessage = FString::Printf(TEXT("Thermal controller blueprint created and compiled successfully"));
 }
 
+void FindAllNonLogiActorBlueprintsInProject(TArray<FAssetData>& OutActorBlueprints) {
+	//Get the asset registry module
+	FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry");
+
+	//Get the asset registry inside the asset registry module
+	IAssetRegistry& Registry = AssetRegistryModule.Get();
+
+	// verify registry is up to date
+	Registry.SearchAllAssets(true);
+
+	// Create filert for the search
+	FARFilter Filter;
+	Filter.ClassPaths.Add(UBlueprint::StaticClass()->GetClassPathName());
+	Filter.PackagePaths.Add(FName("/Game"));
+	Filter.bRecursivePaths = true;
+
+	//create array to hold blueprints found
+	TArray<FAssetData> AssetList;
+
+	//Get all blueprints in the /games (content) folder and add them to the AssetsList list
+	Registry.GetAssets(Filter, AssetList);
+
+	//Filter out all blueprints that are not actors
+	for (const FAssetData& Asset : AssetList) {
+
+		// Skipping the Logi_ThermalCamera folder
+		if (Asset.PackagePath.ToString().StartsWith("/Game/Logi_ThermalCamera")) {
+			continue;
+		}
+
+		//Check if the blueprint has a parent class
+		FString ParentClassPath;
+
+		//Get the parent class path and set it to the ParentClassPath variable to that path
+		if (Asset.GetTagValue<FString>("ParentClass", ParentClassPath))
+		{
+			// Remove the autogenerated "_C" suffix from the class path
+			ParentClassPath.RemoveFromEnd(TEXT("_C"), ESearchCase::IgnoreCase);
+
+			//Tries to find the actualparent class object from the classe's path
+			UClass* ParentClass = FindObject<UClass>(nullptr, *ParentClassPath);
+
+			//Check if the parent class is a child of the AActor, i.e if it's an Actor blueprint
+			if (ParentClass && ParentClass->IsChildOf(AActor::StaticClass()))
+			{
+				//Actor blueprint added to the list
+				OutActorBlueprints.Add(Asset);
+			}
+		}
+	}
+}
+
+void AddLogiVariablesToActorBlueprint(const FAssetData& actor) {
+
+	//Cast asset data to blueprint type
+	UBlueprint* blueprint = Cast<UBlueprint>(actor.GetAsset());
+
+	//Validate that the cast was successfull
+	if(!blueprint) {
+		UE_LOG(LogTemp, Error, TEXT("Failed to load blueprint from asset data: %s"), *actor.AssetName.ToString());
+		return;
+	}
+
+	//Create bolean type
+	FEdGraphPinType boolType;
+	boolType.PinCategory = UEdGraphSchema_K2::PC_Boolean;
+
+	//Create float type
+	FEdGraphPinType floatType;
+	floatType.PinCategory = UEdGraphSchema_K2::PC_Real;
+	floatType.PinSubCategory = UEdGraphSchema_K2::PC_Float;
+
+	//Create Linear Color type
+	FEdGraphPinType linearColorType;
+	linearColorType.PinCategory = UEdGraphSchema_K2::PC_Struct;
+	linearColorType.PinSubCategoryObject = TBaseStructure<FLinearColor>::Get();
+
+	//Create vector type
+	FEdGraphPinType vectorType;
+	vectorType.PinCategory = UEdGraphSchema_K2::PC_Struct;
+	vectorType.PinSubCategoryObject = TBaseStructure<FVector>::Get();
+
+	//Print status
+	UE_LOG(LogTemp, Warning, TEXT("Adding variable to actor blueprint"));
+
+	//Add variables to the blueprint
+	AddVariableToBlueprintClass(blueprint, "Logi_Hot", boolType, true, "false");
+	AddVariableToBlueprintClass(blueprint, "Logi_BaseTemperature", floatType, true, "0.0");
+	AddVariableToBlueprintClass(blueprint, "Logi_MaxTemperature", floatType, true, "25.0");
+	AddVariableToBlueprintClass(blueprint, "Logi_CurrentTemperature", floatType, true, "25.0");
+	/*
+	AddThermalControlerReferenceToBlueprint(blueprint, "Logi_ThermalController", false);
+	*/
+}
+
+auto AddSetupFunctionToNonLogiActor(const FAssetData& actor) {
+
+	UBlueprint* blueprint = Cast<UBlueprint>(actor.GetAsset());
+	FName functionName = FName("Logi_ThermalMaterialUpdate");
+
+
+	//Validate blueprint
+	if (!blueprint) {
+		UE_LOG(LogTemp, Error, TEXT("Blueprint is null, cannot add setup function."));
+		return;
+	}
+
+	// Check if the setup function already exists in the blueprint
+	for (UEdGraph* Graph : blueprint->FunctionGraphs)
+	{
+		if (Graph && Graph->GetFName() == functionName)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Function '%s' already exists in blueprint '%s', skipping implementation."), *functionName.ToString(), *blueprint->GetName());
+			return;
+		}
+	}
+
+
+	// Create the setup function
+	UEdGraph* newFunctionGraph = FBlueprintEditorUtils::CreateNewGraph(blueprint, functionName, UEdGraph::StaticClass(), UEdGraphSchema_K2::StaticClass());
+	FBlueprintEditorUtils::AddFunctionGraph<UFunction>(blueprint, newFunctionGraph,true, nullptr);
+
+	// Create setup function function entry node
+	newFunctionGraph->Modify();
+	newFunctionGraph->bAllowDeletion = true;
+	UK2Node_FunctionEntry* entryNode = NewObject<UK2Node_FunctionEntry>(newFunctionGraph);
+	entryNode->FunctionReference.SetSelfMember(functionName);
+	entryNode->NodePosX = 0;
+	entryNode->NodePosY = 0;
+	entryNode->AllocateDefaultPins();
+
+	newFunctionGraph->AddNode(entryNode);
+
+	//Mark blueprint as modified
+	FBlueprintEditorUtils::MarkBlueprintAsStructurallyModified(blueprint);
+
+	UE_LOG(LogTemp, Log, TEXT("Function 'Logi_ThermalActorSetup' successfully added to blueprint '%s'."), *blueprint->GetName());
+}
+
+auto AddUpdateThermalMaterialFunctionToNonLogiActor(const FAssetData& actor) {
+
+	UBlueprint* blueprint = Cast<UBlueprint>(actor.GetAsset());
+	FName functionName = FName("Logi_UpdateThermalMaterial");
+
+	//Validate blueprint
+	if (!blueprint) {
+		UE_LOG(LogTemp, Error, TEXT("Blueprint is null, cannot add setup function."));
+		return;
+	}
+
+	// Check if the setup function already exists in the blueprint
+	for (UEdGraph* Graph : blueprint->FunctionGraphs)
+	{
+		if (Graph && Graph->GetFName() == functionName)
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Function '%s' already exists in blueprint '%s', skipping implementation."), *functionName.ToString(), *blueprint->GetName());
+			return;
+		}
+	}
+
+
+	// Create the setup function
+	UEdGraph* newFunctionGraph = FBlueprintEditorUtils::CreateNewGraph(blueprint, functionName, UEdGraph::StaticClass(), UEdGraphSchema_K2::StaticClass());
+	FBlueprintEditorUtils::AddFunctionGraph<UFunction>(blueprint, newFunctionGraph, true, nullptr);
+
+	// Create setup function function entry node
+	newFunctionGraph->Modify();
+	newFunctionGraph->bAllowDeletion = true;
+	UK2Node_FunctionEntry* entryNode = NewObject<UK2Node_FunctionEntry>(newFunctionGraph);
+	entryNode->FunctionReference.SetSelfMember(functionName);
+	entryNode->NodePosX = 0;
+	entryNode->NodePosY = 0;
+	entryNode->AllocateDefaultPins();
+
+	newFunctionGraph->AddNode(entryNode);
+
+	//Mark blueprint as modified
+	FBlueprintEditorUtils::MarkBlueprintAsStructurallyModified(blueprint);
+
+	UE_LOG(LogTemp, Log, TEXT("Function 'Logi_ThermalActorSetup' successfully added to blueprint '%s'."), *blueprint->GetName());
+}
+
+void MakeProjectBPActorsLogiCompatible() {
+	//Create a list to hold all the actor blueprints in the project
+	TArray<FAssetData> projectActors;
+	//Find all the blueprints of type Actor in the /games (content) folder and add them to the projectActors list
+	FindAllNonLogiActorBlueprintsInProject(projectActors);
+
+	//Add Logi variables to all the actor blueprints in the project
+	for (FAssetData actor : projectActors) {
+		//Prints status
+		UE_LOG(LogTemp, Warning, TEXT("Adding Logi variables to actor: %s"), *actor.AssetName.ToString());
+
+		//Add Logi variables to the actor blueprint
+		AddLogiVariablesToActorBlueprint(actor);
+		AddSetupFunctionToNonLogiActor(actor);
+		AddUpdateThermalMaterialFunctionToNonLogiActor(actor);
+	}
+}
+
 //Plugin functions
 
 void FLogiModule::StartupModule()
@@ -723,6 +1016,8 @@ void FLogiModule::PluginButtonClicked()
 
 	//Log status
 	UE_LOG(LogTemp, Warning, TEXT("%s"), *statusMessage);
+	//Make all project actors logi compatible
+	MakeProjectBPActorsLogiCompatible();
 
 }
 
