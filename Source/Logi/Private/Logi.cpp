@@ -1052,7 +1052,7 @@ UMaterialParameterCollection* FLogiModule::EnsureThermalSettingsExist(UWorld* Wo
 	if (!World) return nullptr;
 
 	//Asset path
-	FString AssetPath = TEXT("/Game/Logi_ThermalCamera/Materials//MPC_ThermalSettings");
+	FString AssetPath = TEXT("/Game/Logi_ThermalCamera/Materials/MPC_ThermalSettings");
 	UMaterialParameterCollection* ThermalSettings = LoadObject<UMaterialParameterCollection>(nullptr, *AssetPath);
 
 	//if the MPC does not exist, create new MPC
