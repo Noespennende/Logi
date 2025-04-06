@@ -43,6 +43,7 @@
 #include "K2Node_FunctionEntry.h"
 
 #include "MF_Logi_ThermalMaterialFunction.h"
+#include "Logi_Outliner.h"
 
 
 static const FName LogiTabName("Logi");
@@ -1018,6 +1019,8 @@ void FLogiModule::PluginButtonClicked()
 	UE_LOG(LogTemp, Warning, TEXT("%s"), *statusMessage);
 	//Make all project actors logi compatible
 	MakeProjectBPActorsLogiCompatible();
+
+	FLogiOutliner::AddLogiLogicToOutliner(World);
 
 }
 
