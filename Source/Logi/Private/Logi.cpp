@@ -47,6 +47,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "K2Node_GetArrayItem.h"
 #include "MaterialDomain.h"
+#include "Logi_Outliner.h"
 
 
 static const FName LogiTabName("Logi");
@@ -1494,6 +1495,8 @@ void FLogiModule::PluginButtonClicked()
 	//Make all project actors logi compatible
 	MakeProjectBPActorsLogiCompatible();
 
+	FLogiOutliner::AddLogiLogicToOutliner(World);
+
 }
 
 
@@ -1591,7 +1594,7 @@ void FLogiModule::SetupThermalSettings(UWorld* World)
 	UMaterialParameterCollection* ThermalSettings = EnsureThermalSettingsExist(World);
 	if (!ThermalSettings) return;
 
-	// Checks if MPc has required parameters
+	// Checks if MPC has required parameters
 	bool bUpdated = false;
 
 	// checks if mpc has required scalar parameters if not add them
