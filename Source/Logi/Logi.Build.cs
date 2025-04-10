@@ -45,12 +45,12 @@ public class Logi : ModuleRules
 				"SlateCore",
 				"Core",
                 "AssetTools",
-				"UnrealEd",
                 "MaterialEditor",
                 "Kismet",
                 "KismetCompiler",
                 "AssetRegistry",
                 "BlueprintGraph",
+                "AssetRegistry",
 				
 
 				// ... add private dependencies that you statically link with here ...	
