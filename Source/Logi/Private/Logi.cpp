@@ -48,6 +48,7 @@
 #include "K2Node_GetArrayItem.h"
 #include "MaterialDomain.h"
 #include "Logi_Outliner.h"
+#include "PP_Logi_ThermalCamera.h"
 
 
 static const FName LogiTabName("Logi");
@@ -1489,6 +1490,8 @@ void FLogiModule::PluginButtonClicked()
 
 	// Create Thermal MaterialFunction
 	FMF_ThermalMaterialFunction::CreateMaterialFunction(success, statusMessage);
+
+	FPP_ThermalCamera::CreateThermalCamera(success, statusMessage);
 
 	//Log status
 	UE_LOG(LogTemp, Warning, TEXT("%s"), *statusMessage);
