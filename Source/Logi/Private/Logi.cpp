@@ -1531,12 +1531,14 @@ UMaterialParameterCollection* FLogiModule::EnsureThermalSettingsExist(UWorld* Wo
 
 	//Asset path
 	FString AssetPath = TEXT("/Game/Logi_ThermalCamera/Materials/MPC_Logi_ThermalSettings");
+
+	// Try to load the existing MPC
 	UMaterialParameterCollection* ThermalSettings = LoadObject<UMaterialParameterCollection>(nullptr, *AssetPath);
 
 	//if the MPC does not exist, create new MPC
 	if (!ThermalSettings)
 	{
-		UPackage* Package = CreatePackage(*AssetPath);
+		UPackage* Package = CreatePackage(*FString("/Game/Logi_ThermalCamera/Materials"));
 		ThermalSettings = NewObject<UMaterialParameterCollection>(Package, UMaterialParameterCollection::StaticClass(), FName("MPC_Logi_ThermalSettings"), RF_Public | RF_Standalone);
 		if (ThermalSettings) {
 
@@ -1653,6 +1655,7 @@ void FLogiModule::SetupThermalSettings(UWorld* World)
 		FString FilePath = FPackageName::LongPackageNameToFilename(AssetPath, FPackageName::GetAssetPackageExtension());
 		UPackage::SavePackage(ThermalSettings->GetOutermost(), ThermalSettings, EObjectFlags::RF_Public | EObjectFlags::RF_Standalone, *FilePath);
 		UE_LOG(LogTemp, Warning, TEXT("Added missing parameters to MPC_Logi_ThermalSettings"));
+		
 	}
 
 	// set values of MPC asset
@@ -1672,6 +1675,8 @@ void FLogiModule::SetupThermalSettings(UWorld* World)
 
 		UE_LOG(LogTemp, Warning, TEXT("Thermal settings applied."));
 	}
+
+	
 }
 
 
