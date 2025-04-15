@@ -1,4 +1,7 @@
 #include "PP_Logi_ThermalCamera.h"
+
+#include <optional>
+
 #include "Materials/MaterialFunction.h"
 #include "Materials/MaterialExpressionMakeMaterialAttributes.h"
 #include "Materials/MaterialExpressionConstant3Vector.h"
@@ -25,8 +28,14 @@
 #include "CoreUObject.h"
 #include "Materials/MaterialExpressionAdd.h"
 #include "Materials/MaterialExpressionAppendVector.h"
+#include "Materials/MaterialExpressionClamp.h"
+#include "Materials/MaterialExpressionConstant2Vector.h"
+#include "Materials/MaterialExpressionDivide.h"
 #include "Materials/MaterialExpressionFloor.h"
+#include "Materials/MaterialExpressionMax.h"
 #include "Materials/MaterialExpressionMultiply.h"
+#include "Materials/MaterialExpressionOneMinus.h"
+#include "Materials/MaterialExpressionStep.h"
 #include "Materials/MaterialExpressionTextureCoordinate.h"
 #include "Materials/MaterialExpressionTime.h"
 #include "Materials/MaterialExpressionVectorNoise.h"
@@ -35,8 +44,13 @@
 
 /// 
 
+enum class EThermalSettingsParamType
+{
+    Scalar,
+    Vector
+};
 
-UMaterialExpressionCollectionParameter* CreateThermalSettingsCPNode(UMaterial* Material, FVector2D EditorPos, const FName& ParameterName)
+UMaterialExpressionCollectionParameter* CreateThermalSettingsCPNode(UMaterial* Material, FVector2D EditorPos, const FName& ParameterName, EThermalSettingsParamType ParamType)
 {
     UE_LOG(LogTemp, Warning, TEXT("Starting to create Collection Parameter Node"));
 
@@ -65,21 +79,35 @@ UMaterialExpressionCollectionParameter* CreateThermalSettingsCPNode(UMaterial* M
     // Manually find and set GUID for the parameter wanted from MPC_ThermalSettings,
     // based on the known Parameter name
     // (This is needed as the Guid does not automatically transfer with MPC_ThermalSettings when creating the node)
-    for (const FCollectionScalarParameter& Param : MPC_ThermalSettings->ScalarParameters)
-    {
-        //Log
-        UE_LOG(LogTemp, Warning, TEXT("Parameter Name: %s"), *Param.ParameterName.ToString());
-        // Iterates every parameter in ScalarParameters and checks for the wanted parameter name
-        if (Param.ParameterName == CollectionParamNode->ParameterName)
-        {
-            //Log
-            UE_LOG(LogTemp, Warning, TEXT("Found parameter: %s"), *Param.ParameterName.ToString());
-            CollectionParamNode->ParameterId = Param.Id;
-            break;
-        }
 
-        //Log
-        UE_LOG(LogTemp, Warning, TEXT("Did not find: %s"), *Param.ParameterName.ToString());
+    if (ParamType == EThermalSettingsParamType::Scalar)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Wanted Parameter Name: %s"), *CollectionParamNode->ParameterName.ToString());
+        for (const FCollectionScalarParameter& ScalarParam : MPC_ThermalSettings->ScalarParameters)
+        {
+            if (ScalarParam.ParameterName == ParameterName)
+            {
+                UE_LOG(LogTemp, Warning, TEXT("MATCH: %s"), *ScalarParam.ParameterName.ToString());
+                CollectionParamNode->ParameterId = ScalarParam.Id;
+                break;
+            }
+        }
+    }
+
+    else if (ParamType == EThermalSettingsParamType::Vector)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Wanted Parameter Name: %s"), *CollectionParamNode->ParameterName.ToString());
+        for (const FCollectionVectorParameter& VectorParam : MPC_ThermalSettings->VectorParameters)
+        {
+            // Iterates every parameter in ScalarParameters and checks for the wanted parameter name
+            if (VectorParam.ParameterName == ParameterName)
+            {
+                UE_LOG(LogTemp, Warning, TEXT("MATCH: %s"), *VectorParam.ParameterName.ToString());
+                CollectionParamNode->ParameterId = VectorParam.Id;
+                break;
+            }
+            UE_LOG(LogTemp, Warning, TEXT("No match, found: %s"), *VectorParam.ParameterName.ToString());
+        }
     }
     
     // Make sure the CollectionParamNode now has a valid collection assigned
@@ -103,7 +131,7 @@ UMaterialExpressionLinearInterpolate* CreateLerpNode(UMaterial* Material, FVecto
 }
 
 
-UMaterialExpressionMaterialFunctionCall* CreateSceneTexture(UMaterial* Material, FVector2D EditorPos)
+UMaterialExpressionMaterialFunctionCall* CreateSceneTexturePostProcess(UMaterial* Material, FVector2D EditorPos)
 {
 
     // 1) Load the MF asset with SceneTexturePP functionality inside
@@ -118,14 +146,66 @@ UMaterialExpressionMaterialFunctionCall* CreateSceneTexture(UMaterial* Material,
     
 
     // 2) Create MaterialExpressionFunctionCall node, and assign the MF asset to it
-    UMaterialExpressionMaterialFunctionCall* MFSceneTextureNode = NewObject<UMaterialExpressionMaterialFunctionCall >(Material);
-    MFSceneTextureNode->MaterialFunction = MaterialFunction;  // Set the Function to the MF-asset from 1)
+    UMaterialExpressionMaterialFunctionCall* MFSceneTexturePostProcessNode = NewObject<UMaterialExpressionMaterialFunctionCall >(Material);
+    MFSceneTexturePostProcessNode->MaterialFunction = MaterialFunction;  // Set the Function to the MF-asset from 1)
 
     // Nodes posititon in editor
-    MFSceneTextureNode->MaterialExpressionEditorX = EditorPos.X;
-    MFSceneTextureNode->MaterialExpressionEditorY = EditorPos.Y;
+    MFSceneTexturePostProcessNode->MaterialExpressionEditorX = EditorPos.X;
+    MFSceneTexturePostProcessNode->MaterialExpressionEditorY = EditorPos.Y;
 
-    return MFSceneTextureNode;
+    return MFSceneTexturePostProcessNode;
+}
+
+
+UMaterialExpressionMaterialFunctionCall* CreateSceneTextureBaseColor(UMaterial* Material, FVector2D EditorPos)
+{
+
+    // 1) Load the MF asset with SceneTexturePP functionality inside
+    FString FilePath = TEXT("/Logi/MF_Logi_SceneTextureBaseColor.MF_Logi_SceneTextureBaseColor");
+    UMaterialFunction* MaterialFunction = LoadObject<UMaterialFunction>(nullptr, *FilePath);
+
+    if (!MaterialFunction)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("MaterialFunction failed to load!"));
+        return nullptr;
+    }
+    
+
+    // 2) Create MaterialExpressionFunctionCall node, and assign the MF asset to it
+    UMaterialExpressionMaterialFunctionCall* MFSceneTextureBaseColorNode = NewObject<UMaterialExpressionMaterialFunctionCall >(Material);
+    MFSceneTextureBaseColorNode->MaterialFunction = MaterialFunction;  // Set the Function to the MF-asset from 1)
+
+    // Nodes posititon in editor
+    MFSceneTextureBaseColorNode->MaterialExpressionEditorX = EditorPos.X;
+    MFSceneTextureBaseColorNode->MaterialExpressionEditorY = EditorPos.Y;
+
+    return MFSceneTextureBaseColorNode;
+}
+
+
+UMaterialExpressionMaterialFunctionCall* CreateSceneTextureWorldNormal(UMaterial* Material, FVector2D EditorPos)
+{
+
+    // 1) Load the MF asset with SceneTexturePP functionality inside
+    FString FilePath = TEXT("/Logi/MF_Logi_SceneTextureWorldNormal.MF_Logi_SceneTextureWorldNormal");
+    UMaterialFunction* MaterialFunction = LoadObject<UMaterialFunction>(nullptr, *FilePath);
+
+    if (!MaterialFunction)
+    {
+        UE_LOG(LogTemp, Warning, TEXT("MaterialFunction failed to load!"));
+        return nullptr;
+    }
+    
+
+    // 2) Create MaterialExpressionFunctionCall node, and assign the MF asset to it
+    UMaterialExpressionMaterialFunctionCall* MFSceneTextureWorldNormalNode = NewObject<UMaterialExpressionMaterialFunctionCall >(Material);
+    MFSceneTextureWorldNormalNode->MaterialFunction = MaterialFunction;  // Set the Function to the MF-asset from 1)
+
+    // Nodes posititon in editor
+    MFSceneTextureWorldNormalNode->MaterialExpressionEditorX = EditorPos.X;
+    MFSceneTextureWorldNormalNode->MaterialExpressionEditorY = EditorPos.Y;
+
+    return MFSceneTextureWorldNormalNode;
 }
 
 
@@ -198,12 +278,22 @@ UMaterialExpressionAppendVector* CreateAppendVectorNode(UMaterial* Material, FVe
     return AppendVectorNode;
 }
 
-UMaterialExpressionMultiply* CreateMultiplyNode(UMaterial* Material, FVector2D EditorPos)
-{
-
+// BValue first of the optionals, because it is most likely to be the one that has a set value, if not both does.
+UMaterialExpressionMultiply* CreateMultiplyNode(UMaterial* Material, FVector2D EditorPos, std::optional<float> BValue = std::nullopt, std::optional<float> AValue = std::nullopt)
+{ 
     UMaterialExpressionMultiply* MultiplyNode = NewObject<UMaterialExpressionMultiply>(Material);
     MultiplyNode->MaterialExpressionEditorX = EditorPos.X;
     MultiplyNode->MaterialExpressionEditorY = EditorPos.Y;
+    
+    if (AValue.has_value())
+    {
+        MultiplyNode->ConstA = AValue.value();
+    }
+    
+    if (BValue.has_value())
+    {
+        MultiplyNode->ConstB = BValue.value();
+    }
 
     return MultiplyNode;
 }
@@ -226,6 +316,17 @@ UMaterialExpressionConstant* CreateConstantNode(UMaterial* Material, FVector2D E
     ConstantNode->R = Value; 
 
     return ConstantNode;
+}
+
+UMaterialExpressionConstant2Vector* CreateConstant2VectorNode(UMaterial* Material, FVector2D EditorPos, float X, float Y)
+{
+    UMaterialExpressionConstant2Vector* Constant2VectorNode = NewObject<UMaterialExpressionConstant2Vector>(Material);
+    Constant2VectorNode->MaterialExpressionEditorX = EditorPos.X;
+    Constant2VectorNode->MaterialExpressionEditorY = EditorPos.Y;
+    Constant2VectorNode->R = X; 
+    Constant2VectorNode->G = Y;
+
+    return Constant2VectorNode;
 }
 
 UMaterialExpressionFloor* CreateFloorNode(UMaterial* Material, FVector2D EditorPos)
@@ -270,6 +371,147 @@ UMaterialExpressionMaterialFunctionCall* CreateViewSize(UMaterial* Material, FVe
 
     return MFViewSizeNode;
 }
+
+// Create 3ColorBlend node
+UMaterialExpressionMaterialFunctionCall* Create3ColorBlendNode(UMaterial* Material, FVector2D EditorPos)
+{
+    // Opprett en MaterialExpressionMaterialFunctionCall-node
+    UMaterialExpressionMaterialFunctionCall* MaterialFunctionNode = NewObject<UMaterialExpressionMaterialFunctionCall>(Material);
+    
+    // 3ColorBlend MaterialFunction
+    FString FilePath = TEXT("MaterialFunction'/Engine/Functions/Engine_MaterialFunctions01/ImageAdjustment/3ColorBlend.3ColorBlend'");
+    UMaterialFunction* MFThreeColorBlendNode = LoadObject<UMaterialFunction>(nullptr, *FilePath);
+    
+    
+    if (MFThreeColorBlendNode)
+    {
+        // Assign 3ColorBlend MF to the MaterialFunction
+        MaterialFunctionNode->MaterialFunction = MFThreeColorBlendNode;
+
+        MaterialFunctionNode->MaterialExpressionEditorX = EditorPos.X;
+        MaterialFunctionNode->MaterialExpressionEditorY = EditorPos.Y;
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Failed to load 3ColorBlend MaterialFunction!"));
+    }
+
+    return MaterialFunctionNode;
+}
+
+
+UMaterialExpressionOneMinus* CreateOneMinusNode(UMaterial* Material, FVector2D EditorPos)
+{
+    UMaterialExpressionOneMinus* OneMinusNode = NewObject<UMaterialExpressionOneMinus>(Material);
+    OneMinusNode->MaterialExpressionEditorX = EditorPos.X;
+    OneMinusNode->MaterialExpressionEditorY = EditorPos.Y;
+
+    return OneMinusNode;
+}
+
+// CreateFresnelNode
+UMaterialExpressionFresnel* CreateFresnelNode(UMaterial* Material, FVector2D EditorPos)
+{
+    UMaterialExpressionFresnel* FresnelNode = NewObject<UMaterialExpressionFresnel>(Material);
+    FresnelNode->MaterialExpressionEditorX = EditorPos.X;
+    FresnelNode->MaterialExpressionEditorY = EditorPos.Y;
+
+    return FresnelNode;
+}
+
+
+UMaterialExpressionScalarParameter* CreateScalarParameterNode(UMaterial* Material, FVector2D EditorPos, const FName& ParameterName, float DefaultValue)
+{
+    UMaterialExpressionScalarParameter* ScalarParameterNode = NewObject<UMaterialExpressionScalarParameter>(Material);
+    ScalarParameterNode->MaterialExpressionEditorX = EditorPos.X;
+    ScalarParameterNode->MaterialExpressionEditorY = EditorPos.Y;
+    ScalarParameterNode->ParameterName = ParameterName;
+    ScalarParameterNode->DefaultValue = DefaultValue;
+
+    return ScalarParameterNode;
+}
+
+
+UMaterialExpressionStep* CreateStepNode(UMaterial* Material, FVector2D EditorPos)
+{
+    UMaterialExpressionStep* StepNode = NewObject<UMaterialExpressionStep>(Material);
+    StepNode->MaterialExpressionEditorX = EditorPos.X;
+    StepNode->MaterialExpressionEditorY = EditorPos.Y;
+
+    return StepNode;
+}
+
+
+UMaterialExpressionMax* CreateMaxNode(UMaterial* Material, FVector2D EditorPos)
+{
+    UMaterialExpressionMax* MaxNode = NewObject<UMaterialExpressionMax>(Material);
+    MaxNode->MaterialExpressionEditorX = EditorPos.X;
+    MaxNode->MaterialExpressionEditorY = EditorPos.Y;
+
+    return MaxNode;
+}
+
+
+UMaterialExpressionClamp* CreateClampNode(UMaterial* Material, FVector2D EditorPos, std::optional<float> MinValue = std::nullopt, std::optional<float> MaxValue = std::nullopt)
+{
+    UMaterialExpressionClamp* ClampNode = NewObject<UMaterialExpressionClamp>(Material);
+    ClampNode->MaterialExpressionEditorX = EditorPos.X;
+    ClampNode->MaterialExpressionEditorY = EditorPos.Y;
+
+    // Set MinDefault and MaxDefault if values are provided
+    if (MinValue.has_value())
+    {
+        ClampNode->MinDefault = MinValue.value();
+        //ClampNode->bUseMin = true;
+    }
+
+    if (MaxValue.has_value())
+    {
+        ClampNode->MaxDefault = MaxValue.value();
+        //ClampNode->bUseMax = true;
+    }
+
+    return ClampNode;
+}
+
+
+UMaterialExpressionDivide* CreateDivideNode(UMaterial* Material, FVector2D EditorPos)
+{
+    UMaterialExpressionDivide* DivideNode = NewObject<UMaterialExpressionDivide>(Material);
+    DivideNode->MaterialExpressionEditorX = EditorPos.X;
+    DivideNode->MaterialExpressionEditorY = EditorPos.Y;
+
+    return DivideNode;
+}
+
+
+UMaterialExpressionMaterialFunctionCall* CreateScreenResolution(UMaterial* Material, FVector2D EditorPos)
+{
+    // Opprett en MaterialExpressionMaterialFunctionCall-node
+    UMaterialExpressionMaterialFunctionCall* MaterialFunctionNode = NewObject<UMaterialExpressionMaterialFunctionCall>(Material);
+    
+    // ScreenResolution MaterialFunction
+    FString FilePath = TEXT("MaterialFunction'/Engine/Functions/Engine_MaterialFunctions02/ScreenResolution.ScreenResolution'");
+    UMaterialFunction* MFScreenResolutionNode = LoadObject<UMaterialFunction>(nullptr, *FilePath);
+    
+    
+    if (MFScreenResolutionNode)
+    {
+        // Assign 3ColorBlend MF to the MaterialFunction
+        MaterialFunctionNode->MaterialFunction = MFScreenResolutionNode;
+
+        MaterialFunctionNode->MaterialExpressionEditorX = EditorPos.X;
+        MaterialFunctionNode->MaterialExpressionEditorY = EditorPos.Y;
+    }
+    else
+    {
+        UE_LOG(LogTemp, Warning, TEXT("Failed to load 3ColorBlend MaterialFunction!"));
+    }
+
+    return MaterialFunctionNode;
+}
+
+
 
 
 void FPP_ThermalCamera::CreateThermalCamera(bool& mfNodecreated, FString& statusMessage)
@@ -319,12 +561,12 @@ void FPP_ThermalCamera::CreateThermalCamera(bool& mfNodecreated, FString& status
     
     // ThermalSettingsCameraToggle-node
     FVector2D ThermalSettingsCameraToggleNodePos(-550, 300);
-    UMaterialExpressionCollectionParameter* ThermalSettingsCameraToggleNode = CreateThermalSettingsCPNode(Material, ThermalSettingsCameraToggleNodePos, TEXT("ThermalCameraToggle"));
+    UMaterialExpressionCollectionParameter* ThermalSettingsCameraToggleNode = CreateThermalSettingsCPNode(Material, ThermalSettingsCameraToggleNodePos, TEXT("ThermalCameraToggle"), EThermalSettingsParamType::Scalar);
     Expressions.Add(ThermalSettingsCameraToggleNode);
     
     // MF with SceneTexture-PostProcessInput0 inside -node
     FVector2D MFSceneTextureNodePos(-600, 150);
-    UMaterialExpressionMaterialFunctionCall* MFSceneTextureNode = CreateSceneTexture(Material, MFSceneTextureNodePos);
+    UMaterialExpressionMaterialFunctionCall* MFSceneTextureNode = CreateSceneTexturePostProcess(Material, MFSceneTextureNodePos);
     Expressions.Add(MFSceneTextureNode);
     
     // White comment box (1) - Is thermal camera on?
@@ -347,7 +589,7 @@ void FPP_ThermalCamera::CreateThermalCamera(bool& mfNodecreated, FString& status
     WhiteLerpNode->Alpha.Connect(0, ThermalSettingsCameraToggleNode);
 
 
-    /* 2 - Yellow area */
+    /* 2 - Yellow area  - Add noise */
     
     // LERP-node
     FVector2D YelloLerpNodePos(-1000, 210);
@@ -360,17 +602,17 @@ void FPP_ThermalCamera::CreateThermalCamera(bool& mfNodecreated, FString& status
 
     // ThermalSettingsNoiseAmount-node
     FVector2D ThermalSettingsNoiseAmountPos(-1255, 400);
-    UMaterialExpressionCollectionParameter* ThermalSettingsNoiseAmountNode = CreateThermalSettingsCPNode(Material, ThermalSettingsNoiseAmountPos, TEXT("NoiseAmount"));
+    UMaterialExpressionCollectionParameter* ThermalSettingsNoiseAmountNode = CreateThermalSettingsCPNode(Material, ThermalSettingsNoiseAmountPos, TEXT("NoiseAmount"), EThermalSettingsParamType::Scalar);
     Expressions.Add(ThermalSettingsNoiseAmountNode);
 
     YellowLerpNode->Alpha.Connect(0, ThermalSettingsNoiseAmountNode);
 
     // Add-node
-    FVector2D AddNodePos(-1255, 280);
-    UMaterialExpressionAdd* AddNode = CreateAddNode(Material, AddNodePos);
-    Expressions.Add(AddNode);
+    FVector2D YellowAddNodePos(-1255, 280);
+    UMaterialExpressionAdd* YellowAddNode = CreateAddNode(Material, YellowAddNodePos);
+    Expressions.Add(YellowAddNode);
 
-    YellowLerpNode->B.Connect(0, AddNode);
+    YellowLerpNode->B.Connect(0, YellowAddNode);
 
 
     /** Add noise to image area **/
@@ -380,7 +622,7 @@ void FPP_ThermalCamera::CreateThermalCamera(bool& mfNodecreated, FString& status
     UMaterialExpressionComponentMask* NoiseMaskNode = CreateMaskNode(Material, NoiseMaskPos, true, false, false);
     Expressions.Add(NoiseMaskNode);
     
-    AddNode->B.Connect(0, NoiseMaskNode);
+    YellowAddNode->B.Connect(0, NoiseMaskNode);
 
     // VectorNoise-node
     FVector2D VectorNoisePos(-1750, 450);
@@ -453,7 +695,7 @@ void FPP_ThermalCamera::CreateThermalCamera(bool& mfNodecreated, FString& status
     // MPC_ThermalSettings node
     FVector2D ThermalSettingsNoiseSizePos(-3000, 640);
     UMaterialExpressionCollectionParameter* ThermalSettingsNoiseSizeNode = CreateThermalSettingsCPNode(
-        Material, ThermalSettingsNoiseSizePos, TEXT("NoiseSize"));
+        Material, ThermalSettingsNoiseSizePos, TEXT("NoiseSize"), EThermalSettingsParamType::Vector);
     Expressions.Add(ThermalSettingsNoiseSizeNode);
 
     DesideMaskNode->Input.Connect(0, ThermalSettingsNoiseSizeNode);
@@ -518,6 +760,710 @@ void FPP_ThermalCamera::CreateThermalCamera(bool& mfNodecreated, FString& status
     UMaterialExpressionComment* YellowComment = CreateCommentNode(Material, YellowCommentPos, YellowCommentSize, YellowCommentText, YellowCommentColor);
     
     Expressions.Add(YellowComment);
+
+
+    /* 3 - White area - Add back the alpha channel to the image */
+
+    // Append-node
+    FVector2D ImageConstructAppendNodePos(-4050, 210);
+    UMaterialExpressionAppendVector* ImageConstructAppendNode = CreateAppendVectorNode(Material, ImageConstructAppendNodePos);
+    Expressions.Add(ImageConstructAppendNode);
+
+    YellowLerpNode->A.Connect(0, ImageConstructAppendNode);
+    YellowAddNode->A.Connect(0, ImageConstructAppendNode);
+
+    // Constant-node
+    FVector2D ImageConstructConstantNodePos(-4250, 300);
+    UMaterialExpressionConstant* ImageConstructConstantNode = CreateConstantNode(Material, ImageConstructConstantNodePos, 1.0f);
+    Expressions.Add(ImageConstructConstantNode);
+
+    ImageConstructAppendNode->B.Connect(0, ImageConstructConstantNode);
+
+    
+    // White comment box (3) - Add back the alpha channel to the image
+    FVector2D ImageConstructCommentPos(-4350, 75);
+    FVector2D ImageConstructCommentSize(500, 450);
+    FString ImageConstructCommentText = TEXT("Add back the alpha channel to the image");
+    UMaterialExpressionComment* ImageConstructComment = CreateCommentNode(Material, ImageConstructCommentPos, ImageConstructCommentSize, ImageConstructCommentText);
+    Expressions.Add(ImageConstructComment);
+
+
+    /* ---- */
+
+    // Lerp-node
+    FVector2D CombiningLerpNodePos(-4600, 210);
+    UMaterialExpressionLinearInterpolate* CombiningLerpNode = CreateLerpNode(Material, CombiningLerpNodePos);
+    Expressions.Add(CombiningLerpNode);
+    
+    ImageConstructAppendNode->A.Connect(0, CombiningLerpNode);
+
+    /* ---- */
+    
+    /* 4 - Blue area */
+
+    /** Blue 4.1 - Background colors **/
+
+    // Blue comment box (4.1) - Background colors
+    FVector2D BackgroundCommentPos(-7800, -2600);
+    FVector2D BackgroundCommentSize(2200, 1200);
+    FString BackgroundCommentText = TEXT("Background colors");
+    FColor BackgroundCommentColor =FColor::FromHex(TEXT("00B6FFFF"));
+    UMaterialExpressionComment* BackgroundComment = CreateCommentNode(Material, BackgroundCommentPos, BackgroundCommentSize, BackgroundCommentText, BackgroundCommentColor);
+    Expressions.Add(BackgroundComment);
+
+
+    // 3ColorBlend-node
+    FVector2D Background3ColorBlendNodePos(-5900, -2150);
+    UMaterialExpressionMaterialFunctionCall* Background3ColorBlendNode = Create3ColorBlendNode(Material, Background3ColorBlendNodePos);
+    Expressions.Add(Background3ColorBlendNode);
+
+    Background3ColorBlendNode->UpdateFromFunctionResource();
+    CombiningLerpNode->A.Connect(0, Background3ColorBlendNode);
+
+
+    // MPC_ThermalSettings "Cold" node
+    FVector2D ThermalSettingsColdPos(-6400, -2500);
+    UMaterialExpressionCollectionParameter* ThermalSettingsColdNode = CreateThermalSettingsCPNode(Material, ThermalSettingsColdPos, TEXT("Cold"), EThermalSettingsParamType::Vector);
+    Expressions.Add(ThermalSettingsColdNode);
+    
+    for (FFunctionExpressionInput& Input : Background3ColorBlendNode->FunctionInputs)
+    {
+        if (Input.Input.InputName == TEXT("A"))
+        {
+            Input.Input.Connect(0, ThermalSettingsColdNode);
+        }
+    }
+
+    // MPC_ThermalSettings "Mid" node
+    FVector2D ThermalSettingsMidPos(-6400, -2300);
+    UMaterialExpressionCollectionParameter* ThermalSettingsMidNode = CreateThermalSettingsCPNode(Material, ThermalSettingsMidPos, TEXT("Mid"), EThermalSettingsParamType::Vector);
+    Expressions.Add(ThermalSettingsMidNode);
+    
+    for (FFunctionExpressionInput& Input : Background3ColorBlendNode->FunctionInputs)
+    {
+        if (Input.Input.InputName == TEXT("B"))
+        {
+            Input.Input.Connect(0, ThermalSettingsMidNode);
+        }
+        
+    }
+
+    // MPC_ThermalSettings "Hot" node
+    FVector2D ThermalSettingsHotPos(-6400, -2100);
+    UMaterialExpressionCollectionParameter* ThermalSettingsHotNode = CreateThermalSettingsCPNode(Material, ThermalSettingsHotPos, TEXT("Hot"), EThermalSettingsParamType::Vector);
+    Expressions.Add(ThermalSettingsHotNode);
+    
+    for (FFunctionExpressionInput& Input : Background3ColorBlendNode->FunctionInputs)
+    {
+        if (Input.Input.InputName == TEXT("C"))
+        {
+            Input.Input.Connect(0, ThermalSettingsHotNode);
+        }
+        
+    }
+
+
+    // Multiply-node
+    FVector2D BackgroundMultiplyNodePos(-6900, -1900);
+    UMaterialExpressionMultiply* BackgroundMultiplyNode = CreateMultiplyNode(Material, BackgroundMultiplyNodePos);
+    Expressions.Add(BackgroundMultiplyNode);
+
+
+    // MPC Thermal BackgroundTemperature
+    FVector2D ThermalSettingsBackgroundTemperaturePos(-7400, -1930);
+    UMaterialExpressionCollectionParameter* ThermalSettingsBackgroundTemperatureNode = CreateThermalSettingsCPNode(Material, ThermalSettingsBackgroundTemperaturePos, TEXT("BackgroundTemperature"), EThermalSettingsParamType::Scalar);
+    Expressions.Add(ThermalSettingsBackgroundTemperatureNode);
+    BackgroundMultiplyNode->A.Connect(0, ThermalSettingsBackgroundTemperatureNode);
+
+    // OneMinus-node
+    FVector2D BackgroundOneMinusNodePos(-7050, -1700);
+    UMaterialExpressionOneMinus* BackgroundOneMinusNode = CreateOneMinusNode(Material, BackgroundOneMinusNodePos);
+    Expressions.Add(BackgroundOneMinusNode);
+    BackgroundMultiplyNode->B.Connect(0, BackgroundOneMinusNode);
+
+
+    // Fresnel-node
+    FVector2D BackgroundFresnelNodePos(-7400, -1700);
+    UMaterialExpressionFresnel* BackgroundFresnelNode = CreateFresnelNode(Material, BackgroundFresnelNodePos);
+    Expressions.Add(BackgroundFresnelNode);
+
+    BackgroundOneMinusNode->Input.Connect(0, BackgroundFresnelNode);
+
+
+    // Fersnel EXP ScalarParameter-node
+    FVector2D BackgroundFresnelExpPos(-7700, -1715);
+    UMaterialExpressionScalarParameter* BackgroundFresnelExpNode = CreateScalarParameterNode(Material, BackgroundFresnelExpPos, TEXT("Fersnel EXP"), 1.0f);
+    Expressions.Add(BackgroundFresnelExpNode);
+    BackgroundFresnelNode->ExponentIn.Connect(0, BackgroundFresnelExpNode);
+
+
+    // Mask-node
+    FVector2D BackgroundMaskNodePos(-7700, -1620);
+    UMaterialExpressionComponentMask* BackgroundMaskNode = CreateMaskNode(Material, BackgroundMaskNodePos, true, true, true);
+    Expressions.Add(BackgroundMaskNode);
+    BackgroundFresnelNode->Normal.Connect(0, BackgroundMaskNode);
+
+    
+
+    /** Blue 4.2 - Re-add sky in to image background image **/
+
+    // Blue comment box (4,2) - Re-add sky in to image background image
+    FVector2D AddSkyCommentPos(-7800, -1300);
+    FVector2D AddSkyCommentSize(1500, 900);
+    FString AddSkyCommentText = TEXT("Re-add sky in to image background image");
+    FColor AddSkyCommentColor =FColor::FromHex(TEXT("00B6FFFF"));
+    UMaterialExpressionComment* AddSkyComment = CreateCommentNode(Material, AddSkyCommentPos, AddSkyCommentSize, AddSkyCommentText, AddSkyCommentColor);
+    Expressions.Add(AddSkyComment);
+
+
+    // Lerp-node
+    FVector2D AddSkyLerpNodePos(-6500, -1000);
+    UMaterialExpressionLinearInterpolate* AddSkyLerpNode = CreateLerpNode(Material, AddSkyLerpNodePos);
+    Expressions.Add(AddSkyLerpNode);
+
+    
+    for (FFunctionExpressionInput& Input : Background3ColorBlendNode->FunctionInputs)
+    {
+        if (Input.Input.InputName == TEXT("Alpha"))
+        {
+            Input.Input.Connect(0, AddSkyLerpNode);
+        }
+        
+    }
+
+    AddSkyLerpNode->B.Connect(0, BackgroundMultiplyNode);
+
+    
+    // Multiply-node
+    FVector2D AddSkyMultiplyNodePos(-7000, -1050);
+    UMaterialExpressionMultiply* AddSkyMultiplyNode = CreateMultiplyNode(Material, AddSkyMultiplyNodePos);
+    Expressions.Add(AddSkyMultiplyNode);
+    AddSkyLerpNode->A.Connect(0, AddSkyMultiplyNode);
+
+
+    // MPC_ThermalSettings "SkyTemperatur" node
+    FVector2D ThermalSettingsSkyTemperaturePos(-7400, -1200);
+    UMaterialExpressionCollectionParameter* ThermalSettingsSkyTemperatureNode = CreateThermalSettingsCPNode(Material, ThermalSettingsSkyTemperaturePos, TEXT("SkyTemperature"), EThermalSettingsParamType::Scalar);
+    Expressions.Add(ThermalSettingsSkyTemperatureNode);
+
+    AddSkyMultiplyNode->A.Connect(0, ThermalSettingsSkyTemperatureNode);
+
+
+    /*** Blue 4.2 White inside - Is R, G and B channels black? If so re-add sky ***/
+    
+    // Blue 4.2 inside comment box - Is R, G and B channels black? If so re-add sky
+    FVector2D ReAddSkyCommentPos(-7200, -900);
+    FVector2D ReAddSkyCommentSize(600, 350);
+    FString ReAddSkyCommentText = TEXT("Is R, G and B channels black? If so re-add sky");
+    UMaterialExpressionComment* ReAddSkyComment = CreateCommentNode(Material, ReAddSkyCommentPos, ReAddSkyCommentSize, ReAddSkyCommentText);
+    Expressions.Add(ReAddSkyComment);
+
+
+    // Step-node
+    FVector2D ReAddSkyStepNodePos(-6750, -850);
+    UMaterialExpressionStep* ReAddSkyStepNode = CreateStepNode(Material, ReAddSkyStepNodePos);
+    Expressions.Add(ReAddSkyStepNode);
+    
+    AddSkyLerpNode->Alpha.Connect(0, ReAddSkyStepNode);
+
+
+    // Max-node
+    FVector2D ReAddSkyMaxNodePos(-6900, -860);
+    UMaterialExpressionMax* ReAddSkyMaxNode = CreateMaxNode(Material, ReAddSkyMaxNodePos);
+    Expressions.Add(ReAddSkyMaxNode);
+
+    ReAddSkyStepNode->X.Connect(0, ReAddSkyMaxNode);
+
+    
+    // Max-node (connecting Mask G and B)
+    FVector2D ReAddSkyMaxGBNodePos(-7010, -700);
+    UMaterialExpressionMax* ReAddSkyMaxGBNode = CreateMaxNode(Material, ReAddSkyMaxGBNodePos);
+    Expressions.Add(ReAddSkyMaxGBNode);
+
+    ReAddSkyMaxNode->B.Connect(0, ReAddSkyMaxGBNode);
+    
+
+    // Mask-node
+    FVector2D ReAddSkyMaskRNodePos(-7150, -850);
+    UMaterialExpressionComponentMask* ReAddSkyMaskRNode = CreateMaskNode(Material, ReAddSkyMaskRNodePos, true, false, false);
+    Expressions.Add(ReAddSkyMaskRNode);
+    ReAddSkyMaxNode->A.Connect(0, ReAddSkyMaskRNode);
+
+
+    // Mask-node
+    FVector2D ReAddSkyMaskGNodePos(-7150, -750);
+    UMaterialExpressionComponentMask* ReAddSkyMaskGNode = CreateMaskNode(Material, ReAddSkyMaskGNodePos, false, true, false);
+    Expressions.Add(ReAddSkyMaskGNode);
+
+    ReAddSkyMaxGBNode->A.Connect(0, ReAddSkyMaskGNode);
+
+
+    // Mask-node
+    FVector2D ReAddSkyMaskBNodePos(-7150, -650);
+    UMaterialExpressionComponentMask* ReAddSkyMaskBNode = CreateMaskNode(Material, ReAddSkyMaskBNodePos, false, false, true);
+    Expressions.Add(ReAddSkyMaskBNode);
+
+    ReAddSkyMaxGBNode->B.Connect(0, ReAddSkyMaskBNode);
+
+
+    // SceneTexture:BaseColor-node
+    FVector2D SceneTextureBaseColorNodePos(-7500, -750);
+    UMaterialExpressionMaterialFunctionCall* SceneTextureBaseColorNode = CreateSceneTextureBaseColor(Material, SceneTextureBaseColorNodePos);
+    Expressions.Add(SceneTextureBaseColorNode);
+    SceneTextureBaseColorNode->UpdateFromFunctionResource();
+
+    ReAddSkyMaskRNode->Input.Connect(0, SceneTextureBaseColorNode);
+    ReAddSkyMaskGNode->Input.Connect(0, SceneTextureBaseColorNode);
+    ReAddSkyMaskBNode->Input.Connect(0, SceneTextureBaseColorNode);
+
+
+    /** Blue 4.3 - World Normal blur control **/
+
+    // Blue comment box (4.3) - World Normal blur control
+    FVector2D BlueBlurCommentPos(-8550, -1980);
+    FVector2D BlueBlurCommentSize(700, 550);
+    FString BlueBlurCommentText = TEXT("World Normal blur control");
+    FColor BlueBlurCommentColor =FColor::FromHex(TEXT("00B6FFFF"));
+    UMaterialExpressionComment* BlueBlurComment = CreateCommentNode(Material, BlueBlurCommentPos, BlueBlurCommentSize, BlueBlurCommentText, BlueBlurCommentColor);
+    Expressions.Add(BlueBlurComment);
+
+    
+    // Lerp-node
+    FVector2D BlueBlurLerpNodePos(-8000, -1830);
+    UMaterialExpressionLinearInterpolate* BlueBlurLerpNode = CreateLerpNode(Material, BlueBlurLerpNodePos);
+    Expressions.Add(BlueBlurLerpNode);
+
+    BackgroundMaskNode->Input.Connect(0, BlueBlurLerpNode);
+
+
+    // SceneTexture:WorldNormal-node
+    FVector2D SceneTextureWorldNormalNodePos(-8450, -1900);
+    UMaterialExpressionMaterialFunctionCall* SceneTextureWorldNormalNode = CreateSceneTextureWorldNormal(Material, SceneTextureWorldNormalNodePos);
+    Expressions.Add(SceneTextureWorldNormalNode);
+    
+    SceneTextureWorldNormalNode->UpdateFromFunctionResource();
+    BlueBlurLerpNode->A.Connect(0, SceneTextureWorldNormalNode);
+
+
+    // Clamp-node
+    FVector2D BlueBlurClampNodePos(-8250, -1670);
+    UMaterialExpressionClamp* BlueBlurClampNode = CreateClampNode(Material, BlueBlurClampNodePos, 0.0f, 2.0f);
+    Expressions.Add(BlueBlurClampNode);
+    
+    BlueBlurLerpNode->Alpha.Connect(0, BlueBlurClampNode);
+
+
+    // ThermalSettingsBlur-node
+    FVector2D ThermalSettingsBlurNodePos(-8500, -1630);
+    UMaterialExpressionCollectionParameter* ThermalSettingsBlurNode = CreateThermalSettingsCPNode(Material, ThermalSettingsBlurNodePos, TEXT("Blur"), EThermalSettingsParamType::Scalar);
+    Expressions.Add(ThermalSettingsBlurNode);
+
+    BlueBlurClampNode->Input.Connect(0, ThermalSettingsBlurNode);
+    
+
+    
+    /** Blue 4.4 - World Normal blur **/
+
+    // Blue comment box (4.4) - World Normal blur
+    FVector2D WorldNormalCommentPos(-11500, -2900);
+    FVector2D WorldNormalCommentSize(2900, 1500);
+    FString WorldNormalCommentText = TEXT("World Normal blur");
+    FColor WorldNormalCommentColor =FColor::FromHex(TEXT("00B6FFFF"));
+    UMaterialExpressionComment* WorldNormalComment = CreateCommentNode(Material, WorldNormalCommentPos, WorldNormalCommentSize, WorldNormalCommentText, WorldNormalCommentColor);
+    Expressions.Add(WorldNormalComment);
+
+
+    // Add-node
+    FVector2D WorldNormalAddNodeStartPos(-8800, -1780);
+    UMaterialExpressionAdd* WorldNormalAddNodeStart = CreateAddNode(Material, WorldNormalAddNodeStartPos);
+    Expressions.Add(WorldNormalAddNodeStart);
+    
+    BlueBlurLerpNode->B.Connect(0, WorldNormalAddNodeStart);
+
+    //* Groups of Add-nodes
+    
+    // Add-node 1
+    FVector2D WorldNormalAddNode1Pos(-9100, -1940);
+    UMaterialExpressionAdd* WorldNormalAddNode1 = CreateAddNode(Material, WorldNormalAddNode1Pos);
+    Expressions.Add(WorldNormalAddNode1);
+
+    WorldNormalAddNodeStart->A.Connect(0, WorldNormalAddNode1);
+
+    // Add-node 2
+    FVector2D WorldNormalAddNode2Pos(-9100, -2100);
+    UMaterialExpressionAdd* WorldNormalAddNode2 = CreateAddNode(Material, WorldNormalAddNode2Pos);
+    Expressions.Add(WorldNormalAddNode2);
+
+    WorldNormalAddNode1->A.Connect(0, WorldNormalAddNode2);
+
+    // Add-node 3
+    FVector2D WorldNormalAddNode3Pos(-9100, -2260);
+    UMaterialExpressionAdd* WorldNormalAddNode3 = CreateAddNode(Material, WorldNormalAddNode3Pos);
+    Expressions.Add(WorldNormalAddNode3);
+
+    WorldNormalAddNode2->A.Connect(0, WorldNormalAddNode3);
+
+    // Add-node 4
+    FVector2D WorldNormalAddNode4Pos(-9100, -2420);
+    UMaterialExpressionAdd* WorldNormalAddNode4 = CreateAddNode(Material, WorldNormalAddNode4Pos);
+    Expressions.Add(WorldNormalAddNode4);
+    
+    WorldNormalAddNode3->A.Connect(0, WorldNormalAddNode4);
+
+    // Add-node 5
+    FVector2D WorldNormalAddNode5Pos(-9100, -2580);
+    UMaterialExpressionAdd* WorldNormalAddNode5 = CreateAddNode(Material, WorldNormalAddNode5Pos);
+    Expressions.Add(WorldNormalAddNode5);
+
+    WorldNormalAddNode4->A.Connect(0, WorldNormalAddNode5);
+
+
+    //* Group of Multiply-nodes
+
+    // Multiply-node 1 -1880
+    FVector2D WorldNormalMultiplyNode1Pos(-9400, -1690);
+    UMaterialExpressionMultiply* WorldNormalMultiplyNode1 = CreateMultiplyNode(Material, WorldNormalMultiplyNode1Pos, 0.3f);
+    Expressions.Add(WorldNormalMultiplyNode1);
+    WorldNormalAddNodeStart->B.Connect(0, WorldNormalMultiplyNode1);
+
+    // Multiply-node 2
+    FVector2D WorldNormalMultiplyNode2Pos(-9400, -1860);
+    UMaterialExpressionMultiply* WorldNormalMultiplyNode2 = CreateMultiplyNode(Material, WorldNormalMultiplyNode2Pos, 0.1167f);
+    Expressions.Add(WorldNormalMultiplyNode2);
+    WorldNormalAddNode1->B.Connect(0, WorldNormalMultiplyNode2);
+
+    // Multiply-node 3
+    FVector2D WorldNormalMultiplyNode3Pos(-9400, -2020);
+    UMaterialExpressionMultiply* WorldNormalMultiplyNode3 = CreateMultiplyNode(Material, WorldNormalMultiplyNode3Pos, 0.1167f);
+    Expressions.Add(WorldNormalMultiplyNode3);
+    WorldNormalAddNode2->B.Connect(0, WorldNormalMultiplyNode3);
+
+    // Multiply-node 4
+    FVector2D WorldNormalMultiplyNode4Pos(-9400, -2180);
+    UMaterialExpressionMultiply* WorldNormalMultiplyNode4 = CreateMultiplyNode(Material, WorldNormalMultiplyNode4Pos, 0.1167f);
+    Expressions.Add(WorldNormalMultiplyNode4);
+    WorldNormalAddNode3->B.Connect(0, WorldNormalMultiplyNode4);
+
+    // Multiply-node 5
+    FVector2D WorldNormalMultiplyNode5Pos(-9400, -2340);
+    UMaterialExpressionMultiply* WorldNormalMultiplyNode5 = CreateMultiplyNode(Material, WorldNormalMultiplyNode5Pos, 0.1167f);
+    Expressions.Add(WorldNormalMultiplyNode5);
+    WorldNormalAddNode4->B.Connect(0, WorldNormalMultiplyNode5);
+
+    // Multiply-node 6
+    FVector2D WorldNormalMultiplyNode6Pos(-9400, -2500);
+    UMaterialExpressionMultiply* WorldNormalMultiplyNode6 = CreateMultiplyNode(Material, WorldNormalMultiplyNode6Pos, 0.1167f);
+    Expressions.Add(WorldNormalMultiplyNode6);
+    WorldNormalAddNode5->B.Connect(0, WorldNormalMultiplyNode6);
+
+    // Multiply-node 7
+    FVector2D WorldNormalMultiplyNode7Pos(-9400, -2660);
+    UMaterialExpressionMultiply* WorldNormalMultiplyNode7 = CreateMultiplyNode(Material, WorldNormalMultiplyNode7Pos, 0.1167f);
+    Expressions.Add(WorldNormalMultiplyNode7);
+    WorldNormalAddNode5->A.Connect(0, WorldNormalMultiplyNode7);
+
+
+    //* Group of SceneTexture:WorldNormal-nodes
+
+    // SceneTexture:WorldNormal-node 1
+    FVector2D SceneTextureWorldNormalNode1Pos(-9750, -1690);
+    UMaterialExpressionMaterialFunctionCall* SceneTextureWorldNormalNode1 = CreateSceneTextureWorldNormal(Material, SceneTextureWorldNormalNode1Pos);
+    Expressions.Add(SceneTextureWorldNormalNode1);
+    SceneTextureWorldNormalNode1->UpdateFromFunctionResource();
+    WorldNormalMultiplyNode1->A.Connect(0, SceneTextureWorldNormalNode1);
+    
+    // SceneTexture:WorldNormal-node 2
+    FVector2D SceneTextureWorldNormalNode2Pos(-9750, -1860);
+    UMaterialExpressionMaterialFunctionCall* SceneTextureWorldNormalNode2 = CreateSceneTextureWorldNormal(Material, SceneTextureWorldNormalNode2Pos);
+    Expressions.Add(SceneTextureWorldNormalNode2);
+    SceneTextureWorldNormalNode2->UpdateFromFunctionResource();
+    WorldNormalMultiplyNode2->A.Connect(0, SceneTextureWorldNormalNode2);
+
+    // SceneTexture:WorldNormal-node 3
+    FVector2D SceneTextureWorldNormalNode3Pos(-9750, -2020);
+    UMaterialExpressionMaterialFunctionCall* SceneTextureWorldNormalNode3 = CreateSceneTextureWorldNormal(Material, SceneTextureWorldNormalNode3Pos);
+    Expressions.Add(SceneTextureWorldNormalNode3);
+    SceneTextureWorldNormalNode3->UpdateFromFunctionResource();
+    WorldNormalMultiplyNode3->A.Connect(0, SceneTextureWorldNormalNode3);
+
+    // SceneTexture:WorldNormal-node 4
+    FVector2D SceneTextureWorldNormalNode4Pos(-9750, -2180);
+    UMaterialExpressionMaterialFunctionCall* SceneTextureWorldNormalNode4 = CreateSceneTextureWorldNormal(Material, SceneTextureWorldNormalNode4Pos);
+    Expressions.Add(SceneTextureWorldNormalNode4);
+    SceneTextureWorldNormalNode4->UpdateFromFunctionResource();
+    WorldNormalMultiplyNode4->A.Connect(0, SceneTextureWorldNormalNode4);
+
+    // SceneTexture:WorldNormal-node 5
+    FVector2D SceneTextureWorldNormalNode5Pos(-9750, -2340);
+    UMaterialExpressionMaterialFunctionCall* SceneTextureWorldNormalNode5 = CreateSceneTextureWorldNormal(Material, SceneTextureWorldNormalNode5Pos);
+    Expressions.Add(SceneTextureWorldNormalNode5);
+    SceneTextureWorldNormalNode5->UpdateFromFunctionResource();
+    WorldNormalMultiplyNode5->A.Connect(0, SceneTextureWorldNormalNode5);
+
+    // SceneTexture:WorldNormal-node 6
+    FVector2D SceneTextureWorldNormalNode6Pos(-9750, -2500);
+    UMaterialExpressionMaterialFunctionCall* SceneTextureWorldNormalNode6 = CreateSceneTextureWorldNormal(Material, SceneTextureWorldNormalNode6Pos);
+    Expressions.Add(SceneTextureWorldNormalNode6);
+    SceneTextureWorldNormalNode6->UpdateFromFunctionResource();
+    WorldNormalMultiplyNode6->A.Connect(0, SceneTextureWorldNormalNode6);
+
+    // SceneTexture:WorldNormal-node 7
+    FVector2D SceneTextureWorldNormalNode7Pos(-9750, -2660);
+    UMaterialExpressionMaterialFunctionCall* SceneTextureWorldNormalNode7 = CreateSceneTextureWorldNormal(Material, SceneTextureWorldNormalNode7Pos);
+    Expressions.Add(SceneTextureWorldNormalNode7);
+    SceneTextureWorldNormalNode7->UpdateFromFunctionResource();
+    WorldNormalMultiplyNode7->A.Connect(0, SceneTextureWorldNormalNode7);
+
+
+    /*** Blue 4.3 White inside - UV Coordinates for color sample ***/
+    
+    // Blue 4.2 inside comment box - UV Coordinates for color sample
+    FVector2D UVCoordCommentPos(-10550, -2800);
+    FVector2D UVCoordCCommentSize(700, 1350);
+    FString UVCoordCCommentText = TEXT("UV Coordinates for color sample");
+    UMaterialExpressionComment* UVCoordComment = CreateCommentNode(Material, UVCoordCommentPos, UVCoordCCommentSize, UVCoordCCommentText);
+    Expressions.Add(UVCoordComment);
+
+
+    //* Groups of Add-nodes
+    
+    // Add-node 1
+    FVector2D UVCoordAddNode1Pos(-10020, -1660);
+    UMaterialExpressionAdd* UVCoordAddNode1 = CreateAddNode(Material, UVCoordAddNode1Pos);
+    Expressions.Add(UVCoordAddNode1);
+    
+    for (FFunctionExpressionInput& Input : SceneTextureWorldNormalNode1->FunctionInputs)
+    {
+        if (Input.Input.InputName == TEXT("UVs"))
+        {
+            Input.Input.Connect(0, UVCoordAddNode1);
+        }
+    }
+
+    // Add-node 2 
+    FVector2D UVCoordAddNode2Pos(-10020, -1820);
+    UMaterialExpressionAdd* UVCoordAddNode2 = CreateAddNode(Material, UVCoordAddNode2Pos);
+    Expressions.Add(UVCoordAddNode2);
+
+    for (FFunctionExpressionInput& Input : SceneTextureWorldNormalNode2->FunctionInputs)
+    {
+        if (Input.Input.InputName == TEXT("UVs"))
+        {
+            Input.Input.Connect(0, UVCoordAddNode2);
+        }
+    }
+
+    // Add-node 3 
+    FVector2D UVCoordAddNode3Pos(-10020, -1980);
+    UMaterialExpressionAdd* UVCoordAddNode3 = CreateAddNode(Material, UVCoordAddNode3Pos);
+    Expressions.Add(UVCoordAddNode3);
+
+    for (FFunctionExpressionInput& Input : SceneTextureWorldNormalNode3->FunctionInputs)
+    {
+        if (Input.Input.InputName == TEXT("UVs"))
+        {
+            Input.Input.Connect(0, UVCoordAddNode3);
+        }
+    }
+
+    // Add-node 4 
+    FVector2D UVCoordAddNode4Pos(-10020, -2140);
+    UMaterialExpressionAdd* UVCoordAddNode4 = CreateAddNode(Material, UVCoordAddNode4Pos);
+    Expressions.Add(UVCoordAddNode4);
+
+    for (FFunctionExpressionInput& Input : SceneTextureWorldNormalNode4->FunctionInputs)
+    {
+        if (Input.Input.InputName == TEXT("UVs"))
+        {
+            Input.Input.Connect(0, UVCoordAddNode4);
+        }
+    }
+
+    // Add-node 5 
+    FVector2D UVCoordAddNode5Pos(-10020, -2300);
+    UMaterialExpressionAdd* UVCoordAddNode5 = CreateAddNode(Material, UVCoordAddNode5Pos);
+    Expressions.Add(UVCoordAddNode5);
+
+    for (FFunctionExpressionInput& Input : SceneTextureWorldNormalNode5->FunctionInputs)
+    {
+        if (Input.Input.InputName == TEXT("UVs"))
+        {
+            Input.Input.Connect(0, UVCoordAddNode5);
+        }
+    }
+    
+    // Add-node 6 
+    FVector2D UVCoordAddNode6Pos(-10020, -2460);
+    UMaterialExpressionAdd* UVCoordAddNode6 = CreateAddNode(Material, UVCoordAddNode6Pos);
+    Expressions.Add(UVCoordAddNode6);
+
+    for (FFunctionExpressionInput& Input : SceneTextureWorldNormalNode6->FunctionInputs)
+    {
+        if (Input.Input.InputName == TEXT("UVs"))
+        {
+            Input.Input.Connect(0, UVCoordAddNode6);
+        }
+    }
+
+    // Add-node 7 
+    FVector2D UVCoordAddNode7Pos(-10020, -2620);
+    UMaterialExpressionAdd* UVCoordAddNode7 = CreateAddNode(Material, UVCoordAddNode7Pos);
+    Expressions.Add(UVCoordAddNode7);
+
+    for (FFunctionExpressionInput& Input : SceneTextureWorldNormalNode7->FunctionInputs)
+    {
+        if (Input.Input.InputName == TEXT("UVs"))
+        {
+            Input.Input.Connect(0, UVCoordAddNode7);
+        }
+    }
+
+
+    // TextureCoordinate-node
+    FVector2D UVCoordTextureCoordinateNodePos(-10300, -2750);
+    UMaterialExpressionTextureCoordinate* UVCoordTextureCoordinateNode = CreateTextureCoordinateNode(Material, UVCoordTextureCoordinateNodePos);
+    Expressions.Add(UVCoordTextureCoordinateNode);
+
+    UVCoordAddNode1->A.Connect(0, UVCoordTextureCoordinateNode);
+    UVCoordAddNode2->A.Connect(0, UVCoordTextureCoordinateNode);
+    UVCoordAddNode3->A.Connect(0, UVCoordTextureCoordinateNode);
+    UVCoordAddNode4->A.Connect(0, UVCoordTextureCoordinateNode);
+    UVCoordAddNode5->A.Connect(0, UVCoordTextureCoordinateNode);
+    UVCoordAddNode6->A.Connect(0, UVCoordTextureCoordinateNode);
+    UVCoordAddNode7->A.Connect(0, UVCoordTextureCoordinateNode);
+    
+
+    
+    //* Group of Multiply-nodes
+
+    // Multiply-node 1 -1880
+    FVector2D UVCoordMultiplyNode1Pos(-10250, -1620);
+    UMaterialExpressionMultiply* UVCoordMultiplyNode1 = CreateMultiplyNode(Material, UVCoordMultiplyNode1Pos);
+    Expressions.Add(UVCoordMultiplyNode1);
+    UVCoordAddNode1->B.Connect(0, UVCoordMultiplyNode1);
+
+    // Multiply-node 2
+    FVector2D UVCoordMultiplyNode2Pos(-10250, -1780);
+    UMaterialExpressionMultiply* UVCoordMultiplyNode2 = CreateMultiplyNode(Material, UVCoordMultiplyNode2Pos);
+    Expressions.Add(UVCoordMultiplyNode2);
+    UVCoordAddNode2->B.Connect(0, UVCoordMultiplyNode2);
+
+    // Multiply-node 3
+    FVector2D UVCoordMultiplyNode3Pos(-10250, -1940);
+    UMaterialExpressionMultiply* UVCoordMultiplyNode3 = CreateMultiplyNode(Material, UVCoordMultiplyNode3Pos);
+    Expressions.Add(UVCoordMultiplyNode3);
+    UVCoordAddNode3->B.Connect(0, UVCoordMultiplyNode3);
+
+    // Multiply-node 4
+    FVector2D UVCoordMultiplyNode4Pos(-10250, -2100);
+    UMaterialExpressionMultiply* UVCoordMultiplyNode4 = CreateMultiplyNode(Material, UVCoordMultiplyNode4Pos);
+    Expressions.Add(UVCoordMultiplyNode4);
+    UVCoordAddNode4->B.Connect(0, UVCoordMultiplyNode4);
+    
+    // Multiply-node 5
+    FVector2D UVCoordMultiplyNode5Pos(-10250, -2260);
+    UMaterialExpressionMultiply* UVCoordMultiplyNode5 = CreateMultiplyNode(Material, UVCoordMultiplyNode5Pos);
+    Expressions.Add(UVCoordMultiplyNode5);
+    UVCoordAddNode5->B.Connect(0, UVCoordMultiplyNode5);
+    
+    // Multiply-node 6
+    FVector2D UVCoordMultiplyNode6Pos(-10250, -2420);
+    UMaterialExpressionMultiply* UVCoordMultiplyNode6 = CreateMultiplyNode(Material, UVCoordMultiplyNode6Pos);
+    Expressions.Add(UVCoordMultiplyNode6);
+    UVCoordAddNode6->B.Connect(0, UVCoordMultiplyNode6);
+    
+    // Multiply-node 7
+    FVector2D UVCoordMultiplyNode7Pos(-10250, -2580);
+    UMaterialExpressionMultiply* UVCoordMultiplyNode7 = CreateMultiplyNode(Material, UVCoordMultiplyNode7Pos);
+    Expressions.Add(UVCoordMultiplyNode7);
+    UVCoordAddNode7->B.Connect(0, UVCoordMultiplyNode7);
+
+
+    //* Group of Constant2Vector -nodes
+
+    // -1660 -1820 -1980 -2140 -2300 -2460 -2620
+    
+    // Constant 2Vector-node 1
+    FVector2D UVCoordConstant2VectorNode1Pos(-10480, -1680);
+    UMaterialExpressionConstant2Vector* UVCoordConstant2VectorNode1 = CreateConstant2VectorNode(Material, UVCoordConstant2VectorNode1Pos, -1.0f, -2.0f);
+    Expressions.Add(UVCoordConstant2VectorNode1);
+    UVCoordMultiplyNode1->A.Connect(2, UVCoordConstant2VectorNode1);
+
+    // Constant 2Vector-node 2
+    FVector2D UVCoordConstant2VectorNode2Pos(-10480, -1840);
+    UMaterialExpressionConstant2Vector* UVCoordConstant2VectorNode2 = CreateConstant2VectorNode(Material, UVCoordConstant2VectorNode2Pos, 0.0f, 0.0f);
+    Expressions.Add(UVCoordConstant2VectorNode2);
+    UVCoordMultiplyNode2->A.Connect(2, UVCoordConstant2VectorNode2);
+    
+    // Constant 2Vector-node 3
+    FVector2D UVCoordConstant2VectorNode3Pos(-10480, -2000);
+    UMaterialExpressionConstant2Vector* UVCoordConstant2VectorNode3 = CreateConstant2VectorNode(Material, UVCoordConstant2VectorNode3Pos, -2.0f, 0.0f);
+    Expressions.Add(UVCoordConstant2VectorNode3);
+    UVCoordMultiplyNode3->A.Connect(2, UVCoordConstant2VectorNode3);
+    
+    // Constant 2Vector-node 4
+    FVector2D UVCoordConstant2VectorNode4Pos(-10480, -2160);
+    UMaterialExpressionConstant2Vector* UVCoordConstant2VectorNode4 = CreateConstant2VectorNode(Material, UVCoordConstant2VectorNode4Pos, 1.0f, 2.0f);
+    Expressions.Add(UVCoordConstant2VectorNode4);
+    UVCoordMultiplyNode4->A.Connect(2, UVCoordConstant2VectorNode4);
+        
+    // Constant 2Vector-node 5
+    FVector2D UVCoordConstant2VectorNode5Pos(-10480, -2320);
+    UMaterialExpressionConstant2Vector* UVCoordConstant2VectorNode5 = CreateConstant2VectorNode(Material, UVCoordConstant2VectorNode5Pos, 1.0f, -2.0f);
+    Expressions.Add(UVCoordConstant2VectorNode5);
+    UVCoordMultiplyNode5->A.Connect(2, UVCoordConstant2VectorNode5);
+    
+    // Constant 2Vector-node 6
+    FVector2D UVCoordConstant2VectorNode6Pos(-10480, -2480);
+    UMaterialExpressionConstant2Vector* UVCoordConstant2VectorNode6 = CreateConstant2VectorNode(Material, UVCoordConstant2VectorNode6Pos, -1.0f, -2.0f);
+    Expressions.Add(UVCoordConstant2VectorNode6);
+    UVCoordMultiplyNode6->A.Connect(2, UVCoordConstant2VectorNode6);
+    
+    // Constant 2Vector-node 7
+    FVector2D UVCoordConstant2VectorNode7Pos(-10480, -2640);
+    UMaterialExpressionConstant2Vector* UVCoordConstant2VectorNode7 = CreateConstant2VectorNode(Material, UVCoordConstant2VectorNode7Pos, -1.0f, -2.0f);
+    Expressions.Add(UVCoordConstant2VectorNode7);
+    UVCoordMultiplyNode7->A.Connect(2, UVCoordConstant2VectorNode7);
+
+    /*** Blue 4.3 White inside - Get size of a pixel ***/
+    
+    // Blue 4.3 inside comment box - Get size of a pixel
+    FVector2D PixelSizeCommentPos(-11330, -2260);
+    FVector2D PixelSizeCommentSize(500, 300);
+    FString PixelSizeCommentText = TEXT("Get size of a pixel");
+    UMaterialExpressionComment* PixelSizeComment = CreateCommentNode(Material, PixelSizeCommentPos, PixelSizeCommentSize, PixelSizeCommentText);
+    Expressions.Add(PixelSizeComment);
+
+
+    // Divide-node
+    FVector2D PixelSizeDivideNodePos(-11030, -2140);
+    UMaterialExpressionDivide* PixelSizeDivideNode = CreateDivideNode(Material, PixelSizeDivideNodePos);
+    Expressions.Add(PixelSizeDivideNode);
+
+    UVCoordMultiplyNode1->B.Connect(0, PixelSizeDivideNode);
+    UVCoordMultiplyNode2->B.Connect(0, PixelSizeDivideNode);
+    UVCoordMultiplyNode3->B.Connect(0, PixelSizeDivideNode);
+    UVCoordMultiplyNode4->B.Connect(0, PixelSizeDivideNode);
+    UVCoordMultiplyNode5->B.Connect(0, PixelSizeDivideNode);
+    UVCoordMultiplyNode6->B.Connect(0, PixelSizeDivideNode);
+    UVCoordMultiplyNode7->B.Connect(0, PixelSizeDivideNode);
+
+
+    // Constant node
+    FVector2D PixelSizeConstantNodePos(-11230, -2180);
+    UMaterialExpressionConstant* PixelSizeConstantNode = CreateConstantNode(Material, PixelSizeConstantNodePos, 1.0f);
+    Expressions.Add(PixelSizeConstantNode);
+    PixelSizeDivideNode->A.Connect(0, PixelSizeConstantNode);
+
+
+    // ScreenResolution node
+    FVector2D PixelSizeScreenResolutionNodePos(-11230, -2080);
+    UMaterialExpressionMaterialFunctionCall* PixelSizeScreenResolutionNode = CreateScreenResolution(Material, PixelSizeScreenResolutionNodePos);
+    Expressions.Add(PixelSizeScreenResolutionNode);
+    PixelSizeScreenResolutionNode->UpdateFromFunctionResource();
+    PixelSizeDivideNode->B.Connect(0, PixelSizeScreenResolutionNode);
+    
+    
     
     
     /* Finish */
