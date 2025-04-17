@@ -664,6 +664,16 @@ void FPP_ThermalCamera::CreateThermalCamera(bool& mfNodecreated, FString& status
 
 
     /* 2 - Yellow area  - Add noise */
+
+    // 
+    // Yellow comment box (2) - Add noise
+    FVector2D YellowCommentPos(-3700, 75);
+    FVector2D YellowCommentSize(2900, 900);
+    FString YellowCommentText = TEXT("Add noise");
+    FColor YellowCommentColor =FColor::FromHex(TEXT("FFF976FF"));
+    UMaterialExpressionComment* YellowComment = CreateCommentNode(Material, YellowCommentPos, YellowCommentSize, YellowCommentText, YellowCommentColor);
+    
+    Expressions.Add(YellowComment);
     
     // LERP-node
     FVector2D YelloLerpNodePos(-1000, 210);
@@ -690,6 +700,16 @@ void FPP_ThermalCamera::CreateThermalCamera(bool& mfNodecreated, FString& status
 
 
     /** Add noise to image area **/
+
+    //FVector2D CommentYellowCoordinatesPos(-3650, 400);
+    //FVector2D CommentYellowCoordinatesSize(600, 500);
+
+    // Yellow inside comment node 1 - Add noise to image
+    FVector2D CommentNoiseImageAreaPos(-3680, 350);
+    FVector2D CommentNoiseImageAreaSize(2280, 560);
+    FString CommentNoiseImageAreaText = TEXT("Add noise to image");
+    UMaterialExpressionComment* CommentNoiseImageArea = CreateCommentNode(Material, CommentNoiseImageAreaPos, CommentNoiseImageAreaSize, CommentNoiseImageAreaText);
+    Expressions.Add(CommentNoiseImageArea);
     
     // Mask-node
     FVector2D NoiseMaskPos(-1550, 450);
@@ -784,6 +804,13 @@ void FPP_ThermalCamera::CreateThermalCamera(bool& mfNodecreated, FString& status
 
     /*** Get screen coordinates ***/
 
+    // Yellow inside comment node 2 - Deside size of noise pixels
+    FVector2D CommentYellowCoordinatesPos(-3650, 400);
+    FVector2D CommentYellowCoordinatesSize(600, 500);
+    FString CommentYellowCoordinatesText = TEXT("Get screen coordinates");
+    UMaterialExpressionComment* CommentYellowCoordinates = CreateCommentNode(Material, CommentYellowCoordinatesPos, CommentYellowCoordinatesSize, CommentYellowCoordinatesText);
+    Expressions.Add(CommentYellowCoordinates);
+
     // Floor-node
     FVector2D CoordinatesFloorNodePos(-3200, 460);
     UMaterialExpressionFloor* CoordinatesFloorNode = CreateFloorNode(Material, CoordinatesFloorNodePos);
@@ -817,24 +844,6 @@ void FPP_ThermalCamera::CreateThermalCamera(bool& mfNodecreated, FString& status
     CoordinatesMultiplyNode->B.Connect(0, CoordinatesViewSizeNode);
     
 
-    // Yellow inside comment node 2 - Deside size of noise pixels
-    FVector2D CommentYellowCoordinatesPos(-3650, 400);
-    FVector2D CommentYellowCoordinatesSize(600, 500);
-    FString CommentYellowCoordinatesText = TEXT("Get screen coordinates");
-    UMaterialExpressionComment* CommentYellowCoordinates = CreateCommentNode(Material, CommentYellowCoordinatesPos, CommentYellowCoordinatesSize, CommentYellowCoordinatesText);
-    Expressions.Add(CommentYellowCoordinates);
-
-
-    // 
-    // Yellow comment box (2) - Add noise
-    FVector2D YellowCommentPos(-3700, 75);
-    FVector2D YellowCommentSize(2900, 900);
-    FString YellowCommentText = TEXT("Add noise");
-    FColor YellowCommentColor =FColor::FromHex(TEXT("FFF976FF"));
-    UMaterialExpressionComment* YellowComment = CreateCommentNode(Material, YellowCommentPos, YellowCommentSize, YellowCommentText, YellowCommentColor);
-    
-    Expressions.Add(YellowComment);
-
 
     /* 3 - White area - Add back the alpha channel to the image */
 
@@ -848,7 +857,7 @@ void FPP_ThermalCamera::CreateThermalCamera(bool& mfNodecreated, FString& status
 
     // Constant-node
     FVector2D ImageConstructConstantNodePos(-4250, 300);
-    UMaterialExpressionConstant* ImageConstructConstantNode = CreateConstantNode(Material, ImageConstructConstantNodePos, 1.0f);
+    UMaterialExpressionConstant* ImageConstructConstantNode = CreateConstantNode(Material, ImageConstructConstantNodePos, 0.0f);
     Expressions.Add(ImageConstructConstantNode);
 
     ImageConstructAppendNode->B.Connect(0, ImageConstructConstantNode);
@@ -1036,6 +1045,7 @@ void FPP_ThermalCamera::CreateThermalCamera(bool& mfNodecreated, FString& status
     // Step-node
     FVector2D ReAddSkyStepNodePos(-6750, -850);
     UMaterialExpressionStep* ReAddSkyStepNode = CreateStepNode(Material, ReAddSkyStepNodePos);
+    ReAddSkyComment->SizeY = 0.0001f;
     Expressions.Add(ReAddSkyStepNode);
     
     AddSkyLerpNode->Alpha.Connect(0, ReAddSkyStepNode);
@@ -1292,165 +1302,165 @@ void FPP_ThermalCamera::CreateThermalCamera(bool& mfNodecreated, FString& status
     /*** Blue 4.3 White inside - UV Coordinates for color sample ***/
     
     // Blue 4.2 inside comment box - UV Coordinates for color sample
-    FVector2D UVCoordCommentPos(-10550, -2800);
-    FVector2D UVCoordCCommentSize(700, 1350);
-    FString UVCoordCCommentText = TEXT("UV Coordinates for color sample");
-    UMaterialExpressionComment* UVCoordComment = CreateCommentNode(Material, UVCoordCommentPos, UVCoordCCommentSize, UVCoordCCommentText);
-    Expressions.Add(UVCoordComment);
+    FVector2D BlueUVCoordCommentPos(-10550, -2800);
+    FVector2D BlueUVCoordCCommentSize(700, 1350);
+    FString BlueUVCoordCCommentText = TEXT("UV Coordinates for color sample");
+    UMaterialExpressionComment* BlueUVCoordComment = CreateCommentNode(Material, BlueUVCoordCommentPos, BlueUVCoordCCommentSize, BlueUVCoordCCommentText);
+    Expressions.Add(BlueUVCoordComment);
 
 
     //* Groups of Add-nodes
     
     // Add-node 1
-    FVector2D UVCoordAddNode1Pos(-10020, -1660);
-    UMaterialExpressionAdd* UVCoordAddNode1 = CreateAddNode(Material, UVCoordAddNode1Pos);
-    Expressions.Add(UVCoordAddNode1);
+    FVector2D BlueUVCoordAddNode1Pos(-10020, -1660);
+    UMaterialExpressionAdd* BlueUVCoordAddNode1 = CreateAddNode(Material, BlueUVCoordAddNode1Pos);
+    Expressions.Add(BlueUVCoordAddNode1);
     
     for (FFunctionExpressionInput& Input : SceneTextureWorldNormalNode1->FunctionInputs)
     {
         if (Input.Input.InputName == TEXT("UVs"))
         {
-            Input.Input.Connect(0, UVCoordAddNode1);
+            Input.Input.Connect(0, BlueUVCoordAddNode1);
         }
     }
 
     // Add-node 2 
-    FVector2D UVCoordAddNode2Pos(-10020, -1820);
-    UMaterialExpressionAdd* UVCoordAddNode2 = CreateAddNode(Material, UVCoordAddNode2Pos);
-    Expressions.Add(UVCoordAddNode2);
+    FVector2D BlueUVCoordAddNode2Pos(-10020, -1820);
+    UMaterialExpressionAdd* BlueUVCoordAddNode2 = CreateAddNode(Material, BlueUVCoordAddNode2Pos);
+    Expressions.Add(BlueUVCoordAddNode2);
 
     for (FFunctionExpressionInput& Input : SceneTextureWorldNormalNode2->FunctionInputs)
     {
         if (Input.Input.InputName == TEXT("UVs"))
         {
-            Input.Input.Connect(0, UVCoordAddNode2);
+            Input.Input.Connect(0, BlueUVCoordAddNode2);
         }
     }
 
     // Add-node 3 
-    FVector2D UVCoordAddNode3Pos(-10020, -1980);
-    UMaterialExpressionAdd* UVCoordAddNode3 = CreateAddNode(Material, UVCoordAddNode3Pos);
-    Expressions.Add(UVCoordAddNode3);
+    FVector2D BlueUVCoordAddNode3Pos(-10020, -1980);
+    UMaterialExpressionAdd* BlueUVCoordAddNode3 = CreateAddNode(Material, BlueUVCoordAddNode3Pos);
+    Expressions.Add(BlueUVCoordAddNode3);
 
     for (FFunctionExpressionInput& Input : SceneTextureWorldNormalNode3->FunctionInputs)
     {
         if (Input.Input.InputName == TEXT("UVs"))
         {
-            Input.Input.Connect(0, UVCoordAddNode3);
+            Input.Input.Connect(0, BlueUVCoordAddNode3);
         }
     }
 
     // Add-node 4 
-    FVector2D UVCoordAddNode4Pos(-10020, -2140);
-    UMaterialExpressionAdd* UVCoordAddNode4 = CreateAddNode(Material, UVCoordAddNode4Pos);
-    Expressions.Add(UVCoordAddNode4);
+    FVector2D BlueUVCoordAddNode4Pos(-10020, -2140);
+    UMaterialExpressionAdd* BlueUVCoordAddNode4 = CreateAddNode(Material, BlueUVCoordAddNode4Pos);
+    Expressions.Add(BlueUVCoordAddNode4);
 
     for (FFunctionExpressionInput& Input : SceneTextureWorldNormalNode4->FunctionInputs)
     {
         if (Input.Input.InputName == TEXT("UVs"))
         {
-            Input.Input.Connect(0, UVCoordAddNode4);
+            Input.Input.Connect(0, BlueUVCoordAddNode4);
         }
     }
 
     // Add-node 5 
-    FVector2D UVCoordAddNode5Pos(-10020, -2300);
-    UMaterialExpressionAdd* UVCoordAddNode5 = CreateAddNode(Material, UVCoordAddNode5Pos);
-    Expressions.Add(UVCoordAddNode5);
+    FVector2D BlueUVCoordAddNode5Pos(-10020, -2300);
+    UMaterialExpressionAdd* BlueUVCoordAddNode5 = CreateAddNode(Material, BlueUVCoordAddNode5Pos);
+    Expressions.Add(BlueUVCoordAddNode5);
 
     for (FFunctionExpressionInput& Input : SceneTextureWorldNormalNode5->FunctionInputs)
     {
         if (Input.Input.InputName == TEXT("UVs"))
         {
-            Input.Input.Connect(0, UVCoordAddNode5);
+            Input.Input.Connect(0, BlueUVCoordAddNode5);
         }
     }
     
     // Add-node 6 
-    FVector2D UVCoordAddNode6Pos(-10020, -2460);
-    UMaterialExpressionAdd* UVCoordAddNode6 = CreateAddNode(Material, UVCoordAddNode6Pos);
-    Expressions.Add(UVCoordAddNode6);
+    FVector2D BlueUVCoordAddNode6Pos(-10020, -2460);
+    UMaterialExpressionAdd* BlueUVCoordAddNode6 = CreateAddNode(Material, BlueUVCoordAddNode6Pos);
+    Expressions.Add(BlueUVCoordAddNode6);
 
     for (FFunctionExpressionInput& Input : SceneTextureWorldNormalNode6->FunctionInputs)
     {
         if (Input.Input.InputName == TEXT("UVs"))
         {
-            Input.Input.Connect(0, UVCoordAddNode6);
+            Input.Input.Connect(0, BlueUVCoordAddNode6);
         }
     }
 
     // Add-node 7 
-    FVector2D UVCoordAddNode7Pos(-10020, -2620);
-    UMaterialExpressionAdd* UVCoordAddNode7 = CreateAddNode(Material, UVCoordAddNode7Pos);
-    Expressions.Add(UVCoordAddNode7);
+    FVector2D BlueUVCoordAddNode7Pos(-10020, -2620);
+    UMaterialExpressionAdd* BlueUVCoordAddNode7 = CreateAddNode(Material, BlueUVCoordAddNode7Pos);
+    Expressions.Add(BlueUVCoordAddNode7);
 
     for (FFunctionExpressionInput& Input : SceneTextureWorldNormalNode7->FunctionInputs)
     {
         if (Input.Input.InputName == TEXT("UVs"))
         {
-            Input.Input.Connect(0, UVCoordAddNode7);
+            Input.Input.Connect(0, BlueUVCoordAddNode7);
         }
     }
 
 
     // TextureCoordinate-node
-    FVector2D UVCoordTextureCoordinateNodePos(-10300, -2750);
-    UMaterialExpressionTextureCoordinate* UVCoordTextureCoordinateNode = CreateTextureCoordinateNode(Material, UVCoordTextureCoordinateNodePos);
-    Expressions.Add(UVCoordTextureCoordinateNode);
+    FVector2D BlueUVCoordTextureCoordinateNodePos(-10300, -2750);
+    UMaterialExpressionTextureCoordinate* BlueUVCoordTextureCoordinateNode = CreateTextureCoordinateNode(Material, BlueUVCoordTextureCoordinateNodePos);
+    Expressions.Add(BlueUVCoordTextureCoordinateNode);
 
-    UVCoordAddNode1->A.Connect(0, UVCoordTextureCoordinateNode);
-    UVCoordAddNode2->A.Connect(0, UVCoordTextureCoordinateNode);
-    UVCoordAddNode3->A.Connect(0, UVCoordTextureCoordinateNode);
-    UVCoordAddNode4->A.Connect(0, UVCoordTextureCoordinateNode);
-    UVCoordAddNode5->A.Connect(0, UVCoordTextureCoordinateNode);
-    UVCoordAddNode6->A.Connect(0, UVCoordTextureCoordinateNode);
-    UVCoordAddNode7->A.Connect(0, UVCoordTextureCoordinateNode);
+    BlueUVCoordAddNode1->A.Connect(0, BlueUVCoordTextureCoordinateNode);
+    BlueUVCoordAddNode2->A.Connect(0, BlueUVCoordTextureCoordinateNode);
+    BlueUVCoordAddNode3->A.Connect(0, BlueUVCoordTextureCoordinateNode);
+    BlueUVCoordAddNode4->A.Connect(0, BlueUVCoordTextureCoordinateNode);
+    BlueUVCoordAddNode5->A.Connect(0, BlueUVCoordTextureCoordinateNode);
+    BlueUVCoordAddNode6->A.Connect(0, BlueUVCoordTextureCoordinateNode);
+    BlueUVCoordAddNode7->A.Connect(0, BlueUVCoordTextureCoordinateNode);
     
 
     
     //* Group of Multiply-nodes
 
     // Multiply-node 1 -1880
-    FVector2D UVCoordMultiplyNode1Pos(-10250, -1620);
-    UMaterialExpressionMultiply* UVCoordMultiplyNode1 = CreateMultiplyNode(Material, UVCoordMultiplyNode1Pos);
-    Expressions.Add(UVCoordMultiplyNode1);
-    UVCoordAddNode1->B.Connect(0, UVCoordMultiplyNode1);
+    FVector2D BlueUVCoordMultiplyNode1Pos(-10250, -1620);
+    UMaterialExpressionMultiply* BlueUVCoordMultiplyNode1 = CreateMultiplyNode(Material, BlueUVCoordMultiplyNode1Pos);
+    Expressions.Add(BlueUVCoordMultiplyNode1);
+    BlueUVCoordAddNode1->B.Connect(0, BlueUVCoordMultiplyNode1);
 
     // Multiply-node 2
-    FVector2D UVCoordMultiplyNode2Pos(-10250, -1780);
-    UMaterialExpressionMultiply* UVCoordMultiplyNode2 = CreateMultiplyNode(Material, UVCoordMultiplyNode2Pos);
-    Expressions.Add(UVCoordMultiplyNode2);
-    UVCoordAddNode2->B.Connect(0, UVCoordMultiplyNode2);
+    FVector2D BlueUVCoordMultiplyNode2Pos(-10250, -1780);
+    UMaterialExpressionMultiply* BlueUVCoordMultiplyNode2 = CreateMultiplyNode(Material, BlueUVCoordMultiplyNode2Pos);
+    Expressions.Add(BlueUVCoordMultiplyNode2);
+    BlueUVCoordAddNode2->B.Connect(0, BlueUVCoordMultiplyNode2);
 
     // Multiply-node 3
-    FVector2D UVCoordMultiplyNode3Pos(-10250, -1940);
-    UMaterialExpressionMultiply* UVCoordMultiplyNode3 = CreateMultiplyNode(Material, UVCoordMultiplyNode3Pos);
-    Expressions.Add(UVCoordMultiplyNode3);
-    UVCoordAddNode3->B.Connect(0, UVCoordMultiplyNode3);
+    FVector2D BlueUVCoordMultiplyNode3Pos(-10250, -1940);
+    UMaterialExpressionMultiply* BlueUVCoordMultiplyNode3 = CreateMultiplyNode(Material, BlueUVCoordMultiplyNode3Pos);
+    Expressions.Add(BlueUVCoordMultiplyNode3);
+    BlueUVCoordAddNode3->B.Connect(0, BlueUVCoordMultiplyNode3);
 
     // Multiply-node 4
-    FVector2D UVCoordMultiplyNode4Pos(-10250, -2100);
-    UMaterialExpressionMultiply* UVCoordMultiplyNode4 = CreateMultiplyNode(Material, UVCoordMultiplyNode4Pos);
-    Expressions.Add(UVCoordMultiplyNode4);
-    UVCoordAddNode4->B.Connect(0, UVCoordMultiplyNode4);
+    FVector2D BlueUVCoordMultiplyNode4Pos(-10250, -2100);
+    UMaterialExpressionMultiply* BlueUVCoordMultiplyNode4 = CreateMultiplyNode(Material, BlueUVCoordMultiplyNode4Pos);
+    Expressions.Add(BlueUVCoordMultiplyNode4);
+    BlueUVCoordAddNode4->B.Connect(0, BlueUVCoordMultiplyNode4);
     
     // Multiply-node 5
-    FVector2D UVCoordMultiplyNode5Pos(-10250, -2260);
-    UMaterialExpressionMultiply* UVCoordMultiplyNode5 = CreateMultiplyNode(Material, UVCoordMultiplyNode5Pos);
-    Expressions.Add(UVCoordMultiplyNode5);
-    UVCoordAddNode5->B.Connect(0, UVCoordMultiplyNode5);
+    FVector2D BlueUVCoordMultiplyNode5Pos(-10250, -2260);
+    UMaterialExpressionMultiply* BlueUVCoordMultiplyNode5 = CreateMultiplyNode(Material, BlueUVCoordMultiplyNode5Pos);
+    Expressions.Add(BlueUVCoordMultiplyNode5);
+    BlueUVCoordAddNode5->B.Connect(0, BlueUVCoordMultiplyNode5);
     
     // Multiply-node 6
-    FVector2D UVCoordMultiplyNode6Pos(-10250, -2420);
-    UMaterialExpressionMultiply* UVCoordMultiplyNode6 = CreateMultiplyNode(Material, UVCoordMultiplyNode6Pos);
-    Expressions.Add(UVCoordMultiplyNode6);
-    UVCoordAddNode6->B.Connect(0, UVCoordMultiplyNode6);
+    FVector2D BlueUVCoordMultiplyNode6Pos(-10250, -2420);
+    UMaterialExpressionMultiply* BlueUVCoordMultiplyNode6 = CreateMultiplyNode(Material, BlueUVCoordMultiplyNode6Pos);
+    Expressions.Add(BlueUVCoordMultiplyNode6);
+    BlueUVCoordAddNode6->B.Connect(0, BlueUVCoordMultiplyNode6);
     
     // Multiply-node 7
-    FVector2D UVCoordMultiplyNode7Pos(-10250, -2580);
-    UMaterialExpressionMultiply* UVCoordMultiplyNode7 = CreateMultiplyNode(Material, UVCoordMultiplyNode7Pos);
-    Expressions.Add(UVCoordMultiplyNode7);
-    UVCoordAddNode7->B.Connect(0, UVCoordMultiplyNode7);
+    FVector2D BlueUVCoordMultiplyNode7Pos(-10250, -2580);
+    UMaterialExpressionMultiply* BlueUVCoordMultiplyNode7 = CreateMultiplyNode(Material, BlueUVCoordMultiplyNode7Pos);
+    Expressions.Add(BlueUVCoordMultiplyNode7);
+    BlueUVCoordAddNode7->B.Connect(0, BlueUVCoordMultiplyNode7);
 
 
     //* Group of Constant2Vector -nodes
@@ -1458,46 +1468,46 @@ void FPP_ThermalCamera::CreateThermalCamera(bool& mfNodecreated, FString& status
     // -1660 -1820 -1980 -2140 -2300 -2460 -2620
     
     // Constant 2Vector-node 1
-    FVector2D UVCoordConstant2VectorNode1Pos(-10480, -1680);
-    UMaterialExpressionConstant2Vector* UVCoordConstant2VectorNode1 = CreateConstant2VectorNode(Material, UVCoordConstant2VectorNode1Pos, -1.0f, -2.0f);
-    Expressions.Add(UVCoordConstant2VectorNode1);
-    UVCoordMultiplyNode1->A.Connect(2, UVCoordConstant2VectorNode1);
+    FVector2D BlueUVCoordConstant2VectorNode1Pos(-10480, -1680);
+    UMaterialExpressionConstant2Vector* BlueUVCoordConstant2VectorNode1 = CreateConstant2VectorNode(Material, BlueUVCoordConstant2VectorNode1Pos, -1.0f, -2.0f);
+    Expressions.Add(BlueUVCoordConstant2VectorNode1);
+    BlueUVCoordMultiplyNode1->A.Connect(2, BlueUVCoordConstant2VectorNode1);
 
     // Constant 2Vector-node 2
-    FVector2D UVCoordConstant2VectorNode2Pos(-10480, -1840);
-    UMaterialExpressionConstant2Vector* UVCoordConstant2VectorNode2 = CreateConstant2VectorNode(Material, UVCoordConstant2VectorNode2Pos, 0.0f, 0.0f);
-    Expressions.Add(UVCoordConstant2VectorNode2);
-    UVCoordMultiplyNode2->A.Connect(2, UVCoordConstant2VectorNode2);
+    FVector2D BlueUVCoordConstant2VectorNode2Pos(-10480, -1840);
+    UMaterialExpressionConstant2Vector* BlueUVCoordConstant2VectorNode2 = CreateConstant2VectorNode(Material, BlueUVCoordConstant2VectorNode2Pos, -1.0f, 2.0f);
+    Expressions.Add(BlueUVCoordConstant2VectorNode2);
+    BlueUVCoordMultiplyNode2->A.Connect(2, BlueUVCoordConstant2VectorNode2);
     
     // Constant 2Vector-node 3
-    FVector2D UVCoordConstant2VectorNode3Pos(-10480, -2000);
-    UMaterialExpressionConstant2Vector* UVCoordConstant2VectorNode3 = CreateConstant2VectorNode(Material, UVCoordConstant2VectorNode3Pos, -2.0f, 0.0f);
-    Expressions.Add(UVCoordConstant2VectorNode3);
-    UVCoordMultiplyNode3->A.Connect(2, UVCoordConstant2VectorNode3);
+    FVector2D BlueUVCoordConstant2VectorNode3Pos(-10480, -2000);
+    UMaterialExpressionConstant2Vector* BlueUVCoordConstant2VectorNode3 = CreateConstant2VectorNode(Material, BlueUVCoordConstant2VectorNode3Pos, 1.0f, -2.0f);
+    Expressions.Add(BlueUVCoordConstant2VectorNode3);
+    BlueUVCoordMultiplyNode3->A.Connect(2, BlueUVCoordConstant2VectorNode3);
     
     // Constant 2Vector-node 4
-    FVector2D UVCoordConstant2VectorNode4Pos(-10480, -2160);
-    UMaterialExpressionConstant2Vector* UVCoordConstant2VectorNode4 = CreateConstant2VectorNode(Material, UVCoordConstant2VectorNode4Pos, 1.0f, 2.0f);
-    Expressions.Add(UVCoordConstant2VectorNode4);
-    UVCoordMultiplyNode4->A.Connect(2, UVCoordConstant2VectorNode4);
+    FVector2D BlueUVCoordConstant2VectorNode4Pos(-10480, -2160);
+    UMaterialExpressionConstant2Vector* BlueUVCoordConstant2VectorNode4 = CreateConstant2VectorNode(Material, BlueUVCoordConstant2VectorNode4Pos, 1.0f, 2.0f);
+    Expressions.Add(BlueUVCoordConstant2VectorNode4);
+    BlueUVCoordMultiplyNode4->A.Connect(2, BlueUVCoordConstant2VectorNode4);
         
     // Constant 2Vector-node 5
-    FVector2D UVCoordConstant2VectorNode5Pos(-10480, -2320);
-    UMaterialExpressionConstant2Vector* UVCoordConstant2VectorNode5 = CreateConstant2VectorNode(Material, UVCoordConstant2VectorNode5Pos, 1.0f, -2.0f);
-    Expressions.Add(UVCoordConstant2VectorNode5);
-    UVCoordMultiplyNode5->A.Connect(2, UVCoordConstant2VectorNode5);
+    FVector2D BlueUVCoordConstant2VectorNode5Pos(-10480, -2320);
+    UMaterialExpressionConstant2Vector* BlueUVCoordConstant2VectorNode5 = CreateConstant2VectorNode(Material, BlueUVCoordConstant2VectorNode5Pos, -2.0f, 0.0f);
+    Expressions.Add(BlueUVCoordConstant2VectorNode5);
+    BlueUVCoordMultiplyNode5->A.Connect(2, BlueUVCoordConstant2VectorNode5);
     
     // Constant 2Vector-node 6
-    FVector2D UVCoordConstant2VectorNode6Pos(-10480, -2480);
-    UMaterialExpressionConstant2Vector* UVCoordConstant2VectorNode6 = CreateConstant2VectorNode(Material, UVCoordConstant2VectorNode6Pos, -1.0f, -2.0f);
-    Expressions.Add(UVCoordConstant2VectorNode6);
-    UVCoordMultiplyNode6->A.Connect(2, UVCoordConstant2VectorNode6);
+    FVector2D BlueUVCoordConstant2VectorNode6Pos(-10480, -2480);
+    UMaterialExpressionConstant2Vector* BlueUVCoordConstant2VectorNode6 = CreateConstant2VectorNode(Material, BlueUVCoordConstant2VectorNode6Pos, 2.0f, 0.0f);
+    Expressions.Add(BlueUVCoordConstant2VectorNode6);
+    BlueUVCoordMultiplyNode6->A.Connect(2, BlueUVCoordConstant2VectorNode6);
     
     // Constant 2Vector-node 7
-    FVector2D UVCoordConstant2VectorNode7Pos(-10480, -2640);
-    UMaterialExpressionConstant2Vector* UVCoordConstant2VectorNode7 = CreateConstant2VectorNode(Material, UVCoordConstant2VectorNode7Pos, -1.0f, -2.0f);
-    Expressions.Add(UVCoordConstant2VectorNode7);
-    UVCoordMultiplyNode7->A.Connect(2, UVCoordConstant2VectorNode7);
+    FVector2D BlueUVCoordConstant2VectorNode7Pos(-10480, -2640);
+    UMaterialExpressionConstant2Vector* BlueUVCoordConstant2VectorNode7 = CreateConstant2VectorNode(Material, BlueUVCoordConstant2VectorNode7Pos, 0.0f, 0.0f);
+    Expressions.Add(BlueUVCoordConstant2VectorNode7);
+    BlueUVCoordMultiplyNode7->A.Connect(2, BlueUVCoordConstant2VectorNode7);
 
     /*** Blue 4.3 White inside - Get size of a pixel ***/
     
@@ -1514,13 +1524,13 @@ void FPP_ThermalCamera::CreateThermalCamera(bool& mfNodecreated, FString& status
     UMaterialExpressionDivide* PixelSizeDivideNode = CreateDivideNode(Material, PixelSizeDivideNodePos);
     Expressions.Add(PixelSizeDivideNode);
 
-    UVCoordMultiplyNode1->B.Connect(0, PixelSizeDivideNode);
-    UVCoordMultiplyNode2->B.Connect(0, PixelSizeDivideNode);
-    UVCoordMultiplyNode3->B.Connect(0, PixelSizeDivideNode);
-    UVCoordMultiplyNode4->B.Connect(0, PixelSizeDivideNode);
-    UVCoordMultiplyNode5->B.Connect(0, PixelSizeDivideNode);
-    UVCoordMultiplyNode6->B.Connect(0, PixelSizeDivideNode);
-    UVCoordMultiplyNode7->B.Connect(0, PixelSizeDivideNode);
+    BlueUVCoordMultiplyNode1->B.Connect(0, PixelSizeDivideNode);
+    BlueUVCoordMultiplyNode2->B.Connect(0, PixelSizeDivideNode);
+    BlueUVCoordMultiplyNode3->B.Connect(0, PixelSizeDivideNode);
+    BlueUVCoordMultiplyNode4->B.Connect(0, PixelSizeDivideNode);
+    BlueUVCoordMultiplyNode5->B.Connect(0, PixelSizeDivideNode);
+    BlueUVCoordMultiplyNode6->B.Connect(0, PixelSizeDivideNode);
+    BlueUVCoordMultiplyNode7->B.Connect(0, PixelSizeDivideNode);
 
 
     // Constant node
@@ -1620,13 +1630,14 @@ void FPP_ThermalCamera::CreateThermalCamera(bool& mfNodecreated, FString& status
 
     // Mask-node
     FVector2D ThermalActorMaskNodePos(-6900, 580);
-    UMaterialExpressionComponentMask* ThermalActorMaskNode = CreateMaskNode(Material, ThermalActorMaskNodePos, true, true, true);
+    UMaterialExpressionComponentMask* ThermalActorMaskNode = CreateMaskNode(Material, ThermalActorMaskNodePos, true, false, false);
     Expressions.Add(ThermalActorMaskNode);
     ThermalActorPowerNode->Base.Connect(0, ThermalActorMaskNode);
 
     // Constant-node
     FVector2D ThermalActorConstantNodePos(-6900, 730);
-    UMaterialExpressionConstant* ThermalActorConstantNode = CreateConstantNode(Material, ThermalActorConstantNodePos, 2.0f);
+    UMaterialExpressionConstant* ThermalActorConstantNode = CreateConstantNode(Material, ThermalActorConstantNodePos, 1.0f);
+    ThermalActorConstantNode->SetParameterName("powerExpActors");
     Expressions.Add(ThermalActorConstantNode);
     ThermalActorPowerNode->Exponent.Connect(0, ThermalActorConstantNode);
 
