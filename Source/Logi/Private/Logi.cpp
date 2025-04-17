@@ -49,6 +49,25 @@
 #include "MaterialDomain.h"
 #include "Logi_Outliner.h"
 #include "PP_Logi_ThermalCamera.h"
+#include "Materials/Material.h"
+#include "Materials/MaterialExpressionMaterialFunctionCall.h"
+#include "Materials/MaterialExpressionCollectionParameter.h"
+#include "Materials/MaterialExpressionFunctionInput.h"
+#include "Materials/MaterialExpressionFunctionOutput.h"
+#include "Materials/MaterialExpression.h"
+#include "MaterialShared.h"
+#include "AssetRegistry/AssetRegistryModule.h"
+#include "PackageTools.h"
+#include "Materials/MaterialExpression.h"
+#include "Materials/MaterialFunction.h"
+#include "Materials/MaterialFunctionInterface.h"
+#include "Materials/MaterialExpressionFunctionOutput.h"
+#include "Materials/MaterialExpressionFunctionInput.h"
+#include "Materials/MaterialExpressionMaterialFunctionCall.h"
+#include "Factories/MaterialFunctionFactoryNew.h"
+#include "AssetRegistry/AssetRegistryModule.h"
+#include "ObjectTools.h"
+
 
 
 static const FName LogiTabName("Logi");
@@ -185,6 +204,26 @@ auto AddVariableToBlueprintClass(UBlueprint* blueprint, FName varName, FEdGraphP
 	}
 }
 
+FName AddMaterialInstanceVariableToBlueprint(UBlueprint* blueprint) {
+
+	//Validate blueprint
+	if (blueprint == nullptr) {
+		UE_LOG(LogTemp, Error, TEXT("Adding variable to blueprint failed because the blueprint is null"));
+		return FName("");
+	}
+
+	//Create a new variable in the blueprint
+	const FName variableName = FBlueprintEditorUtils::FindUniqueKismetName(blueprint, TEXT("Logi_DynamicMaterialInstance"));
+	FEdGraphPinType variableType;
+	variableType.PinCategory = UEdGraphSchema_K2::PC_Object;
+	variableType.PinSubCategoryObject = UMaterialInstanceDynamic::StaticClass();
+
+	//Add variable to the blueprint
+	FBlueprintEditorUtils::AddMemberVariable(blueprint, variableName, variableType);
+
+	return variableName;
+}
+
 TArray<FName> FindAllMeshComponentsInBlueprint(UBlueprint* blueprint) {
 	TArray<FName> meshComponentNames;
 	//Iterate over all nodes in the blueprint
@@ -275,63 +314,7 @@ UMeshComponent* FindActorMeshComponentFromName(UBlueprint* blueprint, FName mesh
 	return nullptr;
 }
 
-UMaterialInterface* CreateActorLogiMaterial(UMaterialInterface* material, FName actorName) {
-
-	//Validate material
-	if (!material) {
-		UE_LOG(LogTemp, Error, TEXT("Material is null, can't create Logi material"));
-		return nullptr;
-	}
-
-	//Load Logi_ThermalMaterialFunction
-	UMaterialFunctionInterface* thermalMaterialFunction = LoadObject<UMaterialFunctionInterface>(nullptr, TEXT("/Game/Logi_ThermalCamera/Materials/MF_Logi_ThermalMaterialFunction.MF_Logi_ThermalMaterialFunction"));
-
-	//Validate thermal material function
-	if (!thermalMaterialFunction) {
-		UE_LOG(LogTemp, Error, TEXT("Logi_ThermalMaterialFunction is null, can't create Logi material"));
-		return nullptr;
-	}
-
-	//Load Logi_ThermalSettings
-	UMaterialParameterCollection* thermalSettings = LoadObject<UMaterialParameterCollection>(nullptr, TEXT("/Game/Logi_ThermalCamera/Materials/MPC_Logi_ThermalSettings.MPC_Logi_ThermalSettings"));
-
-	//validate thermal settings
-	if (!thermalSettings) {
-		UE_LOG(LogTemp, Error, TEXT("Logi_ThermalSettings is null, can't create Logi material"));
-		return nullptr;
-	}
-
-	//Load blending function
-	UMaterialFunctionInterface* blendingFunction = LoadObject<UMaterialFunctionInterface>(nullptr, TEXT("/Engine/Functions/Engine_MaterialFunctions01/LayerBlend/MatLayerBlend_Simple.MatLayerBlend_Simple"));
-
-	//Validate blending function
-	if (!blendingFunction) {
-		UE_LOG(LogTemp, Error, TEXT("Blending function is null, can't create Logi material"));
-		return nullptr;
-	}
-
-	//generate the material name
-	FString originalMaterialName = material->GetName();
-	FString LogiMaterialName = FString::Printf(TEXT("M_Logi_%s_%s"), *actorName.ToString(), *originalMaterialName);
-
-	//Generating save path for new material
-	FString savePath = FString::Printf(TEXT("/Game/Logi_ThermalCamera/Materials/ActorMaterials/%s"), *LogiMaterialName);
-	UPackage* package = CreatePackage(*savePath);
-
-	//Creating new material
-	UMaterial* logiMaterial = NewObject<UMaterial>(package, *LogiMaterialName, RF_Public | RF_Standalone);
-
-	//Set material properties
-	logiMaterial->MaterialDomain = MD_Surface;
-	logiMaterial->BlendMode = BLEND_Opaque;
-	logiMaterial->SetShadingModel(MSM_DefaultLit);
-	logiMaterial->bUseMaterialAttributes = true;
-
-	return logiMaterial;
-
-}
-
-auto ReplaceComponentMaterialsWithLogiMaterialsInMeshComponent(UBlueprint* blueprint) {
+auto CreateMaterialSwitchersForLogiMaterialsInActorBlueprint(UBlueprint* blueprint) {
 	//validate blueprint
 	if (!blueprint) {
 		UE_LOG(LogTemp, Error, TEXT("Blueprint is null, can't replace materials"));
@@ -359,7 +342,11 @@ auto ReplaceComponentMaterialsWithLogiMaterialsInMeshComponent(UBlueprint* bluep
 
 		//Replace materials in the mesh component with Logi materials
 		for (UMaterialInterface* material : materials) {
-			UMaterialInterface* logiMaterial = CreateActorLogiMaterial(material, blueprint->GetFName());
+
+			if (!material->GetName().Contains(TEXT("Logi"), ESearchCase::IgnoreCase)) {
+
+			}
+			
 
 		}
 
@@ -399,6 +386,9 @@ auto AddThermalControlerReferenceToBlueprint(UBlueprint* blueprint, FName varNam
 	// Add the variable
 	FBlueprintEditorUtils::AddMemberVariable(blueprint, varName, controllerRefType);
 
+	//Set variable as blueprint editable
+	FBlueprintEditorUtils::SetBlueprintOnlyEditableFlag(blueprint, varName, true);
+
 	// Make it instance editable
 	if (bInstanceEditable) {
 		FBlueprintEditorUtils::SetBlueprintOnlyEditableFlag(blueprint, varName, !bInstanceEditable);
@@ -407,6 +397,7 @@ auto AddThermalControlerReferenceToBlueprint(UBlueprint* blueprint, FName varNam
 		FBlueprintEditorUtils::SetBlueprintVariableMetaData(blueprint, varName, nullptr, FBlueprintMetadata::MD_ExposeOnSpawn, TEXT("true"));
 	}
 }
+
 
 UEdGraphNode* AddNodeToBlueprint(UBlueprint* Blueprint, FName FunctionName, UClass* Class, FVector Location)
 {
@@ -520,11 +511,12 @@ UK2Node_GetArrayItem* CreateBPArrayGetterNode(UEdGraph* functionGraph, int xPosi
 
 UK2Node_VariableSet* CreateBPSetterNode(UEdGraph* functionGraph, FName variableName, int xPosition, int yPosition) {
 	UK2Node_VariableSet* setterNode = NewObject<UK2Node_VariableSet>(functionGraph);
-	functionGraph->AddNode(setterNode);
+	functionGraph->AddNode(setterNode, false, false);
 	setterNode->VariableReference.SetSelfMember(variableName);
 	setterNode->NodePosX = xPosition;
 	setterNode->NodePosY = yPosition;
 	setterNode->AllocateDefaultPins();
+	setterNode->ReconstructNode();
 
 	return setterNode;
 }
@@ -604,6 +596,36 @@ UK2Node_CallFunction* CreateBPGetAllActorsOfClassNode(UEdGraph* functionGraph, i
 	functionGraph->AddNode(getAllActorsNode);
 
 	return getAllActorsNode;
+}
+
+UK2Node_CallFunction* CreateBPDynamicMaterialInstanceNode(UEdGraph* functionGraph, int xPosition, int yPosition) {
+
+	//Validate function graph
+	if (!functionGraph) {
+		UE_LOG(LogTemp, Error, TEXT("Function graph is a nullpointer, can't add node"));
+		return nullptr;
+	}
+
+	//Get the target function
+	UFunction* targetFunction = UKismetMaterialLibrary::StaticClass()->FindFunctionByName(GET_FUNCTION_NAME_CHECKED(UKismetMaterialLibrary, CreateDynamicMaterialInstance));
+
+	//Validate target function
+	if (!targetFunction) {
+		UE_LOG(LogTemp, Error, TEXT("Target function is a nullpointer, can't add node"));
+		return nullptr;
+	}
+
+	//Create a new function node in the function graph
+	UK2Node_CallFunction* dynamicMaterialInstanceNode = NewObject<UK2Node_CallFunction>(functionGraph);
+	functionGraph->AddNode(dynamicMaterialInstanceNode, false, false);
+	dynamicMaterialInstanceNode->SetFromFunction(targetFunction);
+	dynamicMaterialInstanceNode->AllocateDefaultPins();
+	dynamicMaterialInstanceNode->NodePosX = xPosition;
+	dynamicMaterialInstanceNode->NodePosY = yPosition;
+	dynamicMaterialInstanceNode->ReconstructNode();
+
+	return dynamicMaterialInstanceNode;
+
 }
 
 void CreateThermalCameraControllerNodeSetup(UBlueprint* blueprint) {
@@ -976,6 +998,86 @@ void CreateThermalController(bool& success, FString& statusMessage) {
 	statusMessage = FString::Printf(TEXT("Thermal controller blueprint created and compiled successfully"));
 }
 
+void CreateThermalMaterial(bool& success, FString& statusMessage) {
+	#if WITH_EDITOR
+		success = false;
+
+		//Load the thermal material function
+		UMaterialFunctionInterface* thermalMaterialFunction = LoadObject<UMaterialFunctionInterface>(nullptr, TEXT("/Game/Logi_ThermalCamera/Materials/MF_Logi_ThermalMaterialFunction.MF_Logi_ThermalMaterialFunction"));
+
+		//Check if the function was loaded successfully
+		if (!thermalMaterialFunction) {
+			statusMessage = TEXT("Failed to load MF_Logi_ThermalMaterialFunction in CreateThermalMaterial. Thermal material could not be created.");
+			return;
+		}
+
+		// Define names, paths and packages
+		const FString materialName = TEXT("M_Logi_ThermalMaterial");
+		const FString packagePath = TEXT("/Game/Logi_ThermalCamera/Materials/");
+		const FString materialPath = packagePath + materialName;
+		UPackage* package = CreatePackage(*materialPath);
+
+		if (!package)
+		{
+			statusMessage = TEXT("Failed to create Package in CreateThermalMaterial. Thermal material could not be created.");
+			return;
+		}
+
+		//Create the material
+		UMaterial* material = NewObject<UMaterial>(package, *materialName, RF_Public | RF_Standalone);
+
+		if (!material)
+		{
+			statusMessage = TEXT("Failed to create material in CreateThermalMaterial. Thermal material could not be created.");
+			return;
+		}
+
+		// Set material properties
+		material->MaterialDomain = MD_Surface;
+		material->BlendMode = BLEND_Opaque;
+		material->SetShadingModel(MSM_DefaultLit);
+		material->bUseMaterialAttributes = true;
+
+		// Create a node for the MF_Logi_ThermalMaterialFunction
+		UMaterialExpressionMaterialFunctionCall* functionCall = NewObject<UMaterialExpressionMaterialFunctionCall>(material);
+		functionCall->Material = material;
+		functionCall->SetMaterialFunction(thermalMaterialFunction);
+		functionCall->UpdateFromFunctionResource();
+		functionCall->MaterialExpressionEditorX = -400;
+		functionCall->MaterialExpressionEditorY = 0;
+
+		//Connecdt the MF_Logi_ThermalMaterialFunction to the materials output node
+		material->GetEditorOnlyData()->MaterialAttributes.Expression = functionCall;
+
+		// Add the expression to the material
+		material->GetEditorOnlyData()->ExpressionCollection.Expressions.Add(functionCall);
+
+		// Mark the material as edited
+		material->PreEditChange(nullptr);
+		material->PostEditChange();
+		material->MarkPackageDirty();
+
+		//Register the material in the asset registry
+		FAssetRegistryModule::AssetCreated(material);
+
+		// Save the material
+		const FString filePath = FPackageName::LongPackageNameToFilename(materialPath, FPackageName::GetAssetPackageExtension());
+
+		if (!UPackage::SavePackage(package, material, EObjectFlags::RF_Public | RF_Standalone, *filePath))
+		{
+			statusMessage = TEXT("Failed to save the material package in CreateThermalMaterial. Could not create thermal material.");
+			return;
+		}
+
+		success = true;
+		statusMessage = TEXT("Successfully created thermal material.");
+
+	#else
+		success = false;
+		statusMessage = TEXT("The function CreateThermalMaterial can only be run in editor builds");
+	#endif
+}
+
 void FindAllNonLogiActorBlueprintsInProject(TArray<FAssetData>& OutActorBlueprints) {
 	//Get the asset registry module
 	FAssetRegistryModule& AssetRegistryModule = FModuleManager::LoadModuleChecked<FAssetRegistryModule>("AssetRegistry");
@@ -1048,6 +1150,10 @@ void AddLogiVariablesToActorBlueprint(const FAssetData& actor) {
 	floatType.PinCategory = UEdGraphSchema_K2::PC_Real;
 	floatType.PinSubCategory = UEdGraphSchema_K2::PC_Float;
 
+	//Create index type
+	FEdGraphPinType intType;
+	intType.PinCategory = UEdGraphSchema_K2::PC_Int;
+
 	//Create Linear Color type
 	FEdGraphPinType linearColorType;
 	linearColorType.PinCategory = UEdGraphSchema_K2::PC_Struct;
@@ -1066,34 +1172,7 @@ void AddLogiVariablesToActorBlueprint(const FAssetData& actor) {
 	AddVariableToBlueprintClass(blueprint, "Logi_BaseTemperature", floatType, true, "0.0");
 	AddVariableToBlueprintClass(blueprint, "Logi_MaxTemperature", floatType, true, "25.0");
 	AddVariableToBlueprintClass(blueprint, "Logi_CurrentTemperature", floatType, true, "25.0");
-
-}
-
-auto ReplaceActorMaterialsWithLogiMaterials(const FAssetData& actor) {
-	//Cast asset data to blueprint type
-	UBlueprint* blueprint = Cast<UBlueprint>(actor.GetAsset());
-
-	//Validate that the cast was successfull
-	if (!blueprint) {
-		UE_LOG(LogTemp, Error, TEXT("Failed to load blueprint from asset data: %s"), *actor.AssetName.ToString());
-		return;
-	}
-
-	//Check every variable in the blueprint for mesh components
-	TArray<FName> meshComponentNames = FindAllMeshComponentsInBlueprint(blueprint);
-
-	//Check if the meshVariableName is empty if so, skipping implementation.
-	if (meshComponentNames.Num() == 0) {
-		UE_LOG(LogTemp, Warning, TEXT("No skeletal mesh component found in blueprint '%s', skipping implementation."), *blueprint->GetName());
-		return;
-	}
-
-	for (FName meshComponentName : meshComponentNames) {
-		ReplaceComponentMaterialsWithLogiMaterialsInMeshComponent(blueprint);
-	}
-
-
-
+	AddVariableToBlueprintClass(blueprint, "Logi_MaterialIndex", intType, true, "0");
 }
 
 auto AddNodeSetupToSetupFunction(UEdGraph* functionGraph, UK2Node_FunctionEntry* entryNode) {
@@ -1291,8 +1370,7 @@ auto AddNodeSetupToSetupFunction(UEdGraph* functionGraph, UK2Node_FunctionEntry*
 
 	//Adds thermal controller referense variable
 	AddThermalControlerReferenceToBlueprint(blueprint, thermalControllerVariableName, false);
-
-
+	
 	
 	//Create a variable setter node for the Logi_ThermalController variable
 	UK2Node_VariableSet* setThermalController = CreateBPSetterNode(functionGraph, thermalControllerVariableName, xPosition, 0);
@@ -1310,7 +1388,44 @@ auto AddNodeSetupToSetupFunction(UEdGraph* functionGraph, UK2Node_FunctionEntry*
 	//Connect the setter node for Logi thermal controller and get all actors of class node's exec pins
 	Schema->TryCreateConnection(setThermalController->GetExecPin(), getAllActorsOfClassNode->GetThenPin());
 
+	//Update xPosition
+	xPosition += 300;
 
+	//Create dynamic material instance node
+	UK2Node_CallFunction* dynamicMaterialInstanceNode = CreateBPDynamicMaterialInstanceNode(functionGraph, xPosition, 0);
+
+	// Find the parent pin of the dynamic material instance node
+	UEdGraphPin* parentPin = dynamicMaterialInstanceNode->FindPin(TEXT("Parent"));
+
+	//Find the Logi_ThermalMaterial
+	FString thermalMaterialFilePath = TEXT("/Game/Logi_ThermalCamera/Materials/M_Logi_ThermalMaterial.M_Logi_ThermalMaterial");
+	UObject* thermalMaterial = StaticLoadObject(UMaterialInterface::StaticClass(), nullptr, *thermalMaterialFilePath);
+	//UMaterialInterface* thermalMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Logi_ThermalCamera/Materials/M_Logi_ThermalMaterial.M_Logi_ThermalMaterial"));
+
+	//Set the parent pin to the logi thermal material
+	if (parentPin && thermalMaterial)
+	{
+		parentPin->DefaultObject = thermalMaterial;
+	}
+
+	
+	// Connect execution from previous setter
+	Schema->TryCreateConnection(setThermalController->GetThenPin(), dynamicMaterialInstanceNode->GetExecPin());
+
+	//Add dynamic material instance variable to blueprint
+	FName dynamicMaterialInstanceVariableName = AddMaterialInstanceVariableToBlueprint(blueprint);
+
+	// Update xPosition
+	xPosition += 500;
+
+	//Create a setter node for the dynamic material instance variable
+	UK2Node_VariableSet* setDynamicMaterialInstanceNode = CreateBPSetterNode(functionGraph, dynamicMaterialInstanceVariableName, xPosition, 0);
+
+	//Connect exec pin of the dynamic material instance node to the setter node
+	Schema->TryCreateConnection(dynamicMaterialInstanceNode->GetThenPin(), setDynamicMaterialInstanceNode->GetExecPin());
+
+	//Connect the return value of the dynamic material instance node to the setter node
+	Schema->TryCreateConnection(dynamicMaterialInstanceNode->FindPin(TEXT("ReturnValue")), setDynamicMaterialInstanceNode->FindPin(dynamicMaterialInstanceVariableName.ToString()));
 
 	return nullptr;
 
@@ -1419,11 +1534,11 @@ void MakeProjectBPActorsLogiCompatible() {
 
 		//Add Logi variables to the actor blueprint
 		AddLogiVariablesToActorBlueprint(actor);
-		ReplaceActorMaterialsWithLogiMaterials(actor);
 		AddSetupFunctionToNonLogiActor(actor);
 		AddUpdateThermalMaterialFunctionToNonLogiActor(actor);
 	}
 }
+
 
 //Plugin functions
 
@@ -1492,6 +1607,11 @@ void FLogiModule::PluginButtonClicked()
 	FMF_ThermalMaterialFunction::CreateMaterialFunction(success, statusMessage);
 
 	FPP_ThermalCamera::CreateThermalCamera(success, statusMessage);
+	//Create Thermal Material
+	CreateThermalMaterial(success, statusMessage);
+
+	//Log status
+	UE_LOG(LogTemp, Warning, TEXT("%s"), *statusMessage);
 
 	//Log status
 	UE_LOG(LogTemp, Warning, TEXT("%s"), *statusMessage);
