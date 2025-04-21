@@ -187,7 +187,7 @@ void FLogiOutliner::CreateThermalPostProcessVolume(UWorld* World) {
 
     // Add PostProcess Material to the ThermalPostProcessVolume - PP_ThermalCamera 
     // !!! Switch out "/Game/IR_Materials/PP_ThermalCamera" with "/Game/Logi_ThermalCamera/Materials/PP_ThermalCamera" when added
-    UMaterialInterface* PostProcessMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Logi_ThermalCamera/Materials/PP_ThermalCamera")); 
+    UMaterialInterface* PostProcessMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Logi_ThermalCamera/Materials/PP_Logi_ThermalCamera")); 
     if (PostProcessMaterial)
     {
         FWeightedBlendable Blendable;
