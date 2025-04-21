@@ -2167,7 +2167,7 @@ void FPP_ThermalCamera::CreateThermalCamera(bool& mfNodecreated, FString& status
 
     // SceneTexture:CustomDepth-node
     FVector2D SceneTextureCustomDepthNodePos(-8400, 1830);
-    UMaterialExpressionMaterialFunctionCall* SceneTextureCustomDepthNode = CreateSceneTexturePostProcess(Material, SceneTextureCustomDepthNodePos);
+    UMaterialExpressionMaterialFunctionCall* SceneTextureCustomDepthNode = CreateSceneTextureCustomDepth(Material, SceneTextureCustomDepthNodePos);
     Expressions.Add(SceneTextureCustomDepthNode);
     SceneTextureCustomDepthNode->UpdateFromFunctionResource();
     OrangeBlurLerpNode->A.Connect(0, SceneTextureCustomDepthNode);
