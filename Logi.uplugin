@@ -10,10 +10,10 @@
 	"DocsURL": "",
 	"MarketplaceURL": "",
 	"SupportURL": "",
-	"CanContainContent": false,
 	"IsBetaVersion": false,
 	"IsExperimentalVersion": false,
 	"Installed": false,
+	"CanContainContent": true,
 	"Modules": [
 		{
 			"Name": "Logi",
