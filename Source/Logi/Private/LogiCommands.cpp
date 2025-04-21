@@ -6,7 +6,10 @@
 
 void FLogiCommands::RegisterCommands()
 {
-	UI_COMMAND(PluginAction, "Logi", "Execute Logi action", EUserInterfaceActionType::Button, FInputChord());
+	UI_COMMAND(PluginAction, "Logi", "Convert current project to Logi project", EUserInterfaceActionType::Button, FInputChord());
+	FSlateIcon(FLogiStyle::GetStyleSetName(), "Logi.PluginAction");
+	FLogiStyle::ReloadTextures();
 }
+
 
 #undef LOCTEXT_NAMESPACE

@@ -21,6 +21,11 @@ public:
 
 	static FName GetStyleSetName();
 
+	static const FSlateBrush* GetBrush(FName PropertyName)
+	{
+		return Get().GetBrush(PropertyName);
+	}
+
 private:
 
 	static TSharedRef< class FSlateStyleSet > Create();

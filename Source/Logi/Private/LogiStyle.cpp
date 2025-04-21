@@ -16,8 +16,13 @@ void FLogiStyle::Initialize()
 {
 	if (!StyleInstance.IsValid())
 	{
+		
+		UE_LOG(LogTemp, Error, TEXT("FLogiStyle::Initialize called"));
 		StyleInstance = Create();
 		FSlateStyleRegistry::RegisterSlateStyle(*StyleInstance);
+
+		FSlateIcon(FLogiStyle::GetStyleSetName(), "Logi.PluginAction");
+		FLogiStyle::ReloadTextures();
 	}
 }
 
@@ -37,13 +42,15 @@ FName FLogiStyle::GetStyleSetName()
 
 const FVector2D Icon16x16(16.0f, 16.0f);
 const FVector2D Icon20x20(20.0f, 20.0f);
+const FVector2D Icon64x64(64.0f, 64.0f);
 
 TSharedRef< FSlateStyleSet > FLogiStyle::Create()
 {
 	TSharedRef< FSlateStyleSet > Style = MakeShareable(new FSlateStyleSet("LogiStyle"));
 	Style->SetContentRoot(IPluginManager::Get().FindPlugin("Logi")->GetBaseDir() / TEXT("Resources"));
 
-	Style->Set("Logi.PluginAction", new IMAGE_BRUSH_SVG(TEXT("PlaceholderButtonIcon"), Icon20x20));
+	Style->Set("Logi.PluginAction", new IMAGE_BRUSH("Icon64", Icon64x64));
+
 	return Style;
 }
 

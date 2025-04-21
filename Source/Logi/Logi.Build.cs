@@ -51,6 +51,7 @@ public class Logi : ModuleRules
                 "AssetRegistry",
                 "BlueprintGraph",
                 "AssetRegistry",
+                "EditorStyle"
 				
 
 				// ... add private dependencies that you statically link with here ...	
@@ -64,5 +65,7 @@ public class Logi : ModuleRules
 				// ... add any modules that your module loads dynamically here ...
 			}
 			);
-	}
+
+        RuntimeDependencies.Add("$(PluginDir)/Resources/LogiIcon.svg");
+    }
 }
