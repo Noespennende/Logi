@@ -4,6 +4,8 @@
 #include "Materials/MaterialExpressionConstant3Vector.h"
 #include "Materials/MaterialExpressionFunctionOutput.h"
 #include "AssetToolsModule.h"
+#include "LogiUtils.h"
+#include "AssetRegistry/AssetRegistryModule.h"
 #include "Factories/MaterialFunctionFactoryNew.h"
 #include "Materials/MaterialExpressionLinearInterpolate.h"
 #include "Materials/MaterialExpressionScalarParameter.h"
@@ -19,8 +21,8 @@ UMaterialExpressionMakeMaterialAttributes* CreateMaterialAttributesNode(UMateria
 
     UMaterialExpressionMakeMaterialAttributes* MakeMatAttr = NewObject<UMaterialExpressionMakeMaterialAttributes>(MaterialFunction);
 
-    MakeMatAttr->MaterialExpressionEditorX = 0;   // x = 0, midt på skjermen
-    MakeMatAttr->MaterialExpressionEditorY = 0;   // y = 0, midt på skjermen
+    MakeMatAttr->MaterialExpressionEditorX = 0;   // x = 0
+    MakeMatAttr->MaterialExpressionEditorY = 0;   // y = 0
 
 
     return MakeMatAttr;
@@ -122,14 +124,14 @@ UMaterialExpressionFunctionOutput* CreateOutputResultNode(UMaterialFunction* Mat
     
     UMaterialExpressionFunctionOutput* OutputResult = NewObject<UMaterialExpressionFunctionOutput>(MaterialFunction);
     OutputResult->OutputName = "Result";
-    OutputResult->MaterialExpressionEditorX = 400;  // x = 400, til høyre for MakeMatAttr
-    OutputResult->MaterialExpressionEditorY = 0;    // y = 0, på samme nivå som MakeMatAttr
+    OutputResult->MaterialExpressionEditorX = 400;  // x = 400, right of MakeMatAttr
+    OutputResult->MaterialExpressionEditorY = 0;    // y = 0, same level as MakeMatAttr
 
     return OutputResult;
 
 }
 
-void FMF_ThermalMaterialFunction::CreateMaterialFunction(bool& mfNodecreated, FString& statusMessage)
+void FMF_ThermalMaterialFunction::CreateMaterialFunction(bool& mfCreated, FString& statusMessage)
 {
 
     FString AssetPath = "/Game/Logi_ThermalCamera/Materials";
@@ -240,12 +242,26 @@ void FMF_ThermalMaterialFunction::CreateMaterialFunction(bool& mfNodecreated, FS
 
     /* Finish */
 
-    // Mark dirty ("Theres been changes in the package/file!")
-    // - Tells Unreal that changes have been made in the project, and need "saving" if ex. project is closed.
+    // "Something has changed/happened"
+    MaterialFunction->PostEditChange();
+    
+    // Mark dirty ("There's been changes in the package/file")
+    // - Tells Unreal that changes have been made in the project, and need actual "saving" if ex. project is closed.
     MaterialFunction->MarkPackageDirty();
 
+    FAssetRegistryModule::AssetCreated(MaterialFunction);
 
-    mfNodecreated = true;
-    statusMessage = FString::Printf(TEXT("Material Function created and saved to: %s"), *FullAssetPath);
+    /**/
+    
+    bool bSuccess = FLogiUtils::SaveAssetToDisk(MaterialFunction);
+
+    if (bSuccess)
+    {
+        statusMessage = FString::Printf(TEXT("Material %s created and successfully saved to: %s"), *MaterialFunction->GetName(), *FullAssetPath);
+        mfCreated = true;
+    }
+
+    statusMessage = FString::Printf(TEXT("Material %s created, but failed to save properly. Manual save required: %s"), *MaterialFunction->GetName(), *FullAssetPath);
+    mfCreated = true;
 
 }

@@ -26,6 +26,7 @@
 #include "Materials/Material.h"
 #include "Materials/MaterialExpressionSceneTexture.h"
 #include "CoreUObject.h"
+#include "LogiUtils.h"
 #include "Materials/MaterialExpressionAdd.h"
 #include "Materials/MaterialExpressionAppendVector.h"
 #include "Materials/MaterialExpressionClamp.h"
@@ -42,6 +43,7 @@
 #include "Materials/MaterialExpressionTime.h"
 #include "Materials/MaterialExpressionVectorNoise.h"
 #include "Materials/MaterialExpressionViewSize.h"
+#include "UObject/SavePackage.h"
 
 
 /// 
@@ -588,7 +590,7 @@ UMaterialExpressionIf* CreateIfNode(UMaterial* Material, FVector2D EditorPos)
 
 
 
-void FPP_ThermalCamera::CreateThermalCamera(bool& mfNodecreated, FString& statusMessage)
+void FPP_ThermalCamera::CreateThermalCamera(bool& ppmCreated, FString& statusMessage)
 {
     
     FString AssetPath = "/Game/Logi_ThermalCamera/Materials";
@@ -1045,7 +1047,7 @@ void FPP_ThermalCamera::CreateThermalCamera(bool& mfNodecreated, FString& status
     // Step-node
     FVector2D ReAddSkyStepNodePos(-6750, -850);
     UMaterialExpressionStep* ReAddSkyStepNode = CreateStepNode(Material, ReAddSkyStepNodePos);
-    ReAddSkyComment->SizeY = 0.0001f;
+    ReAddSkyStepNode->ConstY = 0.0001f;
     Expressions.Add(ReAddSkyStepNode);
     
     AddSkyLerpNode->Alpha.Connect(0, ReAddSkyStepNode);
@@ -2591,21 +2593,32 @@ void FPP_ThermalCamera::CreateThermalCamera(bool& mfNodecreated, FString& status
     OrangePixelSizeDivideNode->B.Connect(0, OrangePixelSizeScreenResolutionNode);
 
     /**/
-    
-
     /**/
-    
     
     /* Finish */
 
-    // Mark dirty ("There's been changes in the package/file!")
-    // - Tells Unreal that changes have been made in the project, and need "saving" if ex. project is closed.
+    // "Something has changed/happened"
+    Material->PostEditChange();
+    
+    // Mark dirty ("There's been changes in the package/file")
+    // - Tells Unreal that changes have been made in the project, and need actual "saving" if ex. project is closed.
     Material->MarkPackageDirty();
 
+    FAssetRegistryModule::AssetCreated(Material);
 
-    mfNodecreated = true;
-    statusMessage = FString::Printf(TEXT("Material Function created and saved to: %s"), *FullAssetPath);
+    /**/
+    
+    bool bSuccess = FLogiUtils::SaveAssetToDisk(Material);
 
+    if (bSuccess)
+    {
+        statusMessage = FString::Printf(TEXT("Material %s created and successfully saved to: %s"), *Material->GetName(), *FullAssetPath);
+        ppmCreated = true;
+    }
+
+    statusMessage = FString::Printf(TEXT("Material %s created, but failed to save properly. Manual save required: %s"), *Material->GetName(), *FullAssetPath);
+    ppmCreated = true;
+    
 }
 
 
