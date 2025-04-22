@@ -592,7 +592,6 @@ UK2Node_CallFunction* CreateBPCallFunctionNode(UEdGraph* eventGraph, FName funct
 	return functionCallNode;
 }
 
-
 UK2Node_CallFunction* CreateBPScalarParameterNode(UEdGraph* eventGraph, int xPosition, int yPosition) {
 	UK2Node_CallFunction* scalarParameterNode = NewObject<UK2Node_CallFunction>(eventGraph);
 	scalarParameterNode->FunctionReference.SetExternalMember(FName("SetScalarParameterValue"), UKismetMaterialLibrary::StaticClass());
@@ -774,6 +773,18 @@ void CreateThermalCameraControllerNodeSetup(UBlueprint* blueprint) {
 		return;
 	}
 
+	//Find the MPC_Logi_ThermalSettings material parameter collection
+	UMaterialParameterCollection* ThermalSettings = LoadObject<UMaterialParameterCollection>(
+		nullptr,
+		TEXT("/Game/Logi_ThermalCamera/Materials/MPC_Logi_ThermalSettings.MPC_Logi_ThermalSettings")
+	);
+
+	//Validate the material parameter collection
+	if (!ThermalSettings) {
+		UE_LOG(LogTemp, Error, TEXT("Failed to load the MPC_Logi_ThermalSettings material parameter collection"));
+		return;
+	}
+
 
 	//Create a new branch node
 	UK2Node_IfThenElse* BranchNode = CreateBPBranchNode(eventGraph, 300, 420);
@@ -797,16 +808,20 @@ void CreateThermalCameraControllerNodeSetup(UBlueprint* blueprint) {
 	//Set node input for parameterName and value for Thermal Camera Toggle true
 	UEdGraphPin* ParamNamePin = thermalToggleTrueScalarParameterNode->FindPin(FName("ParameterName"));
 	UEdGraphPin* ParamValuePin = thermalToggleTrueScalarParameterNode->FindPin(FName("ParameterValue"));
+	UEdGraphPin* CollectionPin = thermalToggleTrueScalarParameterNode->FindPin(FName("Collection"));
 	ParamNamePin->DefaultValue = "ThermalCameraToggle";
 	ParamValuePin->DefaultValue = "1.0";
+	CollectionPin->DefaultObject = ThermalSettings;
 
 	//Create scalar parameter node - Thermal Camera Toggle false
 	UK2Node_CallFunction* thermalToggleFalseScalarParameterNode = CreateBPScalarParameterNode(eventGraph, 600, 600);
 	//Set node input for parameterName and value for  ThermalCameraToggle False
 	ParamNamePin = thermalToggleFalseScalarParameterNode->FindPin(FName("ParameterName"));
 	ParamValuePin = thermalToggleFalseScalarParameterNode->FindPin(FName("ParameterValue"));
+	CollectionPin = thermalToggleFalseScalarParameterNode->FindPin(FName("Collection"));
 	ParamNamePin->DefaultValue = "ThermalCameraToggle";
 	ParamValuePin->DefaultValue = "0.0";
+	CollectionPin->DefaultObject = ThermalSettings;
 
 
 	//Connect thermal camera toggle parameter node to branch nodes true execution pin
@@ -825,7 +840,11 @@ void CreateThermalCameraControllerNodeSetup(UBlueprint* blueprint) {
 		//Create a vector parameter node
 		UK2Node_CallFunction* vectorNode = CreateBPVectorParameterNode(eventGraph, nodePosition.X, nodePosition.Y);
 
-		// Find the parameter pin for the vector node and set the default value
+		//Find the collection pin of the vector parameter node and set it to the ThermalSettings
+		CollectionPin = vectorNode->FindPin(FName("Collection"));
+		CollectionPin->DefaultObject = ThermalSettings;
+
+		// Find the parameter pin for the vector parameter node and set the default value
 		UEdGraphPin* ParamPin = vectorNode->FindPin(FName("ParameterName"));
 		ParamPin->DefaultValue = Param;
 
@@ -863,6 +882,9 @@ void CreateThermalCameraControllerNodeSetup(UBlueprint* blueprint) {
 		//Create a scalar parameter node
 		UK2Node_CallFunction* scalarNode = CreateBPScalarParameterNode(eventGraph, nodePosition.X, nodePosition.Y);
 
+		//Find the collection pin of the scalar parameter node and set it to the ThermalSettings
+		CollectionPin = scalarNode->FindPin(FName("Collection"));
+		CollectionPin->DefaultObject = ThermalSettings;
 
 		// Find the parameterPin for the scalar node and set the default value
 		UEdGraphPin* ParamPin = scalarNode->FindPin(FName("ParameterName"));
@@ -924,6 +946,7 @@ void CreateThermalCameraControllerNodeSetup(UBlueprint* blueprint) {
 	//Create NoiseVector setter node
 	UK2Node_VariableSet* setVectorNode = CreateBPSetterNode(eventGraph, FName("NoiseVector"), nodePosition.X, nodePosition.Y);
 
+
 	//Connect NoiseSize to MakeVector.X/Y/Z
 	UEdGraphPin* NoiseOut = noiseSizeGet->GetValuePin();
 	Schema->TryCreateConnection(NoiseOut, makeVectorNode->FindPin(FName("X")));
@@ -941,6 +964,10 @@ void CreateThermalCameraControllerNodeSetup(UBlueprint* blueprint) {
 
 	//Create Noisesize setVectorParameterValue node
 	UK2Node_CallFunction* noiseSizeVectorNode = CreateBPVectorParameterNode(eventGraph, nodePosition.X, nodePosition.Y);
+
+	//Find the collection pin of the noiseSize vector parameter node and set it to the ThermalSettings
+	UEdGraphPin* noiseSizeCollectionPin = noiseSizeVectorNode->FindPin(FName("Collection"));
+	noiseSizeCollectionPin->DefaultObject = ThermalSettings;
 
 	// Set setVectorParameterValue node parameter name to NoiseSize
 	UEdGraphPin* noiseSizevectorNodeParamPin = noiseSizeVectorNode->FindPin(FName("ParameterName"));
@@ -2070,7 +2097,6 @@ void FLogiModule::ShutdownModule()
 	FLogiCommands::Unregister();
 }
 
-
 void FLogiModule::PluginButtonClicked()
 {
 
@@ -2130,7 +2156,6 @@ void FLogiModule::PluginButtonClicked()
 	FLogiOutliner::AddLogiLogicToOutliner(World);
 
 }
-
 
 void FLogiModule::RegisterMenus()
 {

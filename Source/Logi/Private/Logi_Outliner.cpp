@@ -11,6 +11,7 @@
 #include "Framework/Application/SlateApplication.h"
 #include "Widgets/Docking/SDockTab.h"
 #include "Widgets/SWindow.h"
+#include "Widgets/SWindow.h"
 #include "Widgets/Text/STextBlock.h"
 #include "Framework/Notifications/NotificationManager.h"
 #include "Kismet/GameplayStatics.h"
