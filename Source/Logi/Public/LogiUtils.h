@@ -6,8 +6,8 @@
 #include "UObject/SavePackage.h"
 
 
-class LOGI_API FLogiUtils
+namespace FLogiUtils
 {
-public:
-	static bool SaveAssetToDisk(UObject* Asset, const FSavePackageArgs& SaveArgs = FSavePackageArgs());
+	bool SaveAssetToDisk(UObject* Asset, const FSavePackageArgs& SaveArgs = FSavePackageArgs());
+	
 };

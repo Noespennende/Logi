@@ -22,12 +22,10 @@ public:
 	
 	/** This function will be bound to Command. */
 	void PluginButtonClicked();
-	void SetupThermalSettings(UWorld* World);
 	
 private:
 
 	void RegisterMenus();
-	UMaterialParameterCollection* EnsureThermalSettingsExist(UWorld* World);
 
 
 private:

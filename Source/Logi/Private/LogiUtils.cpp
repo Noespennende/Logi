@@ -2,14 +2,19 @@
 
 #include "Engine/World.h"
 #include "AssetRegistry/AssetRegistryModule.h"
+#include "Kismet2/BlueprintEditorUtils.h"
 #include "UObject/SavePackage.h"
 
-bool FLogiUtils::SaveAssetToDisk(UObject* Asset, const FSavePackageArgs& SaveArgs)
+namespace FLogiUtils
 {
-	if (!Asset) return false;
+	bool SaveAssetToDisk(UObject* Asset, const FSavePackageArgs& SaveArgs)
+	{
+		if (!Asset) return false;
 
-	UPackage* Package = Asset->GetOutermost();
-	FString PackageFilename = FPackageName::LongPackageNameToFilename(Package->GetName(), FPackageName::GetAssetPackageExtension());
+		UPackage* Package = Asset->GetOutermost();
+		FString PackageFilename = FPackageName::LongPackageNameToFilename(Package->GetName(), FPackageName::GetAssetPackageExtension());
 
-	return UPackage::SavePackage(Package, Asset, *PackageFilename, SaveArgs);
+		return UPackage::SavePackage(Package, Asset, *PackageFilename, SaveArgs);
+	}
 }
+
