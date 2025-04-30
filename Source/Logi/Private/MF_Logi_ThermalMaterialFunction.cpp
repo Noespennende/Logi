@@ -253,7 +253,7 @@ void FMF_ThermalMaterialFunction::CreateMaterialFunction(bool& mfCreated, FStrin
 
     /**/
     
-    bool bSuccess = FLogiUtils::SaveAssetToDisk(MaterialFunction);
+    bool bSuccess = Logi::LogiUtils::SaveAssetToDisk(MaterialFunction);
 
     if (bSuccess)
     {

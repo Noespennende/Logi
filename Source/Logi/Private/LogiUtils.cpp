@@ -5,7 +5,7 @@
 #include "Kismet2/BlueprintEditorUtils.h"
 #include "UObject/SavePackage.h"
 
-namespace FLogiUtils
+namespace Logi::LogiUtils
 {
 	bool SaveAssetToDisk(UObject* Asset, const FSavePackageArgs& SaveArgs)
 	{
