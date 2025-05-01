@@ -34,6 +34,7 @@
 #include "Materials/MaterialExpressionVectorNoise.h"
 
 #include "LogiUtils.h"
+#include "Enums/EThermalSettingsParamType.h"
 #include "Utils/MaterialUtils.h"
 
 namespace Logi::ThermalCamera
@@ -55,14 +56,14 @@ namespace Logi::ThermalCamera
         
         // MF with SceneTexture-PostProcessInput0 inside -node
         FVector2D MFSceneTextureNodePos(-600, 150);
-        UMaterialExpressionMaterialFunctionCall* MFSceneTextureNode = MaterialUtils::CreateSceneTexturePostProcess(Material, MFSceneTextureNodePos);
+        UMaterialExpressionMaterialFunctionCall* MFSceneTextureNode = MaterialUtils::CreateSceneTexturePostProcessNode(Material, MFSceneTextureNodePos);
         Expressions.Add(MFSceneTextureNode);
         
         // White comment box (1) - Is thermal camera on?
         FVector2D WhiteCommentPos(-630, 75);
         FVector2D WhiteCommentSize(500, 450);
         FString WhiteCommentText = TEXT("Is thermal camera on?");
-        UMaterialExpressionComment* Comment = MaterialUtils::CreateCommentNode(Material,WhiteCommentPos, WhiteCommentSize, WhiteCommentText);
+        UMaterialExpressionComment* Comment = MaterialUtils::CreateCommentNode(Material, WhiteCommentPos, WhiteCommentSize, WhiteCommentText);
         Expressions.Add(Comment);
 
         /* Linking */
@@ -260,7 +261,7 @@ namespace Logi::ThermalCamera
         
         // MF with ViewSize inside -node
         FVector2D CoordinatesViewSizeNodePos(-3620, 600);
-        UMaterialExpressionMaterialFunctionCall* CoordinatesViewSizeNode = MaterialUtils::CreateViewSize(Material, CoordinatesViewSizeNodePos);
+        UMaterialExpressionMaterialFunctionCall* CoordinatesViewSizeNode = MaterialUtils::CreateViewSizeNode(Material, CoordinatesViewSizeNodePos);
         Expressions.Add(CoordinatesViewSizeNode);
 
         CoordinatesViewSizeNode->UpdateFromFunctionResource();
@@ -515,7 +516,7 @@ namespace Logi::ThermalCamera
 
         // SceneTexture:BaseColor-node
         FVector2D SceneTextureBaseColorNodePos(-7500, -750);
-        UMaterialExpressionMaterialFunctionCall* SceneTextureBaseColorNode = MaterialUtils::CreateSceneTextureBaseColor(Material, SceneTextureBaseColorNodePos);
+        UMaterialExpressionMaterialFunctionCall* SceneTextureBaseColorNode = MaterialUtils::CreateSceneTextureBaseColorNode(Material, SceneTextureBaseColorNodePos);
         Expressions.Add(SceneTextureBaseColorNode);
         SceneTextureBaseColorNode->UpdateFromFunctionResource();
 
@@ -545,7 +546,7 @@ namespace Logi::ThermalCamera
 
         // SceneTexture:WorldNormal-node
         FVector2D SceneTextureWorldNormalNodePos(-8450, -1900);
-        UMaterialExpressionMaterialFunctionCall* SceneTextureWorldNormalNode = MaterialUtils::CreateSceneTextureWorldNormal(Material, SceneTextureWorldNormalNodePos);
+        UMaterialExpressionMaterialFunctionCall* SceneTextureWorldNormalNode = MaterialUtils::CreateSceneTextureWorldNormalNode(Material, SceneTextureWorldNormalNodePos);
         Expressions.Add(SceneTextureWorldNormalNode);
         
         SceneTextureWorldNormalNode->UpdateFromFunctionResource();
@@ -675,49 +676,49 @@ namespace Logi::ThermalCamera
 
         // SceneTexture:WorldNormal-node 1
         FVector2D SceneTextureWorldNormalNode1Pos(-9750, -1690);
-        UMaterialExpressionMaterialFunctionCall* SceneTextureWorldNormalNode1 = MaterialUtils::CreateSceneTextureWorldNormal(Material, SceneTextureWorldNormalNode1Pos);
+        UMaterialExpressionMaterialFunctionCall* SceneTextureWorldNormalNode1 = MaterialUtils::CreateSceneTextureWorldNormalNode(Material, SceneTextureWorldNormalNode1Pos);
         Expressions.Add(SceneTextureWorldNormalNode1);
         SceneTextureWorldNormalNode1->UpdateFromFunctionResource();
         WorldNormalMultiplyNode1->A.Connect(0, SceneTextureWorldNormalNode1);
         
         // SceneTexture:WorldNormal-node 2
         FVector2D SceneTextureWorldNormalNode2Pos(-9750, -1860);
-        UMaterialExpressionMaterialFunctionCall* SceneTextureWorldNormalNode2 = MaterialUtils::CreateSceneTextureWorldNormal(Material, SceneTextureWorldNormalNode2Pos);
+        UMaterialExpressionMaterialFunctionCall* SceneTextureWorldNormalNode2 = MaterialUtils::CreateSceneTextureWorldNormalNode(Material, SceneTextureWorldNormalNode2Pos);
         Expressions.Add(SceneTextureWorldNormalNode2);
         SceneTextureWorldNormalNode2->UpdateFromFunctionResource();
         WorldNormalMultiplyNode2->A.Connect(0, SceneTextureWorldNormalNode2);
 
         // SceneTexture:WorldNormal-node 3
         FVector2D SceneTextureWorldNormalNode3Pos(-9750, -2020);
-        UMaterialExpressionMaterialFunctionCall* SceneTextureWorldNormalNode3 = MaterialUtils::CreateSceneTextureWorldNormal(Material, SceneTextureWorldNormalNode3Pos);
+        UMaterialExpressionMaterialFunctionCall* SceneTextureWorldNormalNode3 = MaterialUtils::CreateSceneTextureWorldNormalNode(Material, SceneTextureWorldNormalNode3Pos);
         Expressions.Add(SceneTextureWorldNormalNode3);
         SceneTextureWorldNormalNode3->UpdateFromFunctionResource();
         WorldNormalMultiplyNode3->A.Connect(0, SceneTextureWorldNormalNode3);
 
         // SceneTexture:WorldNormal-node 4
         FVector2D SceneTextureWorldNormalNode4Pos(-9750, -2180);
-        UMaterialExpressionMaterialFunctionCall* SceneTextureWorldNormalNode4 = MaterialUtils::CreateSceneTextureWorldNormal(Material, SceneTextureWorldNormalNode4Pos);
+        UMaterialExpressionMaterialFunctionCall* SceneTextureWorldNormalNode4 = MaterialUtils::CreateSceneTextureWorldNormalNode(Material, SceneTextureWorldNormalNode4Pos);
         Expressions.Add(SceneTextureWorldNormalNode4);
         SceneTextureWorldNormalNode4->UpdateFromFunctionResource();
         WorldNormalMultiplyNode4->A.Connect(0, SceneTextureWorldNormalNode4);
 
         // SceneTexture:WorldNormal-node 5
         FVector2D SceneTextureWorldNormalNode5Pos(-9750, -2340);
-        UMaterialExpressionMaterialFunctionCall* SceneTextureWorldNormalNode5 = MaterialUtils::CreateSceneTextureWorldNormal(Material, SceneTextureWorldNormalNode5Pos);
+        UMaterialExpressionMaterialFunctionCall* SceneTextureWorldNormalNode5 = MaterialUtils::CreateSceneTextureWorldNormalNode(Material, SceneTextureWorldNormalNode5Pos);
         Expressions.Add(SceneTextureWorldNormalNode5);
         SceneTextureWorldNormalNode5->UpdateFromFunctionResource();
         WorldNormalMultiplyNode5->A.Connect(0, SceneTextureWorldNormalNode5);
 
         // SceneTexture:WorldNormal-node 6
         FVector2D SceneTextureWorldNormalNode6Pos(-9750, -2500);
-        UMaterialExpressionMaterialFunctionCall* SceneTextureWorldNormalNode6 = MaterialUtils::CreateSceneTextureWorldNormal(Material, SceneTextureWorldNormalNode6Pos);
+        UMaterialExpressionMaterialFunctionCall* SceneTextureWorldNormalNode6 = MaterialUtils::CreateSceneTextureWorldNormalNode(Material, SceneTextureWorldNormalNode6Pos);
         Expressions.Add(SceneTextureWorldNormalNode6);
         SceneTextureWorldNormalNode6->UpdateFromFunctionResource();
         WorldNormalMultiplyNode6->A.Connect(0, SceneTextureWorldNormalNode6);
 
         // SceneTexture:WorldNormal-node 7
         FVector2D SceneTextureWorldNormalNode7Pos(-9750, -2660);
-        UMaterialExpressionMaterialFunctionCall* SceneTextureWorldNormalNode7 = MaterialUtils::CreateSceneTextureWorldNormal(Material, SceneTextureWorldNormalNode7Pos);
+        UMaterialExpressionMaterialFunctionCall* SceneTextureWorldNormalNode7 = MaterialUtils::CreateSceneTextureWorldNormalNode(Material, SceneTextureWorldNormalNode7Pos);
         Expressions.Add(SceneTextureWorldNormalNode7);
         SceneTextureWorldNormalNode7->UpdateFromFunctionResource();
         WorldNormalMultiplyNode7->A.Connect(0, SceneTextureWorldNormalNode7);
@@ -966,7 +967,7 @@ namespace Logi::ThermalCamera
 
         // ScreenResolution node
         FVector2D PixelSizeScreenResolutionNodePos(-11230, -2080);
-        UMaterialExpressionMaterialFunctionCall* PixelSizeScreenResolutionNode = MaterialUtils::CreateScreenResolution(Material, PixelSizeScreenResolutionNodePos);
+        UMaterialExpressionMaterialFunctionCall* PixelSizeScreenResolutionNode = MaterialUtils::CreateScreenResolutionNode(Material, PixelSizeScreenResolutionNodePos);
         Expressions.Add(PixelSizeScreenResolutionNode);
         PixelSizeScreenResolutionNode->UpdateFromFunctionResource();
         PixelSizeDivideNode->B.Connect(0, PixelSizeScreenResolutionNode);
@@ -1101,7 +1102,7 @@ namespace Logi::ThermalCamera
 
         // SceneTexture:PostProcessInput0-node
         FVector2D SceneTexturePostProcessInput0NodePos(-8400, -50);
-        UMaterialExpressionMaterialFunctionCall* SceneTexturePostProcessInput0Node = MaterialUtils::CreateSceneTexturePostProcess(Material, SceneTexturePostProcessInput0NodePos);
+        UMaterialExpressionMaterialFunctionCall* SceneTexturePostProcessInput0Node = MaterialUtils::CreateSceneTexturePostProcessNode(Material, SceneTexturePostProcessInput0NodePos);
         Expressions.Add(SceneTexturePostProcessInput0Node);
         SceneTexturePostProcessInput0Node->UpdateFromFunctionResource();
         GreenBlurLerpNode->A.Connect(0, SceneTexturePostProcessInput0Node);
@@ -1229,49 +1230,49 @@ namespace Logi::ThermalCamera
 
         // SceneTexture:PostProcess-node 1
         FVector2D SceneTexturePostProcessNode1Pos(-9750, 177);
-        UMaterialExpressionMaterialFunctionCall* SceneTexturePostProcessNode1 = MaterialUtils::CreateSceneTexturePostProcess(Material, SceneTexturePostProcessNode1Pos);
+        UMaterialExpressionMaterialFunctionCall* SceneTexturePostProcessNode1 = MaterialUtils::CreateSceneTexturePostProcessNode(Material, SceneTexturePostProcessNode1Pos);
         Expressions.Add(SceneTexturePostProcessNode1);
         SceneTexturePostProcessNode1->UpdateFromFunctionResource();
         PostProcessMultiplyNode1->A.Connect(0, SceneTexturePostProcessNode1);
         
         // SceneTexture:PostProcess-node 2
         FVector2D SceneTexturePostProcessNode2Pos(-9750, 7);
-        UMaterialExpressionMaterialFunctionCall* SceneTexturePostProcessNode2 = MaterialUtils::CreateSceneTexturePostProcess(Material, SceneTexturePostProcessNode2Pos);
+        UMaterialExpressionMaterialFunctionCall* SceneTexturePostProcessNode2 = MaterialUtils::CreateSceneTexturePostProcessNode(Material, SceneTexturePostProcessNode2Pos);
         Expressions.Add(SceneTexturePostProcessNode2);
         SceneTexturePostProcessNode2->UpdateFromFunctionResource();
         PostProcessMultiplyNode2->A.Connect(0, SceneTexturePostProcessNode2);
 
         // SceneTexture:PostProcess-node 3
         FVector2D SceneTexturePostProcessNode3Pos(-9750, -153);
-        UMaterialExpressionMaterialFunctionCall* SceneTexturePostProcessNode3 = MaterialUtils::CreateSceneTexturePostProcess(Material, SceneTexturePostProcessNode3Pos);
+        UMaterialExpressionMaterialFunctionCall* SceneTexturePostProcessNode3 = MaterialUtils::CreateSceneTexturePostProcessNode(Material, SceneTexturePostProcessNode3Pos);
         Expressions.Add(SceneTexturePostProcessNode3);
         SceneTexturePostProcessNode3->UpdateFromFunctionResource();
         PostProcessMultiplyNode3->A.Connect(0, SceneTexturePostProcessNode3);
 
         // SceneTexture:PostProcess-node 4
         FVector2D SceneTexturePostProcessNode4Pos(-9750, -313);
-        UMaterialExpressionMaterialFunctionCall* SceneTexturePostProcessNode4 = MaterialUtils::CreateSceneTexturePostProcess(Material, SceneTexturePostProcessNode4Pos);
+        UMaterialExpressionMaterialFunctionCall* SceneTexturePostProcessNode4 = MaterialUtils::CreateSceneTexturePostProcessNode(Material, SceneTexturePostProcessNode4Pos);
         Expressions.Add(SceneTexturePostProcessNode4);
         SceneTexturePostProcessNode4->UpdateFromFunctionResource();
         PostProcessMultiplyNode4->A.Connect(0, SceneTexturePostProcessNode4);
 
         // SceneTexture:PostProcess-node 5
         FVector2D SceneTexturePostProcessNode5Pos(-9750, -473);
-        UMaterialExpressionMaterialFunctionCall* SceneTexturePostProcessNode5 = MaterialUtils::CreateSceneTexturePostProcess(Material, SceneTexturePostProcessNode5Pos);
+        UMaterialExpressionMaterialFunctionCall* SceneTexturePostProcessNode5 = MaterialUtils::CreateSceneTexturePostProcessNode(Material, SceneTexturePostProcessNode5Pos);
         Expressions.Add(SceneTexturePostProcessNode5);
         SceneTexturePostProcessNode5->UpdateFromFunctionResource();
         PostProcessMultiplyNode5->A.Connect(0, SceneTexturePostProcessNode5);
 
         // SceneTexture:PostProcess-node 6
         FVector2D SceneTexturePostProcessNode6Pos(-9750, -633);
-        UMaterialExpressionMaterialFunctionCall* SceneTexturePostProcessNode6 = MaterialUtils::CreateSceneTexturePostProcess(Material, SceneTexturePostProcessNode6Pos);
+        UMaterialExpressionMaterialFunctionCall* SceneTexturePostProcessNode6 = MaterialUtils::CreateSceneTexturePostProcessNode(Material, SceneTexturePostProcessNode6Pos);
         Expressions.Add(SceneTexturePostProcessNode6);
         SceneTexturePostProcessNode6->UpdateFromFunctionResource();
         PostProcessMultiplyNode6->A.Connect(0, SceneTexturePostProcessNode6);
 
         // SceneTexture:PostProcess-node 7
         FVector2D SceneTexturePostProcessNode7Pos(-9750, -793);
-        UMaterialExpressionMaterialFunctionCall* SceneTexturePostProcessNode7 = MaterialUtils::CreateSceneTexturePostProcess(Material, SceneTexturePostProcessNode7Pos);
+        UMaterialExpressionMaterialFunctionCall* SceneTexturePostProcessNode7 = MaterialUtils::CreateSceneTexturePostProcessNode(Material, SceneTexturePostProcessNode7Pos);
         Expressions.Add(SceneTexturePostProcessNode7);
         SceneTexturePostProcessNode7->UpdateFromFunctionResource();
         PostProcessMultiplyNode7->A.Connect(0, SceneTexturePostProcessNode7);
@@ -1518,7 +1519,7 @@ namespace Logi::ThermalCamera
 
         // ScreenResolution node
         FVector2D GreenPixelSizeScreenResolutionNodePos(-11230, -213);
-        UMaterialExpressionMaterialFunctionCall* GreenPixelSizeScreenResolutionNode = MaterialUtils::CreateScreenResolution(Material, GreenPixelSizeScreenResolutionNodePos);
+        UMaterialExpressionMaterialFunctionCall* GreenPixelSizeScreenResolutionNode = MaterialUtils::CreateScreenResolutionNode(Material, GreenPixelSizeScreenResolutionNodePos);
         Expressions.Add(GreenPixelSizeScreenResolutionNode);
         GreenPixelSizeScreenResolutionNode->UpdateFromFunctionResource();
         GreenPixelSizeDivideNode->B.Connect(0, GreenPixelSizeScreenResolutionNode);
@@ -1568,7 +1569,7 @@ namespace Logi::ThermalCamera
 
         // SceneTexture:SceneDepth-node
         FVector2D HeatMaskSceneTextureSceneDepthNodePos(-7250, 1250);
-        UMaterialExpressionMaterialFunctionCall* HeatMaskSceneTextureSceneDepthNode = MaterialUtils::CreateSceneTextureSceneDepth(Material, HeatMaskSceneTextureSceneDepthNodePos);
+        UMaterialExpressionMaterialFunctionCall* HeatMaskSceneTextureSceneDepthNode = MaterialUtils::CreateSceneTextureSceneDepthNode(Material, HeatMaskSceneTextureSceneDepthNodePos);
         Expressions.Add(HeatMaskSceneTextureSceneDepthNode);
         HeatMaskSceneTextureSceneDepthNode->UpdateFromFunctionResource();
         HeatMaskAddNode->A.Connect(0, HeatMaskSceneTextureSceneDepthNode);
@@ -1613,7 +1614,7 @@ namespace Logi::ThermalCamera
 
         // SceneTexture:CustomDepth-node
         FVector2D SceneTextureCustomDepthNodePos(-8400, 1830);
-        UMaterialExpressionMaterialFunctionCall* SceneTextureCustomDepthNode = MaterialUtils::CreateSceneTextureCustomDepth(Material, SceneTextureCustomDepthNodePos);
+        UMaterialExpressionMaterialFunctionCall* SceneTextureCustomDepthNode = MaterialUtils::CreateSceneTextureCustomDepthNode(Material, SceneTextureCustomDepthNodePos);
         Expressions.Add(SceneTextureCustomDepthNode);
         SceneTextureCustomDepthNode->UpdateFromFunctionResource();
         OrangeBlurLerpNode->A.Connect(0, SceneTextureCustomDepthNode);
@@ -1749,49 +1750,49 @@ namespace Logi::ThermalCamera
 
         // SceneTexture:CustomDepth-node 1
         FVector2D SceneTextureCustomDepthNode1Pos(-9750, 2044);
-        UMaterialExpressionMaterialFunctionCall* SceneTextureCustomDepthNode1 = MaterialUtils::CreateSceneTexturePostProcess(Material, SceneTextureCustomDepthNode1Pos);
+        UMaterialExpressionMaterialFunctionCall* SceneTextureCustomDepthNode1 = MaterialUtils::CreateSceneTexturePostProcessNode(Material, SceneTextureCustomDepthNode1Pos);
         Expressions.Add(SceneTextureCustomDepthNode1);
         SceneTextureCustomDepthNode1->UpdateFromFunctionResource();
         CustomDepthMultiplyNode1->A.Connect(0, SceneTextureCustomDepthNode1);
         
         // SceneTexture:CustomDepth-node 2
         FVector2D SceneTextureCustomDepthNode2Pos(-9750, 1874);
-        UMaterialExpressionMaterialFunctionCall* SceneTextureCustomDepthNode2 = MaterialUtils::CreateSceneTexturePostProcess(Material, SceneTextureCustomDepthNode2Pos);
+        UMaterialExpressionMaterialFunctionCall* SceneTextureCustomDepthNode2 = MaterialUtils::CreateSceneTexturePostProcessNode(Material, SceneTextureCustomDepthNode2Pos);
         Expressions.Add(SceneTextureCustomDepthNode2);
         SceneTextureCustomDepthNode2->UpdateFromFunctionResource();
         CustomDepthMultiplyNode2->A.Connect(0, SceneTextureCustomDepthNode2);
 
         // SceneTexture:CustomDepth-node 3
         FVector2D SceneTextureCustomDepthNode3Pos(-9750, 1714);
-        UMaterialExpressionMaterialFunctionCall* SceneTextureCustomDepthNode3 = MaterialUtils::CreateSceneTexturePostProcess(Material, SceneTextureCustomDepthNode3Pos);
+        UMaterialExpressionMaterialFunctionCall* SceneTextureCustomDepthNode3 = MaterialUtils::CreateSceneTexturePostProcessNode(Material, SceneTextureCustomDepthNode3Pos);
         Expressions.Add(SceneTextureCustomDepthNode3);
         SceneTextureCustomDepthNode3->UpdateFromFunctionResource();
         CustomDepthMultiplyNode3->A.Connect(0, SceneTextureCustomDepthNode3);
 
         // SceneTexture:CustomDepth-node 4
         FVector2D SceneTextureCustomDepthNode4Pos(-9750, 1554);
-        UMaterialExpressionMaterialFunctionCall* SceneTextureCustomDepthNode4 = MaterialUtils::CreateSceneTexturePostProcess(Material, SceneTextureCustomDepthNode4Pos);
+        UMaterialExpressionMaterialFunctionCall* SceneTextureCustomDepthNode4 = MaterialUtils::CreateSceneTexturePostProcessNode(Material, SceneTextureCustomDepthNode4Pos);
         Expressions.Add(SceneTextureCustomDepthNode4);
         SceneTextureCustomDepthNode4->UpdateFromFunctionResource();
         CustomDepthMultiplyNode4->A.Connect(0, SceneTextureCustomDepthNode4);
 
         // SceneTexture:CustomDepth-node 5
         FVector2D SceneTextureCustomDepthNode5Pos(-9750, 1394);
-        UMaterialExpressionMaterialFunctionCall* SceneTextureCustomDepthNode5 = MaterialUtils::CreateSceneTexturePostProcess(Material, SceneTextureCustomDepthNode5Pos);
+        UMaterialExpressionMaterialFunctionCall* SceneTextureCustomDepthNode5 = MaterialUtils::CreateSceneTexturePostProcessNode(Material, SceneTextureCustomDepthNode5Pos);
         Expressions.Add(SceneTextureCustomDepthNode5);
         SceneTextureCustomDepthNode5->UpdateFromFunctionResource();
         CustomDepthMultiplyNode5->A.Connect(0, SceneTextureCustomDepthNode5);
 
         // SceneTexture:CustomDepth-node 6
         FVector2D SceneTextureCustomDepthNode6Pos(-9750, 1234);
-        UMaterialExpressionMaterialFunctionCall* SceneTextureCustomDepthNode6 = MaterialUtils::CreateSceneTexturePostProcess(Material, SceneTextureCustomDepthNode6Pos);
+        UMaterialExpressionMaterialFunctionCall* SceneTextureCustomDepthNode6 = MaterialUtils::CreateSceneTexturePostProcessNode(Material, SceneTextureCustomDepthNode6Pos);
         Expressions.Add(SceneTextureCustomDepthNode6);
         SceneTextureCustomDepthNode6->UpdateFromFunctionResource();
         CustomDepthMultiplyNode6->A.Connect(0, SceneTextureCustomDepthNode6);
 
         // SceneTexture:CustomDepth-node 7
         FVector2D SceneTextureCustomDepthNode7Pos(-9750, 1094);
-        UMaterialExpressionMaterialFunctionCall* SceneTextureCustomDepthNode7 = MaterialUtils::CreateSceneTexturePostProcess(Material, SceneTextureCustomDepthNode7Pos);
+        UMaterialExpressionMaterialFunctionCall* SceneTextureCustomDepthNode7 = MaterialUtils::CreateSceneTexturePostProcessNode(Material, SceneTextureCustomDepthNode7Pos);
         Expressions.Add(SceneTextureCustomDepthNode7);
         SceneTextureCustomDepthNode7->UpdateFromFunctionResource();
         CustomDepthMultiplyNode7->A.Connect(0, SceneTextureCustomDepthNode7);
@@ -2045,7 +2046,7 @@ namespace Logi::ThermalCamera
 
         // ScreenResolution node
         FVector2D OrangePixelSizeScreenResolutionNodePos(-11230, 1654);
-        UMaterialExpressionMaterialFunctionCall* OrangePixelSizeScreenResolutionNode = MaterialUtils::CreateScreenResolution(Material, OrangePixelSizeScreenResolutionNodePos);
+        UMaterialExpressionMaterialFunctionCall* OrangePixelSizeScreenResolutionNode = MaterialUtils::CreateScreenResolutionNode(Material, OrangePixelSizeScreenResolutionNodePos);
         Expressions.Add(OrangePixelSizeScreenResolutionNode);
         OrangePixelSizeScreenResolutionNode->UpdateFromFunctionResource();
         OrangePixelSizeDivideNode->B.Connect(0, OrangePixelSizeScreenResolutionNode);

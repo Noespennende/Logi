@@ -26,7 +26,7 @@
 #include "Materials/MaterialExpressionMaterialFunctionCall.h"
 #include "Components/PrimitiveComponent.h"
 
-#include "MF_Logi_ThermalMaterialFunction.h"
+#include "ThermalMaterialFunction.h"
 #include "Logi_Outliner.h"
 #include "ThermalCamera.h"
 #include "ActorPatcher.h"
@@ -118,7 +118,7 @@ void FLogiModule::PluginButtonClicked()
 	
 
 	// Create Thermal MaterialFunction
-	FMF_ThermalMaterialFunction::CreateMaterialFunction(success, statusMessage);
+	ThermalMaterialFunction::CreateMaterialFunction(success, statusMessage);
 
 	
 	Logi::ThermalCamera::CreateThermalCamera(success, statusMessage);
