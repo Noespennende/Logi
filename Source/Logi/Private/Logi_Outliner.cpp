@@ -8,6 +8,7 @@
 #include "UObject/ConstructorHelpers.h"
 #include "Blueprint/BlueprintSupport.h"
 #include "EngineUtils.h"
+#include "LogiUtils.h"
 #include "Framework/Application/SlateApplication.h"
 #include "Widgets/Docking/SDockTab.h"
 #include "Widgets/SWindow.h"
@@ -20,10 +21,10 @@
 
 
 // Main method, that adds everything to the Outliner 
-void FLogiOutliner::AddLogiLogicToOutliner(UWorld* World) {
+void FLogiOutliner::AddLogiLogicToOutliner(UWorld* World, bool& success, FString& statusMessage) {
 
     AddThermalCameraToOutliner(World);
-    AddThermalPostProcessVolumeToOutliner(World);
+    AddThermalPostProcessVolumeToOutliner(World, success, statusMessage);
 
 }
 
@@ -133,7 +134,7 @@ void FLogiOutliner::SpawnNewBlueprint(UWorld* World, UBlueprint* Blueprint) {
 
 
 
-void FLogiOutliner::AddThermalPostProcessVolumeToOutliner(UWorld* World)
+void FLogiOutliner::AddThermalPostProcessVolumeToOutliner(UWorld* World, bool& success, FString& statusMessage)
 {
     
     
@@ -150,21 +151,21 @@ void FLogiOutliner::AddThermalPostProcessVolumeToOutliner(UWorld* World)
 
 
             DeleteActorInOutliner(ExistingActor);
-            CreateThermalPostProcessVolume(World);
+            CreateThermalPostProcessVolume(World, success, statusMessage);
         }
 
     }
     else {
 
         // If not, create/add new
-        CreateThermalPostProcessVolume(World);
+        CreateThermalPostProcessVolume(World, success, statusMessage);
     }
 
 }
 
 
 
-void FLogiOutliner::CreateThermalPostProcessVolume(UWorld* World) {
+void FLogiOutliner::CreateThermalPostProcessVolume(UWorld* World, bool& success, FString& statusMessage){
     
     FActorSpawnParameters SpawnParams;
     FVector SpawnLocation(0.0f, 0.0f, 0.0f);
@@ -200,6 +201,20 @@ void FLogiOutliner::CreateThermalPostProcessVolume(UWorld* World) {
     else
     {
         UE_LOG(LogTemp, Error, TEXT("Failed to load PostProcessMaterial."));
+    }
+
+    bool bSuccess = Logi::LogiUtils::SaveAssetToDisk(NewVolume);
+
+    if (bSuccess)
+    {
+		
+        statusMessage = FString::Printf(TEXT("Actor %s added and successfully saved to: %s"), *NewVolume->GetName(), *NewVolume->GetPathName());
+        success = true;
+    }
+    else
+    {
+        statusMessage = FString::Printf(TEXT("Actor %s added, but failed to save properly. Manual save will be required: %s"), *NewVolume->GetName(), *NewVolume->GetPathName());
+        success = true;
     }
 
 }

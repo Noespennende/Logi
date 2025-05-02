@@ -1,5 +1,6 @@
 ﻿#include "ThermalSettings.h"
 
+#include "LogiUtils.h"
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "Materials/MaterialParameterCollection.h"
 #include "Materials/MaterialParameterCollectionInstance.h"
@@ -67,7 +68,7 @@ static UMaterialParameterCollection* EnsureThermalSettingsExist(UWorld* World)
 	return ThermalSettings;
 }
 
-void MPCThermalSettings::SetupThermalSettings(UWorld* World)
+void MPCThermalSettings::SetupThermalSettings(UWorld* World, bool& success, FString& statusMessage)
 {
 	if (!World) return;
 
@@ -130,9 +131,25 @@ void MPCThermalSettings::SetupThermalSettings(UWorld* World)
 	{
 		ThermalSettings->MarkPackageDirty();
 		FAssetRegistryModule::AssetCreated(ThermalSettings);
-		FString AssetPath = TEXT("/Game/Logi_ThermalCamera/Materials/MPC_Logi_ThermalSettings");
-		FString FilePath = FPackageName::LongPackageNameToFilename(AssetPath, FPackageName::GetAssetPackageExtension());
-		UPackage::SavePackage(ThermalSettings->GetOutermost(), ThermalSettings, EObjectFlags::RF_Public | EObjectFlags::RF_Standalone, *FilePath);
+
+
+		bool bSuccess = Logi::LogiUtils::SaveAssetToDisk(ThermalSettings);
+
+		if (bSuccess)
+		{
+		
+			statusMessage = FString::Printf(TEXT("Blueprint %s created and successfully saved to: %s"), *ThermalSettings->GetName(), *ThermalSettings->GetPathName());
+			success = true;
+		}
+		else
+		{
+			statusMessage = FString::Printf(TEXT("Blueprint %s created, but failed to save properly. Manual save will be required: %s"), *ThermalSettings->GetName(), *ThermalSettings->GetPathName());
+			success = true;
+		}
+		
+		//FString AssetPath = TEXT("/Game/Logi_ThermalCamera/Materials/MPC_Logi_ThermalSettings");
+		//FString FilePath = FPackageName::LongPackageNameToFilename(AssetPath, FPackageName::GetAssetPackageExtension());
+		//UPackage::SavePackage(ThermalSettings->GetOutermost(), ThermalSettings, EObjectFlags::RF_Public | EObjectFlags::RF_Standalone, *FilePath);
 		UE_LOG(LogTemp, Warning, TEXT("Added missing parameters to MPC_Logi_ThermalSettings"));
 		
 	}

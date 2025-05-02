@@ -10,11 +10,11 @@ class AActor;
 class FLogiOutliner
 {
 public:
-    static void AddLogiLogicToOutliner(UWorld* World);
+    static void AddLogiLogicToOutliner(UWorld* World, bool& success, FString& statusMessage);
 
 private:
     static void AddThermalCameraToOutliner(UWorld* World);
-    static void AddThermalPostProcessVolumeToOutliner(UWorld* World);
+    static void AddThermalPostProcessVolumeToOutliner(UWorld* World, bool& success, FString& statusMessage);
 
     static AActor* FindActorInOutlinerByLabel(UWorld* World, const FString& ActorLabel);
 
@@ -22,6 +22,6 @@ private:
     static void DeleteActorInOutliner(AActor* Actor);
 
     static void SpawnNewBlueprint(UWorld* World, UBlueprint* Blueprint);
-    static void CreateThermalPostProcessVolume(UWorld* World);
+    static void CreateThermalPostProcessVolume(UWorld* World, bool& success, FString& statusMessage);
     
 };

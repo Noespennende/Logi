@@ -3,6 +3,6 @@
 namespace MPCThermalSettings
 {
 
-	static void SetupThermalSettings(UWorld* World);
+	static void SetupThermalSettings(UWorld* World, bool& success, FString& statusMessage);
 	
 };

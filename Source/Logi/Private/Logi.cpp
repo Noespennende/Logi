@@ -102,40 +102,48 @@ void FLogiModule::PluginButtonClicked()
 	UE_LOG(LogTemp, Warning, TEXT("%s"), *statusMessage);
 
 	UWorld* World = GEditor->GetEditorWorldContext().World();
-	if (World) {
-		MPCThermalSettings::SetupThermalSettings(World);
-	}
-	else {
-		UE_LOG(LogTemp, Error, TEXT("Failed to get UWorld!"));
+	if (!World) {
+		UE_LOG(LogTemp, Error, TEXT("Failed to get UWorld! Aborting Logi setup."));
+		return;
 	}
 
-	//Create Thermal Controller blueprint
+	// Create ThermalSettings
+	MPCThermalSettings::SetupThermalSettings(World, success, statusMessage);
+
+	//Log status - ThermalSettings
+	UE_LOG(LogTemp, Warning, TEXT("%s"), *statusMessage);
+
+	//Create ThermalController blueprint
 	ThermalController::CreateThermalController(success, statusMessage);
 
-	//Log status
+	//Log status - ThermalController
 	UE_LOG(LogTemp, Warning, TEXT("%s"), *statusMessage);
 
-	
-
-	// Create Thermal MaterialFunction
+	// Create ThermalMaterialFunction Material
 	ThermalMaterialFunction::CreateMaterialFunction(success, statusMessage);
 
-	
-	Logi::ThermalCamera::CreateThermalCamera(success, statusMessage);
-
-	//Create Thermal Material
-	Logi::ActorPatcher::CreateThermalMaterial(success, statusMessage);
-
-	//Log status
+	//Log status - ThermalMaterialFunction
 	UE_LOG(LogTemp, Warning, TEXT("%s"), *statusMessage);
 
-	//Log status
+	// Create ThermalCamera
+	Logi::ThermalCamera::CreateThermalCamera(success, statusMessage);
+
+	// Log status - ThermalCamera
+	UE_LOG(LogTemp, Warning, TEXT("%s"), *statusMessage);
+
+	// Create ThermalMaterial
+	Logi::ActorPatcher::CreateThermalMaterial(success, statusMessage);
+
+	// Log status - ThermalMaterial
 	UE_LOG(LogTemp, Warning, TEXT("%s"), *statusMessage);
 
 	//Make all project actors logi compatible
 	Logi::ActorPatcher::MakeProjectBPActorsLogiCompatible();
 
-	FLogiOutliner::AddLogiLogicToOutliner(World);
+	FLogiOutliner::AddLogiLogicToOutliner(World, success, statusMessage);
+
+	//Log status
+	UE_LOG(LogTemp, Warning, TEXT("%s"), *statusMessage);
 
 }
 

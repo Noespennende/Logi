@@ -27,6 +27,7 @@
 #include "K2Node_VariableSet.h"
 #include "Materials/MaterialParameterCollection.h"
 #include "Editor.h"
+#include "LogiUtils.h"
 #include "Engine/Blueprint.h"
 #include "GameFramework/Actor.h"
 #include "Engine/SimpleConstructionScript.h"
@@ -350,7 +351,6 @@ UBlueprint* CreateBlueprintClass(FString filePath, TSubclassOf<UObject> ParentCl
 }
 
 
-
  void ThermalController::CreateThermalController(bool& success, FString& statusMessage) {
 	//Create thermal controller blueprint
 	UBlueprint* thermalControllerBp = CreateBlueprintClass("/Game/Logi_ThermalCamera/Actors/BP_Logi_ThermalController", AActor::StaticClass(), success, statusMessage);
@@ -483,6 +483,17 @@ UBlueprint* CreateBlueprintClass(FString filePath, TSubclassOf<UObject> ParentCl
 	FKismetEditorUtilities::CompileBlueprint(thermalControllerBp);
 	thermalControllerBp->MarkPackageDirty();
 
-	success = true;
-	statusMessage = FString::Printf(TEXT("Thermal controller blueprint created and compiled successfully"));
+	bool bSuccess = Logi::LogiUtils::SaveAssetToDisk(thermalControllerBp);
+
+	if (bSuccess)
+	{
+		
+		statusMessage = FString::Printf(TEXT("Blueprint %s created and successfully saved to: %s"), *thermalControllerBp->GetName(), *thermalControllerBp->GetPathName());
+		success = true;
+	}
+	else
+	{
+		statusMessage = FString::Printf(TEXT("Blueprint %s created, but failed to save properly. Manual save will be required: %s"), *thermalControllerBp->GetName(), *thermalControllerBp->GetPathName());
+		success = true;
+	}
 }
