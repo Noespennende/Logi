@@ -49,14 +49,12 @@
 
 namespace Logi::ActorUtils
 {
-	TArray<FName> FindAllMeshComponentsInBlueprint(UBlueprint* blueprint);
+	TArray<FName> FindAllMeshComponentsInBlueprint(UBlueprint* Blueprint);
 
-	TArray<UMaterialInterface*> FindAllMaterialsFromActorScsNode(USCS_Node* scsNode);
+	TArray<UMaterialInterface*> FindAllMaterialsFromActorScsNode(USCS_Node* ScsNode);
 
-	TArray<USCS_Node*> FindUscsNodesForMeshComponentsFromABlueprint(UBlueprint* blueprint);
+	TArray<USCS_Node*> FindUscsNodesForMeshComponentsFromBlueprint(UBlueprint* Blueprint);
 
-	UMeshComponent* FindActorMeshComponentFromName(UBlueprint* blueprint, FName meshComponentName);
+	UMeshComponent* FindActorMeshComponentFromName(UBlueprint* Blueprint, const FName& MeshComponentName);
 
-	auto CreateMaterialSwitchersForLogiMaterialsInActorBlueprint(UBlueprint* blueprint);
-	
 };

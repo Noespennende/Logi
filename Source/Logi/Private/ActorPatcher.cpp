@@ -14,79 +14,79 @@
 namespace Logi::ActorPatcher
 {
 	// Creates Thermal Material on already existing material of the actor(?)
-	void CreateThermalMaterial(bool& success, FString& statusMessage) {
+	void CreateThermalMaterial(bool& bSuccess, FString& StatusMessage) {
 		#if WITH_EDITOR
-			success = false;
+			bSuccess = false;
 
 			//Load the thermal material function
-			UMaterialFunctionInterface* thermalMaterialFunction = LoadObject<UMaterialFunctionInterface>(nullptr, TEXT("/Game/Logi_ThermalCamera/Materials/MF_Logi_ThermalMaterialFunction.MF_Logi_ThermalMaterialFunction"));
+			UMaterialFunctionInterface* ThermalMaterialFunction = LoadObject<UMaterialFunctionInterface>(nullptr, TEXT("/Game/Logi_ThermalCamera/Materials/MF_Logi_ThermalMaterialFunction.MF_Logi_ThermalMaterialFunction"));
 
 			//Check if the function was loaded successfully
-			if (!thermalMaterialFunction) {
-				statusMessage = TEXT("Failed to load MF_Logi_ThermalMaterialFunction in CreateThermalMaterial. Thermal material could not be created.");
+			if (!ThermalMaterialFunction) {
+				StatusMessage = TEXT("Failed to load MF_Logi_ThermalMaterialFunction in CreateThermalMaterial. Thermal material could not be created.");
 				return;
 			}
 
 			// Define names, paths and packages
-			const FString materialName = TEXT("M_Logi_ThermalMaterial");
-			const FString packagePath = TEXT("/Game/Logi_ThermalCamera/Materials/");
-			const FString materialPath = packagePath + materialName;
-			UPackage* package = CreatePackage(*materialPath);
+			const FString MaterialName = TEXT("M_Logi_ThermalMaterial");
+			const FString PackagePath = TEXT("/Game/Logi_ThermalCamera/Materials/");
+			const FString MaterialPath = PackagePath + MaterialName;
+			UPackage* Package = CreatePackage(*MaterialPath);
 
-			if (!package)
+			if (!Package)
 			{
-				statusMessage = TEXT("Failed to create Package in CreateThermalMaterial. Thermal material could not be created.");
+				StatusMessage = TEXT("Failed to create Package in CreateThermalMaterial. Thermal material could not be created.");
 				return;
 			}
 
 			//Create the material
-			UMaterial* material = NewObject<UMaterial>(package, *materialName, RF_Public | RF_Standalone);
+			UMaterial* Material = NewObject<UMaterial>(Package, *MaterialName, RF_Public | RF_Standalone);
 
-			if (!material)
+			if (!Material)
 			{
-				statusMessage = TEXT("Failed to create material in CreateThermalMaterial. Thermal material could not be created.");
+				StatusMessage = TEXT("Failed to create material in CreateThermalMaterial. Thermal material could not be created.");
 				return;
 			}
 
 			// Set material properties
-			material->MaterialDomain = MD_Surface;
-			material->BlendMode = BLEND_Opaque;
-			material->SetShadingModel(MSM_DefaultLit);
-			material->bUseMaterialAttributes = true;
+			Material->MaterialDomain = MD_Surface;
+			Material->BlendMode = BLEND_Opaque;
+			Material->SetShadingModel(MSM_DefaultLit);
+			Material->bUseMaterialAttributes = true;
 
 			// Create a node for the MF_Logi_ThermalMaterialFunction
-			UMaterialExpressionMaterialFunctionCall* functionCall = NewObject<UMaterialExpressionMaterialFunctionCall>(material);
-			functionCall->Material = material;
-			functionCall->SetMaterialFunction(thermalMaterialFunction);
-			functionCall->UpdateFromFunctionResource();
-			functionCall->MaterialExpressionEditorX = -400;
-			functionCall->MaterialExpressionEditorY = 0;
+			UMaterialExpressionMaterialFunctionCall* FunctionCall = NewObject<UMaterialExpressionMaterialFunctionCall>(Material);
+			FunctionCall->Material = Material;
+			FunctionCall->SetMaterialFunction(ThermalMaterialFunction);
+			FunctionCall->UpdateFromFunctionResource();
+			FunctionCall->MaterialExpressionEditorX = -400;
+			FunctionCall->MaterialExpressionEditorY = 0;
 
 			//Connecdt the MF_Logi_ThermalMaterialFunction to the materials output node
-			material->GetEditorOnlyData()->MaterialAttributes.Expression = functionCall;
+			Material->GetEditorOnlyData()->MaterialAttributes.Expression = FunctionCall;
 
 			// Add the expression to the material
-			material->GetEditorOnlyData()->ExpressionCollection.Expressions.Add(functionCall);
+			Material->GetEditorOnlyData()->ExpressionCollection.Expressions.Add(FunctionCall);
 
 			// Mark the material as edited
-			material->PreEditChange(nullptr);
-			material->PostEditChange();
-			material->MarkPackageDirty();
+			Material->PreEditChange(nullptr);
+			Material->PostEditChange();
+			Material->MarkPackageDirty();
 
 			//Register the material in the asset registry
-			FAssetRegistryModule::AssetCreated(material);
+			FAssetRegistryModule::AssetCreated(Material);
 
 			// Save the material
-			const FString filePath = FPackageName::LongPackageNameToFilename(materialPath, FPackageName::GetAssetPackageExtension());
+			const FString filePath = FPackageName::LongPackageNameToFilename(MaterialPath, FPackageName::GetAssetPackageExtension());
 
-			if (!UPackage::SavePackage(package, material, EObjectFlags::RF_Public | RF_Standalone, *filePath))
+			if (!UPackage::SavePackage(Package, Material, EObjectFlags::RF_Public | RF_Standalone, *filePath))
 			{
-				statusMessage = TEXT("Failed to save the material package in CreateThermalMaterial. Could not create thermal material.");
+				StatusMessage = TEXT("Failed to save the material package in CreateThermalMaterial. Could not create thermal material.");
 				return;
 			}
 
-			success = true;
-			statusMessage = TEXT("Successfully created thermal material.");
+			bSuccess = true;
+			StatusMessage = TEXT("Successfully created thermal material.");
 
 		#else
 			success = false;
@@ -147,29 +147,29 @@ namespace Logi::ActorPatcher
 		}
 	}
 
-	void AddLogiVariablesToActorBlueprint(const FAssetData& actor) {
+	void AddLogiVariablesToActorBlueprint(const FAssetData& Actor) {
 
 		//Cast asset data to blueprint type
-		UBlueprint* blueprint = Cast<UBlueprint>(actor.GetAsset());
+		UBlueprint* Blueprint = Cast<UBlueprint>(Actor.GetAsset());
 
 		//Validate that the cast was successfull
-		if(!blueprint) {
-			UE_LOG(LogTemp, Error, TEXT("Failed to load blueprint from asset data: %s"), *actor.AssetName.ToString());
+		if(!Blueprint) {
+			UE_LOG(LogTemp, Error, TEXT("Failed to load blueprint from asset data: %s"), *Actor.AssetName.ToString());
 			return;
 		}
 
 		//Create bolean type
-		FEdGraphPinType boolType;
-		boolType.PinCategory = UEdGraphSchema_K2::PC_Boolean;
+		FEdGraphPinType BoolType;
+		BoolType.PinCategory = UEdGraphSchema_K2::PC_Boolean;
 
 		//Create float type
-		FEdGraphPinType floatType;
-		floatType.PinCategory = UEdGraphSchema_K2::PC_Real;
-		floatType.PinSubCategory = UEdGraphSchema_K2::PC_Float;
+		FEdGraphPinType FloatType;
+		FloatType.PinCategory = UEdGraphSchema_K2::PC_Real;
+		FloatType.PinSubCategory = UEdGraphSchema_K2::PC_Float;
 
 		//Create index type
-		FEdGraphPinType intType;
-		intType.PinCategory = UEdGraphSchema_K2::PC_Int;
+		FEdGraphPinType INTType;
+		INTType.PinCategory = UEdGraphSchema_K2::PC_Int;
 
 		//Create Linear Color type
 		FEdGraphPinType linearColorType;
@@ -177,142 +177,142 @@ namespace Logi::ActorPatcher
 		linearColorType.PinSubCategoryObject = TBaseStructure<FLinearColor>::Get();
 
 		//Create vector type
-		FEdGraphPinType vectorType;
-		vectorType.PinCategory = UEdGraphSchema_K2::PC_Struct;
-		vectorType.PinSubCategoryObject = TBaseStructure<FVector>::Get();
+		FEdGraphPinType VectorType;
+		VectorType.PinCategory = UEdGraphSchema_K2::PC_Struct;
+		VectorType.PinSubCategoryObject = TBaseStructure<FVector>::Get();
 
 		//Print status
 		UE_LOG(LogTemp, Warning, TEXT("Adding variable to actor blueprint"));
 
 		//Add variables to the blueprint
-		Logi::BlueprintUtils::AddVariableToBlueprintClass(blueprint, "Logi_Hot", boolType, true, "false");
-		Logi::BlueprintUtils::AddVariableToBlueprintClass(blueprint, "Logi_BaseTemperature", floatType, true, "0.0");
-		Logi::BlueprintUtils::AddVariableToBlueprintClass(blueprint, "Logi_MaxTemperature", floatType, true, "25.0");
-		Logi::BlueprintUtils::AddVariableToBlueprintClass(blueprint, "Logi_CurrentTemperature", floatType, true, "25.0");
-		Logi::BlueprintUtils::AddVariableToBlueprintClass(blueprint, "Logi_MaterialIndex", intType, false, "0");
+		Logi::BlueprintUtils::AddVariableToBlueprintClass(Blueprint, "Logi_Hot", BoolType, true, "false");
+		Logi::BlueprintUtils::AddVariableToBlueprintClass(Blueprint, "Logi_BaseTemperature", FloatType, true, "0.0");
+		Logi::BlueprintUtils::AddVariableToBlueprintClass(Blueprint, "Logi_MaxTemperature", FloatType, true, "25.0");
+		Logi::BlueprintUtils::AddVariableToBlueprintClass(Blueprint, "Logi_CurrentTemperature", FloatType, true, "25.0");
+		Logi::BlueprintUtils::AddVariableToBlueprintClass(Blueprint, "Logi_MaterialIndex", INTType, false, "0");
 	}
 
-	void AddNodeSetupToSetupFunction(UEdGraph* functionGraph, UK2Node_FunctionEntry* entryNode) {
+	void AddNodeSetupToSetupFunction(UEdGraph* FunctionGraph, UK2Node_FunctionEntry* EntryNode) {
 		//Validate function graph
 
-		if (!functionGraph) {
+		if (!FunctionGraph) {
 			UE_LOG(LogTemp, Error, TEXT("Function graph is a nullpointer, cannot add nodes to the graph."));
 			return;
 		}
 
 		//validate entry node
-		if (!entryNode) {
+		if (!EntryNode) {
 			UE_LOG(LogTemp, Error, TEXT("No function entry node is a nullpointer. Cannot add nodes to the graph."));
 			return;
 		}
 
 		// Find the function blueprint
-		UBlueprint* blueprint = Cast<UBlueprint>(functionGraph->GetOuter());
+		UBlueprint* Blueprint = Cast<UBlueprint>(FunctionGraph->GetOuter());
 
 		//Validate the blueprint
-		if (!blueprint) {
+		if (!Blueprint) {
 			UE_LOG(LogTemp, Error, TEXT("Could not find the blueprint linked to the blueprint function"));
 			return;
 		}
 
-		int xPosition = 300;
+		int XPosition = 300;
 
 		//Check every variable in the blueprint for mesh components
-		TArray<FName> meshComponentNames = ActorUtils::FindAllMeshComponentsInBlueprint(blueprint);
+		TArray<FName> MeshComponentNames = ActorUtils::FindAllMeshComponentsInBlueprint(Blueprint);
 
 		//Check if the meshVariableName is empty if so, skipping implementation.
-		if (meshComponentNames.Num() == 0) {
-			UE_LOG(LogTemp, Warning, TEXT("No skeletal mesh component found in blueprint '%s', skipping implementation."), *blueprint->GetName());
+		if (MeshComponentNames.Num() == 0) {
+			UE_LOG(LogTemp, Warning, TEXT("No skeletal mesh component found in blueprint '%s', skipping implementation."), *Blueprint->GetName());
 			return;
 		}
 
 		//Get the function graphs schema
-		const UEdGraphSchema_K2* Schema = CastChecked<UEdGraphSchema_K2>(functionGraph->GetSchema());
+		const UEdGraphSchema_K2* Schema = CastChecked<UEdGraphSchema_K2>(FunctionGraph->GetSchema());
 
 		//Create Logi_Hot variable getter node
-		UK2Node_VariableGet* logiHotGetNode = BlueprintUtils::CreateBPGetterNode(functionGraph, FName("Logi_Hot"), xPosition, 200);
+		UK2Node_VariableGet* LogiHotGetNode = BlueprintUtils::CreateBPGetterNode(FunctionGraph, FName("Logi_Hot"), XPosition, 200);
 
 		//Update xPosition
-		xPosition += 100;
+		XPosition += 100;
 
 		//Creating nodes inside the function graph
-		UK2Node_IfThenElse* branchNode = BlueprintUtils::CreateBPBranchNode(functionGraph, xPosition, 0);
+		UK2Node_IfThenElse* BranchNode = BlueprintUtils::CreateBPBranchNode(FunctionGraph, XPosition, 0);
 
 		//Update xPosition
-		xPosition += 300;
+		XPosition += 300;
 
 		//Connect the entry node to the branch node
-		UEdGraphPin* execPin = entryNode->FindPin(UEdGraphSchema_K2::PN_Then);
+		UEdGraphPin* ExecPin = EntryNode->FindPin(UEdGraphSchema_K2::PN_Then);
 
 		//Connect the Logi_Hot variable getter node to the branch node
-		Schema->TryCreateConnection(logiHotGetNode->FindPin(FName("Logi_Hot")), branchNode->GetConditionPin());
+		Schema->TryCreateConnection(LogiHotGetNode->FindPin(FName("Logi_Hot")), BranchNode->GetConditionPin());
 
 		//Connect the entry node to the branch node
-		Schema->TryCreateConnection(execPin, branchNode->GetExecPin());
+		Schema->TryCreateConnection(ExecPin, BranchNode->GetExecPin());
 
 		// Pointers to track the last SetRenderCustomDepth node in the true/false chain
-		UK2Node_CallFunction* previousTrueExecNode = nullptr;
-		UK2Node_CallFunction* previousFalseExecNode = nullptr;
+		UK2Node_CallFunction* PreviousTrueExecNode = nullptr;
+		UK2Node_CallFunction* PreviousFalseExecNode = nullptr;
 
 		//Create mesh getter nodes and set render custom deapth node for each mesh in the blueprint
-		for (int32 i = 0; i < meshComponentNames.Num(); ++i) {
+		for (int32 i = 0; i < MeshComponentNames.Num(); ++i) {
 
 			//Get the mesh variable name
-			FName meshVariableName = meshComponentNames[i];
+			FName MeshVariableName = MeshComponentNames[i];
 
 			//Create mesh getter nodes
-			UK2Node_VariableGet* meshGetterNodeTrue = Logi::BlueprintUtils::CreateBPGetterNode(functionGraph, meshVariableName, xPosition, -400);
-			UK2Node_VariableGet* meshGetterNodeFalse = Logi::BlueprintUtils::CreateBPGetterNode(functionGraph, meshVariableName, xPosition, 500);
+			UK2Node_VariableGet* MeshGetterNodeTrue = Logi::BlueprintUtils::CreateBPGetterNode(FunctionGraph, MeshVariableName, XPosition, -400);
+			UK2Node_VariableGet* MeshGetterNodeFalse = Logi::BlueprintUtils::CreateBPGetterNode(FunctionGraph, MeshVariableName, XPosition, 500);
 
 			//Create set render custom depth nodes
-			UK2Node_CallFunction* setRenderDepthNodeTrue = Logi::BlueprintUtils::CreateBPSetRenderDepthNode(functionGraph, true, xPosition, -200);
-			UK2Node_CallFunction* setRenderDepthNodeFalse = Logi::BlueprintUtils::CreateBPSetRenderDepthNode(functionGraph, false, xPosition, 200);
+			UK2Node_CallFunction* SetRenderDepthNodeTrue = Logi::BlueprintUtils::CreateBPSetRenderDepthNode(FunctionGraph, true, XPosition, -200);
+			UK2Node_CallFunction* SetRenderDepthNodeFalse = Logi::BlueprintUtils::CreateBPSetRenderDepthNode(FunctionGraph, false, XPosition, 200);
 
 			//Try to find the target pin for the set render custom depth nodes
-			UEdGraphPin* trueTargetPin = setRenderDepthNodeTrue->FindPin(UEdGraphSchema_K2::PN_Self);
-			UEdGraphPin* falseTargetPin = setRenderDepthNodeFalse->FindPin(UEdGraphSchema_K2::PN_Self);
+			UEdGraphPin* TrueTargetPin = SetRenderDepthNodeTrue->FindPin(UEdGraphSchema_K2::PN_Self);
+			UEdGraphPin* FalseTargetPin = SetRenderDepthNodeFalse->FindPin(UEdGraphSchema_K2::PN_Self);
 
 			//Connect mesh getter nodes to set render custom depth nodes
-			if (trueTargetPin && meshGetterNodeTrue->GetValuePin()) {
-				Schema->TryCreateConnection(meshGetterNodeTrue->GetValuePin(), trueTargetPin);
+			if (TrueTargetPin && MeshGetterNodeTrue->GetValuePin()) {
+				Schema->TryCreateConnection(MeshGetterNodeTrue->GetValuePin(), TrueTargetPin);
 			}
 
-			if (falseTargetPin && meshGetterNodeFalse->GetValuePin()) {
-				Schema->TryCreateConnection(meshGetterNodeFalse->GetValuePin(), falseTargetPin);
+			if (FalseTargetPin && MeshGetterNodeFalse->GetValuePin()) {
+				Schema->TryCreateConnection(MeshGetterNodeFalse->GetValuePin(), FalseTargetPin);
 			}
 
 			//Check if this is the first set render custom depth node in the chains
 			if (i == 0) {
 				//Connect the branch node to the set render custom depth nodes
-				Schema->TryCreateConnection(branchNode->GetThenPin(), setRenderDepthNodeTrue->GetExecPin());
-				Schema->TryCreateConnection(branchNode->GetElsePin(), setRenderDepthNodeFalse->GetExecPin());
+				Schema->TryCreateConnection(BranchNode->GetThenPin(), SetRenderDepthNodeTrue->GetExecPin());
+				Schema->TryCreateConnection(BranchNode->GetElsePin(), SetRenderDepthNodeFalse->GetExecPin());
 
 				//Set the previous set render custom depth nodes to the current set render custom depth nodes
 			}
 			else {
 				//Connect the previous set render custom depth node to the current set render custom depth node
-				Schema->TryCreateConnection(previousTrueExecNode->GetThenPin(), setRenderDepthNodeTrue->GetExecPin());
-				Schema->TryCreateConnection(previousFalseExecNode->GetThenPin(), setRenderDepthNodeFalse->GetExecPin());
+				Schema->TryCreateConnection(PreviousTrueExecNode->GetThenPin(), SetRenderDepthNodeTrue->GetExecPin());
+				Schema->TryCreateConnection(PreviousFalseExecNode->GetThenPin(), SetRenderDepthNodeFalse->GetExecPin());
 			}
 
 			//Set the previous set render custom depth nodes to the current set render custom depth nodes
-			previousTrueExecNode = setRenderDepthNodeTrue;
-			previousFalseExecNode = setRenderDepthNodeFalse;
+			PreviousTrueExecNode = SetRenderDepthNodeTrue;
+			PreviousFalseExecNode = SetRenderDepthNodeFalse;
 		
 			//Update xPosition
-			xPosition += 300;
+			XPosition += 300;
 		}
 
 		//create get all actors of class node
-		UK2Node_CallFunction* getAllActorsOfClassNode = Logi::BlueprintUtils::CreateBPGetAllActorsOfClassNode(functionGraph, xPosition, 0);
+		UK2Node_CallFunction* GetAllActorsOfClassNode = Logi::BlueprintUtils::CreateBPGetAllActorsOfClassNode(FunctionGraph, XPosition, 0);
 
 		//Connect Get all actors of class node to the render custom depth node.
-		Schema->TryCreateConnection(previousTrueExecNode->GetThenPin(), getAllActorsOfClassNode->GetExecPin());
-		Schema->TryCreateConnection(previousFalseExecNode->GetThenPin(), getAllActorsOfClassNode->GetExecPin());
+		Schema->TryCreateConnection(PreviousTrueExecNode->GetThenPin(), GetAllActorsOfClassNode->GetExecPin());
+		Schema->TryCreateConnection(PreviousFalseExecNode->GetThenPin(), GetAllActorsOfClassNode->GetExecPin());
 
 
 		//find the actor class pin of the Get all actors of class node
-		UEdGraphPin* actorClassPin = getAllActorsOfClassNode->FindPin(FName("ActorClass"));
+		UEdGraphPin* actorClassPin = GetAllActorsOfClassNode->FindPin(FName("ActorClass"));
 
 		//validate the actor class pin
 		if (!actorClassPin) {
@@ -321,58 +321,58 @@ namespace Logi::ActorPatcher
 		}
 
 		//Find the Logi_ThermalController blueprint
-		UBlueprint* controllerBP = Cast<UBlueprint>(StaticLoadObject(UBlueprint::StaticClass(), nullptr, TEXT("/Game/Logi_ThermalCamera/Actors/BP_Logi_ThermalController.BP_Logi_ThermalController")));
+		UBlueprint* ControllerBP = Cast<UBlueprint>(StaticLoadObject(UBlueprint::StaticClass(), nullptr, TEXT("/Game/Logi_ThermalCamera/Actors/BP_Logi_ThermalController.BP_Logi_ThermalController")));
 
 		//Validate the thermal controller blueprint
-		if (!controllerBP || !controllerBP->GeneratedClass)
+		if (!ControllerBP || !ControllerBP->GeneratedClass)
 		{
 			UE_LOG(LogTemp, Error, TEXT("Failed to load BP_Logi_ThermalController or its generated class"));
 			return;
 		}
 
 		//Set the actor class pin to the BP_Logi_ThermalController class
-		actorClassPin->DefaultObject = controllerBP->GeneratedClass;
+		actorClassPin->DefaultObject = ControllerBP->GeneratedClass;
 
 		//Notify actor class pin that the pin has changed
-		actorClassPin->GetSchema()->TrySetDefaultObject(*actorClassPin, controllerBP->GeneratedClass);
+		actorClassPin->GetSchema()->TrySetDefaultObject(*actorClassPin, ControllerBP->GeneratedClass);
 
 
 		//update xPosition
-		xPosition += 300;
+		XPosition += 300;
 
 		//Create array getter node
-		UK2Node_GetArrayItem* arrayGetNode = Logi::BlueprintUtils::CreateBPArrayGetterNode(functionGraph, xPosition, 200);
+		UK2Node_GetArrayItem* ArrayGetNode = Logi::BlueprintUtils::CreateBPArrayGetterNode(FunctionGraph, XPosition, 200);
 
 		//Find the array input pin of the array getter node
-		UEdGraphPin* arrayInputPin = arrayGetNode->GetTargetArrayPin();
+		UEdGraphPin* ArrayInputPin = ArrayGetNode->GetTargetArrayPin();
 
 
 		//Connect the get all actors of class node to the array getter node
-		Schema->TryCreateConnection(getAllActorsOfClassNode->FindPin(FName("OutActors")), arrayInputPin);
+		Schema->TryCreateConnection(GetAllActorsOfClassNode->FindPin(FName("OutActors")), ArrayInputPin);
 
 		//Notify the array getter node that the input pin has changed to update the pins name to the correct type
-		arrayInputPin->GetOwningNode()->PinConnectionListChanged(arrayInputPin);
+		ArrayInputPin->GetOwningNode()->PinConnectionListChanged(ArrayInputPin);
 
 		//Reconstruct pins for the array getter node to account for the array type
-		arrayGetNode->ReconstructNode();
+		ArrayGetNode->ReconstructNode();
 
 
 		//Find the index input pin of the array getter node
-		UEdGraphPin* indexPin = nullptr;
+		UEdGraphPin* IndexPin = nullptr;
 		//Iterate trough all pins of the getter node
-		for (UEdGraphPin* Pin : arrayGetNode->Pins)
+		for (UEdGraphPin* Pin : ArrayGetNode->Pins)
 		{
 			//Check if the pin's direction is an input pin and if the type is an integer, if so it is the index pin.
 			if (Pin && Pin->PinType.PinCategory == UEdGraphSchema_K2::PC_Int && Pin->Direction == EGPD_Input)
 			{
-				indexPin = Pin;
+				IndexPin = Pin;
 				break;
 			}
 		}
 		
 		//Validate index pin and set the index pins value
-		if (indexPin) {
-			indexPin->DefaultValue = TEXT("0");
+		if (IndexPin) {
+			IndexPin->DefaultValue = TEXT("0");
 		}
 		else {
 			UE_LOG(LogTemp, Error, TEXT("Failed to find the index pin in the array getter node"));
@@ -380,88 +380,88 @@ namespace Logi::ActorPatcher
 		}
 
 		//Update xPosition
-		xPosition += 300;
+		XPosition += 300;
 
 		//Set thermal controller variable name
-		FName thermalControllerVariableName = FName("Logi_ThermalController");
+		FName ThermalControllerVariableName = FName("Logi_ThermalController");
 
 		//Adds thermal controller referense variable
-		Logi::BlueprintUtils::AddThermalControlerReferenceToBlueprint(blueprint, thermalControllerVariableName, false);
+		Logi::BlueprintUtils::AddThermalControlerReferenceToBlueprint(Blueprint, ThermalControllerVariableName, false);
 		
 		
 		//Create a variable setter node for the Logi_ThermalController variable
-		UK2Node_VariableSet* setThermalController = Logi::BlueprintUtils::CreateBPSetterNode(functionGraph, thermalControllerVariableName, xPosition, 0);
+		UK2Node_VariableSet* SetThermalController = Logi::BlueprintUtils::CreateBPSetterNode(FunctionGraph, ThermalControllerVariableName, XPosition, 0);
 
 		//Connect the array getter node to the setThermalController node
-		Schema->TryCreateConnection(arrayGetNode->GetResultPin(), setThermalController->FindPin(thermalControllerVariableName));
+		Schema->TryCreateConnection(ArrayGetNode->GetResultPin(), SetThermalController->FindPin(ThermalControllerVariableName));
 
 
-		UEdGraphPin* thenPin = getAllActorsOfClassNode->FindPin(UEdGraphSchema_K2::PN_Then);
-		if (!thenPin)
+		UEdGraphPin* ThenPin = GetAllActorsOfClassNode->FindPin(UEdGraphSchema_K2::PN_Then);
+		if (!ThenPin)
 		{
 			UE_LOG(LogTemp, Error, TEXT("GetAllActorsOfClass node does not have a Then pin!"));
 		}
 
 		//Connect the setter node for Logi thermal controller and get all actors of class node's exec pins
-		Schema->TryCreateConnection(setThermalController->GetExecPin(), getAllActorsOfClassNode->GetThenPin());
+		Schema->TryCreateConnection(SetThermalController->GetExecPin(), GetAllActorsOfClassNode->GetThenPin());
 
 		//Update xPosition
-		xPosition += 300;
+		XPosition += 300;
 
 		//Create dynamic material instance node
-		UK2Node_CallFunction* dynamicMaterialInstanceNode = Logi::BlueprintUtils::CreateBPDynamicMaterialInstanceNode(functionGraph, xPosition, 0);
+		UK2Node_CallFunction* DynamicMaterialInstanceNode = Logi::BlueprintUtils::CreateBPDynamicMaterialInstanceNode(FunctionGraph, XPosition, 0);
 
 		// Find the parent pin of the dynamic material instance node
-		UEdGraphPin* parentPin = dynamicMaterialInstanceNode->FindPin(TEXT("Parent"));
+		UEdGraphPin* ParentPin = DynamicMaterialInstanceNode->FindPin(TEXT("Parent"));
 
 		//Find the Logi_ThermalMaterial
-		FString thermalMaterialFilePath = TEXT("/Game/Logi_ThermalCamera/Materials/M_Logi_ThermalMaterial.M_Logi_ThermalMaterial");
-		UObject* thermalMaterial = StaticLoadObject(UMaterialInterface::StaticClass(), nullptr, *thermalMaterialFilePath);
+		FString ThermalMaterialFilePath = TEXT("/Game/Logi_ThermalCamera/Materials/M_Logi_ThermalMaterial.M_Logi_ThermalMaterial");
+		UObject* ThermalMaterial = StaticLoadObject(UMaterialInterface::StaticClass(), nullptr, *ThermalMaterialFilePath);
 		//UMaterialInterface* thermalMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Logi_ThermalCamera/Materials/M_Logi_ThermalMaterial.M_Logi_ThermalMaterial"));
 
 		//Set the parent pin to the logi thermal material
-		if (parentPin && thermalMaterial)
+		if (ParentPin && ThermalMaterial)
 		{
-			parentPin->DefaultObject = thermalMaterial;
+			ParentPin->DefaultObject = ThermalMaterial;
 		}
 
 		
 		// Connect execution from previous setter
-		Schema->TryCreateConnection(setThermalController->GetThenPin(), dynamicMaterialInstanceNode->GetExecPin());
+		Schema->TryCreateConnection(SetThermalController->GetThenPin(), DynamicMaterialInstanceNode->GetExecPin());
 
 		//Add dynamic material instance variable to blueprint
-		FName dynamicMaterialInstanceVariableName = Logi::BlueprintUtils::AddMaterialInstanceVariableToBlueprint(blueprint);
+		FName dynamicMaterialInstanceVariableName = Logi::BlueprintUtils::AddMaterialInstanceVariableToBlueprint(Blueprint);
 
 		// Update xPosition
-		xPosition += 500;
+		XPosition += 500;
 
 		//Create a setter node for the dynamic material instance variable
-		UK2Node_VariableSet* setDynamicMaterialInstanceNode = Logi::BlueprintUtils::CreateBPSetterNode(functionGraph, dynamicMaterialInstanceVariableName, xPosition, 0);
+		UK2Node_VariableSet* SetDynamicMaterialInstanceNode = Logi::BlueprintUtils::CreateBPSetterNode(FunctionGraph, dynamicMaterialInstanceVariableName, XPosition, 0);
 
 		//Connect exec pin of the dynamic material instance node to the setter node
-		Schema->TryCreateConnection(dynamicMaterialInstanceNode->GetThenPin(), setDynamicMaterialInstanceNode->GetExecPin());
+		Schema->TryCreateConnection(DynamicMaterialInstanceNode->GetThenPin(), SetDynamicMaterialInstanceNode->GetExecPin());
 
 		//Connect the return value of the dynamic material instance node to the setter node
-		Schema->TryCreateConnection(dynamicMaterialInstanceNode->FindPin(TEXT("ReturnValue")), setDynamicMaterialInstanceNode->FindPin(dynamicMaterialInstanceVariableName.ToString()));
+		Schema->TryCreateConnection(DynamicMaterialInstanceNode->FindPin(TEXT("ReturnValue")), SetDynamicMaterialInstanceNode->FindPin(dynamicMaterialInstanceVariableName.ToString()));
 
 	}
 
-	void AddNodeSetupToUpdateThermalMaterialFunction(UEdGraph* functionGraph, UK2Node_FunctionEntry* entryNode) {
+	void AddNodeSetupToUpdateThermalMaterialFunction(UEdGraph* FunctionGraph, UK2Node_FunctionEntry* EntryNode) {
 		//Validate function graph
 
-		if (!functionGraph) {
+		if (!FunctionGraph) {
 			UE_LOG(LogTemp, Error, TEXT("Function graph is a nullpointer, cannot add nodes to the graph."));
 			return;
 		}
 
 		//validate entry node
-		if (!entryNode) {
+		if (!EntryNode) {
 			UE_LOG(LogTemp, Error, TEXT("No function entry node is a nullpointer. Cannot add nodes to the graph."));
 			return;
 		}
 
 		// Find the function blueprint
-		UBlueprint* blueprint = Cast<UBlueprint>(functionGraph->GetOuter());
+		UBlueprint* blueprint = Cast<UBlueprint>(FunctionGraph->GetOuter());
 
 		//Validate the blueprint
 		if (!blueprint) {
@@ -470,7 +470,7 @@ namespace Logi::ActorPatcher
 		}
 
 		//Check every variable in the blueprint for mesh components
-		 TArray<USCS_Node*> meshComponents = ActorUtils::FindUscsNodesForMeshComponentsFromABlueprint(blueprint);
+		 TArray<USCS_Node*> meshComponents = ActorUtils::FindUscsNodesForMeshComponentsFromBlueprint(blueprint);
 
 		//Check if the meshVariableName is empty if so, skipping implementation.
 		if (meshComponents.Num() == 0) {
@@ -479,27 +479,27 @@ namespace Logi::ActorPatcher
 		}
 
 		//Get the function graphs schema
-		const UEdGraphSchema_K2* Schema = CastChecked<UEdGraphSchema_K2>(functionGraph->GetSchema());
+		const UEdGraphSchema_K2* Schema = CastChecked<UEdGraphSchema_K2>(FunctionGraph->GetSchema());
 
 		int xPosition = 300;
 
 		//create branch node for Logi_Hot variable
-		UK2Node_IfThenElse* branchNode = Logi::BlueprintUtils::CreateBPBranchNode(functionGraph, xPosition, 0);
+		UK2Node_IfThenElse* branchNode = Logi::BlueprintUtils::CreateBPBranchNode(FunctionGraph, xPosition, 0);
 
 		//Create getter for Logi_hot variable
-		UK2Node_VariableGet* logiHotGetNode = Logi::BlueprintUtils::CreateBPGetterNode(functionGraph, FName("Logi_Hot"), xPosition, 200);
+		UK2Node_VariableGet* logiHotGetNode = Logi::BlueprintUtils::CreateBPGetterNode(FunctionGraph, FName("Logi_Hot"), xPosition, 200);
 
 		//connect Logi hot getter node to branch nodes condition pin
 		branchNode->GetConditionPin()->MakeLinkTo(logiHotGetNode->FindPin(FName("Logi_Hot")));
 
 		//Connect the entry node to the branch node
-		Schema->TryCreateConnection(entryNode->FindPin(UEdGraphSchema_K2::PN_Then), branchNode->GetExecPin());
+		Schema->TryCreateConnection(EntryNode->FindPin(UEdGraphSchema_K2::PN_Then), branchNode->GetExecPin());
 
 		xPosition += 300;
 
 		//create setter nodes for Logi material index
-		UK2Node_VariableSet* setLogiMaterialIndexNodeZero = Logi::BlueprintUtils::CreateBPSetterNode(functionGraph, FName("Logi_MaterialIndex"), xPosition, 100);
-		UK2Node_VariableSet* setLogiMaterialIndexNodeOne = Logi::BlueprintUtils::CreateBPSetterNode(functionGraph, FName("Logi_MaterialIndex"), xPosition, -100);
+		UK2Node_VariableSet* setLogiMaterialIndexNodeZero = Logi::BlueprintUtils::CreateBPSetterNode(FunctionGraph, FName("Logi_MaterialIndex"), xPosition, 100);
+		UK2Node_VariableSet* setLogiMaterialIndexNodeOne = Logi::BlueprintUtils::CreateBPSetterNode(FunctionGraph, FName("Logi_MaterialIndex"), xPosition, -100);
 
 		//set Logi material index pin to 0
 		UEdGraphPin* setLogiMaterialIndexNodeZeroPin = setLogiMaterialIndexNodeZero->FindPin(FName("Logi_MaterialIndex"));
@@ -515,11 +515,11 @@ namespace Logi::ActorPatcher
 		xPosition += 600;
 
 		//create set scalar parameter value node for CurrentTemperature
-		UK2Node_CallFunction* setCurrentTemperatureScalarParameterNode = Logi::BlueprintUtils::CreateBPDynamicMaterialInstanceScalarParameterNode(functionGraph, xPosition, 0);
+		UK2Node_CallFunction* setCurrentTemperatureScalarParameterNode = Logi::BlueprintUtils::CreateBPDynamicMaterialInstanceScalarParameterNode(FunctionGraph, xPosition, 0);
 		setCurrentTemperatureScalarParameterNode->FindPin(FName("ParameterName"))->DefaultValue = TEXT("CurrentTemperature");
 
 		//create getter node for getLogiDynamicMaterialInstance and connect it to the current temperature node
-		UK2Node_VariableGet* getLogiLogiDynamicMaterialInstance = Logi::BlueprintUtils::CreateBPGetterNode(functionGraph, FName("Logi_DynamicMaterialInstance"), xPosition - 300, 100);
+		UK2Node_VariableGet* getLogiLogiDynamicMaterialInstance = Logi::BlueprintUtils::CreateBPGetterNode(FunctionGraph, FName("Logi_DynamicMaterialInstance"), xPosition - 300, 100);
 		Schema->TryCreateConnection(getLogiLogiDynamicMaterialInstance->GetValuePin(), setCurrentTemperatureScalarParameterNode->FindPin(FName("self")));
 		Schema->TryCreateConnection(setLogiMaterialIndexNodeZero->GetThenPin(), setCurrentTemperatureScalarParameterNode->GetExecPin());
 		Schema->TryCreateConnection(setLogiMaterialIndexNodeOne->GetThenPin(), setCurrentTemperatureScalarParameterNode->GetExecPin());
@@ -529,12 +529,12 @@ namespace Logi::ActorPatcher
 		const TCHAR* thermalControllerFilePath = TEXT("/Game/Logi_ThermalCamera/Actors/BP_Logi_ThermalController.BP_Logi_ThermalController_C");
 
 		//create normalize to range node setup for CurrentTemperature
-		UK2Node_CallFunction* normalizeToRangeNode = Logi::BlueprintUtils::CreateBPNormalizeToRangeNode(functionGraph, xPosition, 300);
-		UK2Node_VariableGet* getLogiCurrentTemperature =  Logi::BlueprintUtils::CreateBPGetterNode(functionGraph, FName("Logi_CurrentTemperature"), xPosition - 250, 300);
+		UK2Node_CallFunction* normalizeToRangeNode = Logi::BlueprintUtils::CreateBPNormalizeToRangeNode(FunctionGraph, xPosition, 300);
+		UK2Node_VariableGet* getLogiCurrentTemperature =  Logi::BlueprintUtils::CreateBPGetterNode(FunctionGraph, FName("Logi_CurrentTemperature"), xPosition - 250, 300);
 		Schema->TryCreateConnection(getLogiCurrentTemperature->GetValuePin(), normalizeToRangeNode->FindPin(FName("Value")));
-		UK2Node_VariableGet* getThermalController = Logi::BlueprintUtils::CreateBPGetterNode(functionGraph, FName("Logi_ThermalController"), xPosition - 550, 400);
-		UK2Node_VariableGet* getThermalControllerThermalCameraRangeMin = Logi::BlueprintUtils::CreateBPExternalGetterNode(functionGraph, FName("ThermalCameraRangeMin"), thermalControllerFilePath, xPosition - 300, 350);
-		UK2Node_VariableGet* getThermalControllerThermalCameraRangeMax = Logi::BlueprintUtils::CreateBPExternalGetterNode(functionGraph, FName("ThermalCameraRangeMin"), thermalControllerFilePath, xPosition - 300, 450);
+		UK2Node_VariableGet* getThermalController = Logi::BlueprintUtils::CreateBPGetterNode(FunctionGraph, FName("Logi_ThermalController"), xPosition - 550, 400);
+		UK2Node_VariableGet* getThermalControllerThermalCameraRangeMin = Logi::BlueprintUtils::CreateBPExternalGetterNode(FunctionGraph, FName("ThermalCameraRangeMin"), thermalControllerFilePath, xPosition - 300, 350);
+		UK2Node_VariableGet* getThermalControllerThermalCameraRangeMax = Logi::BlueprintUtils::CreateBPExternalGetterNode(FunctionGraph, FName("ThermalCameraRangeMin"), thermalControllerFilePath, xPosition - 300, 450);
 		
 		Schema->TryCreateConnection(getThermalController->GetValuePin(), getThermalControllerThermalCameraRangeMin->FindPin(FName("self")));
 		Schema->TryCreateConnection(getThermalController->GetValuePin(), getThermalControllerThermalCameraRangeMax->FindPin(FName("self")));
@@ -547,17 +547,17 @@ namespace Logi::ActorPatcher
 		xPosition += 800;
 
 		//create set scalar parameter value node for  MaxTemperature node
-		UK2Node_CallFunction* setMaxTemperatureScalarParameterNode = Logi::BlueprintUtils::CreateBPDynamicMaterialInstanceScalarParameterNode(functionGraph, xPosition, 0);
+		UK2Node_CallFunction* setMaxTemperatureScalarParameterNode = Logi::BlueprintUtils::CreateBPDynamicMaterialInstanceScalarParameterNode(FunctionGraph, xPosition, 0);
 		setMaxTemperatureScalarParameterNode->FindPin(FName("ParameterName"))->DefaultValue = TEXT("MaxTemperature");
 		Schema->TryCreateConnection(setCurrentTemperatureScalarParameterNode->GetThenPin(), setMaxTemperatureScalarParameterNode->GetExecPin());
 
 		//create normalize to range node setup for MaxTemperature
-		normalizeToRangeNode = Logi::BlueprintUtils::CreateBPNormalizeToRangeNode(functionGraph, xPosition, 300);
-		UK2Node_VariableGet* getLogiMaxTemperature = Logi::BlueprintUtils::CreateBPGetterNode(functionGraph, FName("Logi_MaxTemperature"), xPosition - 250, 300);
+		normalizeToRangeNode = Logi::BlueprintUtils::CreateBPNormalizeToRangeNode(FunctionGraph, xPosition, 300);
+		UK2Node_VariableGet* getLogiMaxTemperature = Logi::BlueprintUtils::CreateBPGetterNode(FunctionGraph, FName("Logi_MaxTemperature"), xPosition - 250, 300);
 		Schema->TryCreateConnection(getLogiMaxTemperature->GetValuePin(), normalizeToRangeNode->FindPin(FName("Value")));
-		getThermalController = Logi::BlueprintUtils::CreateBPGetterNode(functionGraph, FName("Logi_ThermalController"), xPosition - 550, 400);
-		getThermalControllerThermalCameraRangeMin = Logi::BlueprintUtils::CreateBPExternalGetterNode(functionGraph, FName("ThermalCameraRangeMin"), thermalControllerFilePath, xPosition - 300, 350);
-		getThermalControllerThermalCameraRangeMax = Logi::BlueprintUtils::CreateBPExternalGetterNode(functionGraph, FName("ThermalCameraRangeMin"), thermalControllerFilePath, xPosition - 300, 450);
+		getThermalController = Logi::BlueprintUtils::CreateBPGetterNode(FunctionGraph, FName("Logi_ThermalController"), xPosition - 550, 400);
+		getThermalControllerThermalCameraRangeMin = Logi::BlueprintUtils::CreateBPExternalGetterNode(FunctionGraph, FName("ThermalCameraRangeMin"), thermalControllerFilePath, xPosition - 300, 350);
+		getThermalControllerThermalCameraRangeMax = Logi::BlueprintUtils::CreateBPExternalGetterNode(FunctionGraph, FName("ThermalCameraRangeMin"), thermalControllerFilePath, xPosition - 300, 450);
 
 		Schema->TryCreateConnection(getThermalController->GetValuePin(), getThermalControllerThermalCameraRangeMin->FindPin(FName("self")));
 		Schema->TryCreateConnection(getThermalController->GetValuePin(), getThermalControllerThermalCameraRangeMax->FindPin(FName("self")));
@@ -568,23 +568,23 @@ namespace Logi::ActorPatcher
 
 
 		//create getter node for getLogiDynamicMaterialInstance and connect it to the Max temperature node
-		getLogiLogiDynamicMaterialInstance = Logi::BlueprintUtils::CreateBPGetterNode(functionGraph, FName("Logi_DynamicMaterialInstance"), xPosition - 300, 100);
+		getLogiLogiDynamicMaterialInstance = Logi::BlueprintUtils::CreateBPGetterNode(FunctionGraph, FName("Logi_DynamicMaterialInstance"), xPosition - 300, 100);
 		Schema->TryCreateConnection(getLogiLogiDynamicMaterialInstance->GetValuePin(), setMaxTemperatureScalarParameterNode->FindPin(FName("self")));
 
 		xPosition += 800;
 
 		//create set scalar parameter value node for  BaseTemperature node
-		UK2Node_CallFunction* setBaseTemperatureScalarParameterNode = Logi::BlueprintUtils::CreateBPDynamicMaterialInstanceScalarParameterNode(functionGraph, xPosition, 0);
+		UK2Node_CallFunction* setBaseTemperatureScalarParameterNode = Logi::BlueprintUtils::CreateBPDynamicMaterialInstanceScalarParameterNode(FunctionGraph, xPosition, 0);
 		setBaseTemperatureScalarParameterNode->FindPin(FName("ParameterName"))->DefaultValue = TEXT("BaseTemperature");
 		Schema->TryCreateConnection(setMaxTemperatureScalarParameterNode->GetThenPin(), setBaseTemperatureScalarParameterNode->GetExecPin());
 
 		//create normalize to range node setup for MaxTemperature
-		normalizeToRangeNode = Logi::BlueprintUtils::CreateBPNormalizeToRangeNode(functionGraph, xPosition, 300);
-		UK2Node_VariableGet* getLogiBaseTemperature = Logi::BlueprintUtils::CreateBPGetterNode(functionGraph, FName("Logi_BaseTemperature"), xPosition - 250, 300);
+		normalizeToRangeNode = Logi::BlueprintUtils::CreateBPNormalizeToRangeNode(FunctionGraph, xPosition, 300);
+		UK2Node_VariableGet* getLogiBaseTemperature = Logi::BlueprintUtils::CreateBPGetterNode(FunctionGraph, FName("Logi_BaseTemperature"), xPosition - 250, 300);
 		Schema->TryCreateConnection(getLogiBaseTemperature->GetValuePin(), normalizeToRangeNode->FindPin(FName("Value")));
-		getThermalController = Logi::BlueprintUtils::CreateBPGetterNode(functionGraph, FName("Logi_ThermalController"), xPosition - 550, 400);
-		getThermalControllerThermalCameraRangeMin = Logi::BlueprintUtils::CreateBPExternalGetterNode(functionGraph, FName("ThermalCameraRangeMin"), thermalControllerFilePath, xPosition - 300, 350);
-		getThermalControllerThermalCameraRangeMax = Logi::BlueprintUtils::CreateBPExternalGetterNode(functionGraph, FName("ThermalCameraRangeMin"), thermalControllerFilePath, xPosition - 300, 450);
+		getThermalController = Logi::BlueprintUtils::CreateBPGetterNode(FunctionGraph, FName("Logi_ThermalController"), xPosition - 550, 400);
+		getThermalControllerThermalCameraRangeMin = Logi::BlueprintUtils::CreateBPExternalGetterNode(FunctionGraph, FName("ThermalCameraRangeMin"), thermalControllerFilePath, xPosition - 300, 350);
+		getThermalControllerThermalCameraRangeMax = Logi::BlueprintUtils::CreateBPExternalGetterNode(FunctionGraph, FName("ThermalCameraRangeMin"), thermalControllerFilePath, xPosition - 300, 450);
 
 		Schema->TryCreateConnection(getThermalController->GetValuePin(), getThermalControllerThermalCameraRangeMin->FindPin(FName("self")));
 		Schema->TryCreateConnection(getThermalController->GetValuePin(), getThermalControllerThermalCameraRangeMax->FindPin(FName("self")));
@@ -594,7 +594,7 @@ namespace Logi::ActorPatcher
 		Schema->TryCreateConnection(normalizeToRangeNode->GetReturnValuePin(), setBaseTemperatureScalarParameterNode->FindPin(FName("Value")));
 
 		//create getter node for getLogiDynamicMaterialInstance and connect it to the Base temperature node
-		getLogiLogiDynamicMaterialInstance = Logi::BlueprintUtils::CreateBPGetterNode(functionGraph, FName("Logi_DynamicMaterialInstance"), xPosition - 300, 100);
+		getLogiLogiDynamicMaterialInstance = Logi::BlueprintUtils::CreateBPGetterNode(FunctionGraph, FName("Logi_DynamicMaterialInstance"), xPosition - 300, 100);
 		Schema->TryCreateConnection(getLogiLogiDynamicMaterialInstance->GetValuePin(), setBaseTemperatureScalarParameterNode->FindPin(FName("self")));
 
 		xPosition += 600;
@@ -611,10 +611,10 @@ namespace Logi::ActorPatcher
 			//create a set material node for each material in the mesh component
 			for (UMaterialInterface* meshComponentMaterial : meshComponentMaterials) {
 				//create set material node
-				UK2Node_CallFunction* setMaterialNode = Logi::BlueprintUtils::CreateBPSetMaterialNode(functionGraph, xPosition, 0);
+				UK2Node_CallFunction* setMaterialNode = Logi::BlueprintUtils::CreateBPSetMaterialNode(FunctionGraph, xPosition, 0);
 
 				//Create getter node for the mesh component
-				UK2Node_VariableGet* meshComponentGetterNode = Logi::BlueprintUtils::CreateBPGetterNode(functionGraph, meshComponent->GetVariableName(), xPosition - 150, 100);
+				UK2Node_VariableGet* meshComponentGetterNode = Logi::BlueprintUtils::CreateBPGetterNode(FunctionGraph, meshComponent->GetVariableName(), xPosition - 150, 100);
 
 				//Connect the mesh component getter node to the Set material node
 				Schema->TryCreateConnection(meshComponentGetterNode->GetValuePin(), setMaterialNode->FindPin(FName("self")));
@@ -623,13 +623,13 @@ namespace Logi::ActorPatcher
 				setMaterialNode->FindPin(FName("ElementIndex"))->DefaultValue = FString::FromInt(materialIndex);
 
 				//Create select node
-				UK2Node_Select* selectNode = Logi::BlueprintUtils::CreateBPSelectNode(functionGraph, xPosition, 300);
+				UK2Node_Select* selectNode = Logi::BlueprintUtils::CreateBPSelectNode(FunctionGraph, xPosition, 300);
 
 				//Set the select node's option 0 pin to the mesh component material
 				selectNode->FindPin(FName("Option 0"))->DefaultObject = meshComponentMaterial;
 
 				//Create a getter node for the Logi_DynamicMaterialInstance variable
-				UK2Node_VariableGet* getLogiDynamicMaterialInstance = Logi::BlueprintUtils::CreateBPGetterNode(functionGraph, FName("Logi_DynamicMaterialInstance"), xPosition - 250, 300);
+				UK2Node_VariableGet* getLogiDynamicMaterialInstance = Logi::BlueprintUtils::CreateBPGetterNode(FunctionGraph, FName("Logi_DynamicMaterialInstance"), xPosition - 250, 300);
 
 				//Connect the Logi_DynamicMaterialInstance getter node to the select node
 				Schema->TryCreateConnection(getLogiDynamicMaterialInstance->GetValuePin(), selectNode->FindPin(FName("Option 1")));
@@ -639,7 +639,7 @@ namespace Logi::ActorPatcher
 
 
 				//Create getter node for material index
-				UK2Node_VariableGet* materialIndexGetterNode = Logi::BlueprintUtils::CreateBPGetterNode(functionGraph, FName("Logi_MaterialIndex"), xPosition - 150, 600);
+				UK2Node_VariableGet* materialIndexGetterNode = Logi::BlueprintUtils::CreateBPGetterNode(FunctionGraph, FName("Logi_MaterialIndex"), xPosition - 150, 600);
 
 				//Connect the material index getter node to the select node
 				Schema->TryCreateConnection(materialIndexGetterNode->GetValuePin(), selectNode->FindPin(FName("Index")));
@@ -663,135 +663,135 @@ namespace Logi::ActorPatcher
 
 	}
 
-	UEdGraph* AddSetupFunctionToNonLogiActor(const FAssetData& actor) {
+	UEdGraph* AddSetupFunctionToNonLogiActor(const FAssetData& Actor) {
 
-		UBlueprint* blueprint = Cast<UBlueprint>(actor.GetAsset());
-		FName functionName = FName("Logi_ThermalActorSetup");
+		UBlueprint* Blueprint = Cast<UBlueprint>(Actor.GetAsset());
+		FName FunctionName = FName("Logi_ThermalActorSetup");
 
 
 		//Validate blueprint
-		if (!blueprint) {
+		if (!Blueprint) {
 			UE_LOG(LogTemp, Error, TEXT("Blueprint is null, cannot add setup function."));
 			return nullptr;
 		}
 
 		// Check if the setup function already exists in the blueprint
-		for (UEdGraph* Graph : blueprint->FunctionGraphs)
+		for (UEdGraph* Graph : Blueprint->FunctionGraphs)
 		{
-			if (Graph && Graph->GetFName() == functionName)
+			if (Graph && Graph->GetFName() == FunctionName)
 			{
-				UE_LOG(LogTemp, Warning, TEXT("Function '%s' already exists in blueprint '%s', skipping implementation."), *functionName.ToString(), *blueprint->GetName());
+				UE_LOG(LogTemp, Warning, TEXT("Function '%s' already exists in blueprint '%s', skipping implementation."), *FunctionName.ToString(), *Blueprint->GetName());
 				return nullptr;
 			}
 		}
 
 
 		// Create the setup function
-		UEdGraph* newFunctionGraph = FBlueprintEditorUtils::CreateNewGraph(blueprint, functionName, UEdGraph::StaticClass(), UEdGraphSchema_K2::StaticClass());
-		FBlueprintEditorUtils::AddFunctionGraph<UFunction>(blueprint, newFunctionGraph,true, nullptr);
+		UEdGraph* NewFunctionGraph = FBlueprintEditorUtils::CreateNewGraph(Blueprint, FunctionName, UEdGraph::StaticClass(), UEdGraphSchema_K2::StaticClass());
+		FBlueprintEditorUtils::AddFunctionGraph<UFunction>(Blueprint, NewFunctionGraph,true, nullptr);
 
 		// Find the setup function entry node
-		UK2Node_FunctionEntry* entryNode = nullptr;
-		for (UEdGraphNode* node : newFunctionGraph->Nodes)
+		UK2Node_FunctionEntry* EntryNode = nullptr;
+		for (UEdGraphNode* Node : NewFunctionGraph->Nodes)
 		{
-			entryNode = Cast<UK2Node_FunctionEntry>(node);
-			if (entryNode)
+			EntryNode = Cast<UK2Node_FunctionEntry>(Node);
+			if (EntryNode)
 				break;
 		}
 
 		//Mark blueprint as modified
-		FBlueprintEditorUtils::MarkBlueprintAsStructurallyModified(blueprint);
+		FBlueprintEditorUtils::MarkBlueprintAsStructurallyModified(Blueprint);
 
-		UE_LOG(LogTemp, Log, TEXT("Function 'Logi_ThermalActorSetup' successfully added to blueprint '%s'."), *blueprint->GetName());
+		UE_LOG(LogTemp, Log, TEXT("Function 'Logi_ThermalActorSetup' successfully added to blueprint '%s'."), *Blueprint->GetName());
 
-		AddNodeSetupToSetupFunction(newFunctionGraph, entryNode);
+		AddNodeSetupToSetupFunction(NewFunctionGraph, EntryNode);
 
-		return newFunctionGraph;
+		return NewFunctionGraph;
 	}
 
-	UEdGraph* AddUpdateThermalMaterialFunctionToNonLogiActor(const FAssetData& actor) {
+	UEdGraph* AddUpdateThermalMaterialFunctionToNonLogiActor(const FAssetData& Actor) {
 
-		UBlueprint* blueprint = Cast<UBlueprint>(actor.GetAsset());
-		FName functionName = FName("Logi_UpdateThermalMaterial");
+		UBlueprint* Blueprint = Cast<UBlueprint>(Actor.GetAsset());
+		const FName FunctionName = FName("Logi_UpdateThermalMaterial");
 
 		//Validate blueprint
-		if (!blueprint) {
+		if (!Blueprint) {
 			UE_LOG(LogTemp, Error, TEXT("Blueprint is null, cannot add setup function."));
 			return nullptr;
 		}
 
 		// Check if the setup function already exists in the blueprint
-		for (UEdGraph* Graph : blueprint->FunctionGraphs)
+		for (UEdGraph* Graph : Blueprint->FunctionGraphs)
 		{
-			if (Graph && Graph->GetFName() == functionName)
+			if (Graph && Graph->GetFName() == FunctionName)
 			{
-				UE_LOG(LogTemp, Warning, TEXT("Function '%s' already exists in blueprint '%s', skipping implementation."), *functionName.ToString(), *blueprint->GetName());
+				UE_LOG(LogTemp, Warning, TEXT("Function '%s' already exists in blueprint '%s', skipping implementation."), *FunctionName.ToString(), *Blueprint->GetName());
 				return nullptr;
 			}
 		}
 
 
 		// Create the setup function
-		UEdGraph* newFunctionGraph = FBlueprintEditorUtils::CreateNewGraph(blueprint, functionName, UEdGraph::StaticClass(), UEdGraphSchema_K2::StaticClass());
-		FBlueprintEditorUtils::AddFunctionGraph<UFunction>(blueprint, newFunctionGraph, true, nullptr);
+		UEdGraph* NewFunctionGraph = FBlueprintEditorUtils::CreateNewGraph(Blueprint, FunctionName, UEdGraph::StaticClass(), UEdGraphSchema_K2::StaticClass());
+		FBlueprintEditorUtils::AddFunctionGraph<UFunction>(Blueprint, NewFunctionGraph, true, nullptr);
 
 		// Find the setup function entry node
-		UK2Node_FunctionEntry* entryNode = nullptr;
-		for (UEdGraphNode* node : newFunctionGraph->Nodes)
+		UK2Node_FunctionEntry* EntryNode = nullptr;
+		for (UEdGraphNode* Node : NewFunctionGraph->Nodes)
 		{
-			entryNode = Cast<UK2Node_FunctionEntry>(node);
-			if (entryNode)
+			EntryNode = Cast<UK2Node_FunctionEntry>(Node);
+			if (EntryNode)
 				break;
 		}
 
 		//Add node setup to function graph
-		AddNodeSetupToUpdateThermalMaterialFunction(newFunctionGraph, entryNode);
+		AddNodeSetupToUpdateThermalMaterialFunction(NewFunctionGraph, EntryNode);
 
 
 		//Mark blueprint as modified
-		FBlueprintEditorUtils::MarkBlueprintAsStructurallyModified(blueprint);
+		FBlueprintEditorUtils::MarkBlueprintAsStructurallyModified(Blueprint);
 
-		UE_LOG(LogTemp, Log, TEXT("Function 'Logi_ThermalActorSetup' successfully added to blueprint '%s'."), *blueprint->GetName());
+		UE_LOG(LogTemp, Log, TEXT("Function 'Logi_ThermalActorSetup' successfully added to blueprint '%s'."), *Blueprint->GetName());
 
-		return newFunctionGraph;
+		return NewFunctionGraph;
 	}
 
 	void MakeProjectBPActorsLogiCompatible() {
 		//Create a list to hold all the actor blueprints in the project
-		TArray<FAssetData> projectActors;
+		TArray<FAssetData> ProjectActors;
 		//Find all the blueprints of type Actor in the /games (content) folder and add them to the projectActors list
-		FindAllNonLogiActorBlueprintsInProject(projectActors);
+		FindAllNonLogiActorBlueprintsInProject(ProjectActors);
 
 		//Add Logi variables to all the actor blueprints in the project
-		for (FAssetData actor : projectActors) {
+		for (FAssetData Actor : ProjectActors) {
 			//Prints status
-			UE_LOG(LogTemp, Warning, TEXT("Adding Logi variables to actor: %s"), *actor.AssetName.ToString());
+			UE_LOG(LogTemp, Warning, TEXT("Adding Logi variables to actor: %s"), *Actor.AssetName.ToString());
 
 			//Add Logi variables to the actor blueprint
-			AddLogiVariablesToActorBlueprint(actor);
+			AddLogiVariablesToActorBlueprint(Actor);
 			//Add Logi functions to the actor blueprint
-			UEdGraph* setupFunction = AddSetupFunctionToNonLogiActor(actor);
-			UEdGraph* updateMaterialFunction = AddUpdateThermalMaterialFunctionToNonLogiActor(actor);
+			AddSetupFunctionToNonLogiActor(Actor);
+			AddUpdateThermalMaterialFunctionToNonLogiActor(Actor);
 
 			// Gets and validates the Blueprint
-			UBlueprint* blueprint = Cast<UBlueprint>(actor.GetAsset());
-			if (!blueprint) {
-				UE_LOG(LogTemp, Error, TEXT("Failed to cast actor asset '%s' to Blueprint"), *actor.AssetName.ToString());
+			UBlueprint* Blueprint = Cast<UBlueprint>(Actor.GetAsset());
+			if (!Blueprint) {
+				UE_LOG(LogTemp, Error, TEXT("Failed to cast actor asset '%s' to Blueprint"), *Actor.AssetName.ToString());
 				continue;
 			}
 
 			// Finds the blueprints event graph
-			UEdGraph* eventGraph = nullptr;
-			for (UEdGraph* graph : blueprint->UbergraphPages) {
-				if (graph && graph->GetFName() == FName(TEXT("EventGraph"))) {
-					eventGraph = graph;
+			UEdGraph* EventGraph = nullptr;
+			for (UEdGraph* Graph : Blueprint->UbergraphPages) {
+				if (Graph && Graph->GetFName() == FName(TEXT("EventGraph"))) {
+					EventGraph = Graph;
 					break;
 				}
 			}
 
 			//Validate the event graph
-			if (!eventGraph) {
-				UE_LOG(LogTemp, Error, TEXT("No EventGraph found in Blueprint '%s'"), *blueprint->GetName());
+			if (!EventGraph) {
+				UE_LOG(LogTemp, Error, TEXT("No EventGraph found in Blueprint '%s'"), *Blueprint->GetName());
 				continue;
 			}
 
@@ -800,13 +800,13 @@ namespace Logi::ActorPatcher
 
 			//Validate the schema
 			if (!Schema) {
-				UE_LOG(LogTemp, Error, TEXT("Failed to get the schema for the EventGraph in Blueprint '%s'"), *blueprint->GetName());
+				UE_LOG(LogTemp, Error, TEXT("Failed to get the schema for the EventGraph in Blueprint '%s'"), *Blueprint->GetName());
 				continue;
 			}
 
 			//Check if the Logi_LogiThermalActorSetup function referece nodes already exists in the event graph
 			bool logiThermalActorSetupFunctionNodeAlreadyExists = false;
-			for (UEdGraphNode* node : eventGraph->Nodes)
+			for (UEdGraphNode* node : EventGraph->Nodes)
 			{
 				if (UK2Node_CallFunction* callFuncNode = Cast<UK2Node_CallFunction>(node))
 				{
@@ -819,14 +819,14 @@ namespace Logi::ActorPatcher
 			}
 
 			//Check if the Logi_UpdateThermalMaterial function referece nodes already exists in the event graph
-			bool logiUpdateThermalMaterialFunctionNodeAlreadyExists = false;
-			for (UEdGraphNode* node : eventGraph->Nodes)
+			bool bLogiUpdateThermalMaterialFunctionNodeAlreadyExists = false;
+			for (UEdGraphNode* Node : EventGraph->Nodes)
 			{
-				if (UK2Node_CallFunction* callFuncNode = Cast<UK2Node_CallFunction>(node))
+				if (UK2Node_CallFunction* CallFuncNode = Cast<UK2Node_CallFunction>(Node))
 				{
-					if (callFuncNode->FunctionReference.GetMemberName() == FName("Logi_UpdateThermalMaterial"))
+					if (CallFuncNode->FunctionReference.GetMemberName() == FName("Logi_UpdateThermalMaterial"))
 					{
-						logiUpdateThermalMaterialFunctionNodeAlreadyExists = true;
+						bLogiUpdateThermalMaterialFunctionNodeAlreadyExists = true;
 						break;
 					}
 				}
@@ -836,110 +836,110 @@ namespace Logi::ActorPatcher
 			// Add call function for Logi_ThermalActorSetup function to actor blueprint if it does not already exist
 			if (!logiThermalActorSetupFunctionNodeAlreadyExists) {
 				// Find BeginPlay node
-				UK2Node_Event* beginPlayNode = nullptr;
-				for (UEdGraphNode* node : eventGraph->Nodes) {
-					UK2Node_Event* eventNode = Cast<UK2Node_Event>(node);
-					if (eventNode && eventNode->EventReference.GetMemberName() == FName(TEXT("ReceiveBeginPlay"))) {
-						beginPlayNode = eventNode;
+				UK2Node_Event* BeginPlayNode = nullptr;
+				for (UEdGraphNode* Node : EventGraph->Nodes) {
+					UK2Node_Event* EventNode = Cast<UK2Node_Event>(Node);
+					if (EventNode && EventNode->EventReference.GetMemberName() == FName(TEXT("ReceiveBeginPlay"))) {
+						BeginPlayNode = EventNode;
 						break;
 					}
 				}
 
 				//if the event begin play node is not in the event graph, create it
-				if (!beginPlayNode) {
+				if (!BeginPlayNode) {
 					// If not found, create the BeginPlay event node
-					beginPlayNode = NewObject<UK2Node_Event>(eventGraph);
-					eventGraph->AddNode(beginPlayNode);
-					beginPlayNode->EventReference.SetExternalMember(FName(TEXT("ReceiveBeginPlay")), AActor::StaticClass());
-					beginPlayNode->bOverrideFunction = true;
-					beginPlayNode->NodePosX = 0;
-					beginPlayNode->NodePosY = 0;
-					beginPlayNode->AllocateDefaultPins();
+					BeginPlayNode = NewObject<UK2Node_Event>(EventGraph);
+					EventGraph->AddNode(BeginPlayNode);
+					BeginPlayNode->EventReference.SetExternalMember(FName(TEXT("ReceiveBeginPlay")), AActor::StaticClass());
+					BeginPlayNode->bOverrideFunction = true;
+					BeginPlayNode->NodePosX = 0;
+					BeginPlayNode->NodePosY = 0;
+					BeginPlayNode->AllocateDefaultPins();
 
-					UE_LOG(LogTemp, Warning, TEXT("Created new Event BeginPlay node in Blueprint '%s'"), *blueprint->GetName());
+					UE_LOG(LogTemp, Warning, TEXT("Created new Event BeginPlay node in Blueprint '%s'"), *Blueprint->GetName());
 				}
 
 				// Create a call function node to call the Logi_ThermalActorSetup function
-				UK2Node_CallFunction* callSetupFunctionNode = Logi::BlueprintUtils::CreateBPCallFunctionNode(eventGraph, FName("Logi_ThermalActorSetup"), beginPlayNode->NodePosX + 200, beginPlayNode->NodePosY);
+				UK2Node_CallFunction* CallSetupFunctionNode = Logi::BlueprintUtils::CreateBPCallFunctionNode(EventGraph, FName("Logi_ThermalActorSetup"), BeginPlayNode->NodePosX + 200, BeginPlayNode->NodePosY);
 
 				//find the begin play node's then pin
-				UEdGraphPin* beginPlayThenPin = beginPlayNode->FindPin(UEdGraphSchema_K2::PN_Then);
+				UEdGraphPin* BeginPlayThenPin = BeginPlayNode->FindPin(UEdGraphSchema_K2::PN_Then);
 
 				//Check if there are nodes already connected to the begin play node
-				if (beginPlayThenPin) {
+				if (BeginPlayThenPin) {
 					//Check if the begin play node has any linked nodes, if so make connection between the call function node and the node connected to the begin play node
-					if (beginPlayThenPin->LinkedTo.Num() > 0) {
+					if (BeginPlayThenPin->LinkedTo.Num() > 0) {
 						//Find the pin connected to the begin play node
-						UEdGraphPin* originalConnectedPin = beginPlayThenPin->LinkedTo[0];
+						UEdGraphPin* OriginalConnectedPin = BeginPlayThenPin->LinkedTo[0];
 
 						//Break connection between begin play node and the node connected to it
-						Schema->BreakPinLinks(*beginPlayThenPin, false);
+						Schema->BreakPinLinks(*BeginPlayThenPin, false);
 
 						//connect the begin play node to the call function node
-						Schema->TryCreateConnection(callSetupFunctionNode->GetThenPin(), originalConnectedPin);
+						Schema->TryCreateConnection(CallSetupFunctionNode->GetThenPin(), OriginalConnectedPin);
 
 						//Connect beginplaynode to the call function node
-						Schema->TryCreateConnection(beginPlayThenPin, callSetupFunctionNode->GetExecPin());
+						Schema->TryCreateConnection(BeginPlayThenPin, CallSetupFunctionNode->GetExecPin());
 
 					}
 					else {
-						Schema->TryCreateConnection(beginPlayThenPin, callSetupFunctionNode->GetExecPin());
+						Schema->TryCreateConnection(BeginPlayThenPin, CallSetupFunctionNode->GetExecPin());
 					}
 				}
 			}
 
 			// Create a call function node to call the Logi_UpdateThermalMaterial function
-			if (!logiUpdateThermalMaterialFunctionNodeAlreadyExists) {
+			if (!bLogiUpdateThermalMaterialFunctionNodeAlreadyExists) {
 
 				// Find EventTick node
-				UK2Node_Event* eventTickNode = nullptr;
-				for (UEdGraphNode* node : eventGraph->Nodes) {
-					UK2Node_Event* eventNode = Cast<UK2Node_Event>(node);
-					if (eventNode && eventNode->EventReference.GetMemberName() == FName(TEXT("ReceiveTick"))) {
-						eventTickNode = eventNode;
+				UK2Node_Event* EventTickNode = nullptr;
+				for (UEdGraphNode* Node : EventGraph->Nodes) {
+					UK2Node_Event* EventNode = Cast<UK2Node_Event>(Node);
+					if (EventNode && EventNode->EventReference.GetMemberName() == FName(TEXT("ReceiveTick"))) {
+						EventTickNode = EventNode;
 						break;
 					}
 				}
 
 				//if the event begin play node is not in the event graph, create it
-				if (!eventTickNode) {
+				if (!EventTickNode) {
 					// If not found, create the BeginPlay event node
-					eventTickNode = NewObject<UK2Node_Event>(eventGraph);
-					eventGraph->AddNode(eventTickNode);
-					eventTickNode->EventReference.SetExternalMember(FName(TEXT("ReceiveTick")), AActor::StaticClass());
-					eventTickNode->bOverrideFunction = true;
-					eventTickNode->NodePosX = 0;
-					eventTickNode->NodePosY = 0;
-					eventTickNode->AllocateDefaultPins();
+					EventTickNode = NewObject<UK2Node_Event>(EventGraph);
+					EventGraph->AddNode(EventTickNode);
+					EventTickNode->EventReference.SetExternalMember(FName(TEXT("ReceiveTick")), AActor::StaticClass());
+					EventTickNode->bOverrideFunction = true;
+					EventTickNode->NodePosX = 0;
+					EventTickNode->NodePosY = 0;
+					EventTickNode->AllocateDefaultPins();
 
-					UE_LOG(LogTemp, Warning, TEXT("Created new Event eventTickNode node in Blueprint '%s'"), *blueprint->GetName());
+					UE_LOG(LogTemp, Warning, TEXT("Created new Event eventTickNode node in Blueprint '%s'"), *Blueprint->GetName());
 				}
 
 				//find the eventTick node's then and value pin
-				UEdGraphPin* eventTickThenPin = eventTickNode->FindPin(UEdGraphSchema_K2::PN_Then);
-				UEdGraphPin* eventTickValuePin = eventTickNode->FindPin(FName("DeltaSeconds"));
+				UEdGraphPin* EventTickThenPin = EventTickNode->FindPin(UEdGraphSchema_K2::PN_Then);
+				UEdGraphPin* EventTickValuePin = EventTickNode->FindPin(FName("DeltaSeconds"));
 
 				// Create a call function node to call the Logi_ThermalActorSetup function
-				UK2Node_CallFunction* callUpdateThermalMaterialNode= Logi::BlueprintUtils::CreateBPCallFunctionNode(eventGraph, FName("Logi_UpdateThermalMaterial"), eventTickNode->NodePosX + 200, eventTickNode->NodePosY);
+				UK2Node_CallFunction* CallUpdateThermalMaterialNode= Logi::BlueprintUtils::CreateBPCallFunctionNode(EventGraph, FName("Logi_UpdateThermalMaterial"), EventTickNode->NodePosX + 200, EventTickNode->NodePosY);
 
 				//Check if there are nodes already connected to the event tick node
-				if (eventTickThenPin) {
+				if (EventTickThenPin) {
 					//Check if the event tick has any linked nodes, if so make connection between the call function node and the node connected to the event tick node
-					if (eventTickThenPin->LinkedTo.Num() > 0) {
+					if (EventTickThenPin->LinkedTo.Num() > 0) {
 						//Find the pin connected to the begin play node
-						UEdGraphPin* originalConnectedPin = eventTickThenPin->LinkedTo[0];
+						UEdGraphPin* originalConnectedPin = EventTickThenPin->LinkedTo[0];
 
 						//Break connection between begin play node and the node connected to it
-						Schema->BreakPinLinks(*eventTickThenPin, false);
+						Schema->BreakPinLinks(*EventTickThenPin, false);
 
 						//connect the begin play node to the call function node
-						Schema->TryCreateConnection(callUpdateThermalMaterialNode->GetThenPin(), originalConnectedPin);
+						Schema->TryCreateConnection(CallUpdateThermalMaterialNode->GetThenPin(), originalConnectedPin);
 
 						//Connect beginplaynode to the call function node
-						Schema->TryCreateConnection(eventTickThenPin, callUpdateThermalMaterialNode->GetExecPin());
+						Schema->TryCreateConnection(EventTickThenPin, CallUpdateThermalMaterialNode->GetExecPin());
 					}
 					else {
-						Schema->TryCreateConnection(eventTickThenPin, callUpdateThermalMaterialNode->GetExecPin());
+						Schema->TryCreateConnection(EventTickThenPin, CallUpdateThermalMaterialNode->GetExecPin());
 					}
 				}
 			}
