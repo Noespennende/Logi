@@ -255,14 +255,27 @@ namespace Logi::BlueprintUtils
 		}
 
 		UK2Node_Select* selectNode = NewObject<UK2Node_Select>(functionGraph);
-		functionGraph->AddNode(selectNode);
+		selectNode->SetFlags(RF_Transactional);
 		selectNode->NodePosX = xPosition;
 		selectNode->NodePosY = yPosition;
 		selectNode->NodeGuid = FGuid::NewGuid();
-		FEdGraphPinType optionPinType;
-		optionPinType.PinCategory = UEdGraphSchema_K2::PC_Object;
-		optionPinType.PinSubCategoryObject = UMaterialInterface::StaticClass();
-		selectNode->AllocateDefaultPins();
+
+		selectNode->ReconstructNode();
+
+		FEdGraphPinType materialPinType;
+		materialPinType.PinCategory = UEdGraphSchema_K2::PC_Object;
+		materialPinType.PinSubCategoryObject = UMaterialInterface::StaticClass();
+
+		for (UEdGraphPin* Pin : selectNode->Pins)
+		{
+			if (Pin->PinName.ToString().StartsWith("Option") || Pin->PinName == "ReturnValue")
+			{
+				Pin->PinType = materialPinType;
+			}
+		}
+
+		functionGraph->AddNode(selectNode);
+
 
 		return selectNode;
 	}

@@ -54,11 +54,6 @@ void CreateFolderStructure(bool& folderCreated, FString& statusMessage) {
 	// Print status
 	UE_LOG(LogTemp, Warning, TEXT("%s"), *statusMessage);
 
-	//Create ActorMaterials folder inside the materials folder
-	CreateFolder("/Game/Logi_ThermalCamera/Materials/ActorMaterials", folderCreated, statusMessage);
-	// Print status
-	UE_LOG(LogTemp, Warning, TEXT("%s"), *statusMessage);
-
 	// Set the folder color
 	AssetViewUtils::SetPathColor("/Game/Logi_ThermalCamera", TOptional<FLinearColor>(FLinearColor(FColor::Cyan)));
 
