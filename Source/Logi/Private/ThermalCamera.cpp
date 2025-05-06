@@ -1750,49 +1750,49 @@ namespace Logi::ThermalCamera
 
         // SceneTexture:CustomDepth-node 1
         FVector2D SceneTextureCustomDepthNode1Pos(-9750, 2044);
-        UMaterialExpressionMaterialFunctionCall* SceneTextureCustomDepthNode1 = MaterialUtils::CreateSceneTexturePostProcessNode(Material, SceneTextureCustomDepthNode1Pos);
+        UMaterialExpressionMaterialFunctionCall* SceneTextureCustomDepthNode1 = MaterialUtils::CreateSceneTextureCustomDepthNode(Material, SceneTextureCustomDepthNode1Pos);
         Expressions.Add(SceneTextureCustomDepthNode1);
         SceneTextureCustomDepthNode1->UpdateFromFunctionResource();
         CustomDepthMultiplyNode1->A.Connect(0, SceneTextureCustomDepthNode1);
         
         // SceneTexture:CustomDepth-node 2
         FVector2D SceneTextureCustomDepthNode2Pos(-9750, 1874);
-        UMaterialExpressionMaterialFunctionCall* SceneTextureCustomDepthNode2 = MaterialUtils::CreateSceneTexturePostProcessNode(Material, SceneTextureCustomDepthNode2Pos);
+        UMaterialExpressionMaterialFunctionCall* SceneTextureCustomDepthNode2 = MaterialUtils::CreateSceneTextureCustomDepthNode(Material, SceneTextureCustomDepthNode2Pos);
         Expressions.Add(SceneTextureCustomDepthNode2);
         SceneTextureCustomDepthNode2->UpdateFromFunctionResource();
         CustomDepthMultiplyNode2->A.Connect(0, SceneTextureCustomDepthNode2);
 
         // SceneTexture:CustomDepth-node 3
         FVector2D SceneTextureCustomDepthNode3Pos(-9750, 1714);
-        UMaterialExpressionMaterialFunctionCall* SceneTextureCustomDepthNode3 = MaterialUtils::CreateSceneTexturePostProcessNode(Material, SceneTextureCustomDepthNode3Pos);
+        UMaterialExpressionMaterialFunctionCall* SceneTextureCustomDepthNode3 = MaterialUtils::CreateSceneTextureCustomDepthNode(Material, SceneTextureCustomDepthNode3Pos);
         Expressions.Add(SceneTextureCustomDepthNode3);
         SceneTextureCustomDepthNode3->UpdateFromFunctionResource();
         CustomDepthMultiplyNode3->A.Connect(0, SceneTextureCustomDepthNode3);
 
         // SceneTexture:CustomDepth-node 4
         FVector2D SceneTextureCustomDepthNode4Pos(-9750, 1554);
-        UMaterialExpressionMaterialFunctionCall* SceneTextureCustomDepthNode4 = MaterialUtils::CreateSceneTexturePostProcessNode(Material, SceneTextureCustomDepthNode4Pos);
+        UMaterialExpressionMaterialFunctionCall* SceneTextureCustomDepthNode4 = MaterialUtils::CreateSceneTextureCustomDepthNode(Material, SceneTextureCustomDepthNode4Pos);
         Expressions.Add(SceneTextureCustomDepthNode4);
         SceneTextureCustomDepthNode4->UpdateFromFunctionResource();
         CustomDepthMultiplyNode4->A.Connect(0, SceneTextureCustomDepthNode4);
 
         // SceneTexture:CustomDepth-node 5
         FVector2D SceneTextureCustomDepthNode5Pos(-9750, 1394);
-        UMaterialExpressionMaterialFunctionCall* SceneTextureCustomDepthNode5 = MaterialUtils::CreateSceneTexturePostProcessNode(Material, SceneTextureCustomDepthNode5Pos);
+        UMaterialExpressionMaterialFunctionCall* SceneTextureCustomDepthNode5 = MaterialUtils::CreateSceneTextureCustomDepthNode(Material, SceneTextureCustomDepthNode5Pos);
         Expressions.Add(SceneTextureCustomDepthNode5);
         SceneTextureCustomDepthNode5->UpdateFromFunctionResource();
         CustomDepthMultiplyNode5->A.Connect(0, SceneTextureCustomDepthNode5);
 
         // SceneTexture:CustomDepth-node 6
         FVector2D SceneTextureCustomDepthNode6Pos(-9750, 1234);
-        UMaterialExpressionMaterialFunctionCall* SceneTextureCustomDepthNode6 = MaterialUtils::CreateSceneTexturePostProcessNode(Material, SceneTextureCustomDepthNode6Pos);
+        UMaterialExpressionMaterialFunctionCall* SceneTextureCustomDepthNode6 = MaterialUtils::CreateSceneTextureCustomDepthNode(Material, SceneTextureCustomDepthNode6Pos);
         Expressions.Add(SceneTextureCustomDepthNode6);
         SceneTextureCustomDepthNode6->UpdateFromFunctionResource();
         CustomDepthMultiplyNode6->A.Connect(0, SceneTextureCustomDepthNode6);
 
         // SceneTexture:CustomDepth-node 7
         FVector2D SceneTextureCustomDepthNode7Pos(-9750, 1094);
-        UMaterialExpressionMaterialFunctionCall* SceneTextureCustomDepthNode7 = MaterialUtils::CreateSceneTexturePostProcessNode(Material, SceneTextureCustomDepthNode7Pos);
+        UMaterialExpressionMaterialFunctionCall* SceneTextureCustomDepthNode7 = MaterialUtils::CreateSceneTextureCustomDepthNode(Material, SceneTextureCustomDepthNode7Pos);
         Expressions.Add(SceneTextureCustomDepthNode7);
         SceneTextureCustomDepthNode7->UpdateFromFunctionResource();
         CustomDepthMultiplyNode7->A.Connect(0, SceneTextureCustomDepthNode7);
