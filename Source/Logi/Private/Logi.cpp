@@ -114,7 +114,7 @@ void FLogiModule::PluginButtonClicked()
 	UE_LOG(LogTemp, Warning, TEXT("%s"), *statusMessage);
 
 	//Create ThermalController blueprint
-	ThermalController::CreateThermalController(success, statusMessage);
+	Logi::ThermalController::CreateThermalController(success, statusMessage);
 
 	//Log status - ThermalController
 	UE_LOG(LogTemp, Warning, TEXT("%s"), *statusMessage);

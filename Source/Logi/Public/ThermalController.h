@@ -1,8 +1,8 @@
 ﻿#pragma once
 
-namespace ThermalController
+namespace Logi::ThermalController
 {
 
-	 static void CreateThermalController(bool& success, FString& statusMessage);
+	void CreateThermalController(bool& bSuccess, FString& StatusMessage);
 	
 };
