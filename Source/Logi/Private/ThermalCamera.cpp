@@ -34,7 +34,7 @@
 #include "Materials/MaterialExpressionVectorNoise.h"
 
 #include "LogiUtils.h"
-#include "Enums/EThermalSettingsParamType.h"
+#include "Utils/EThermalSettingsParamType.h"
 #include "Utils/MaterialUtils.h"
 
 namespace Logi::ThermalCamera
@@ -2054,7 +2054,7 @@ namespace Logi::ThermalCamera
         return HeatMaskIfNode;
     }
 
-    void CreateThermalCamera(bool& MFcreated, FString& StatusMessage)
+    void CreateThermalCamera(bool& bSuccess, FString& StatusMessage)
     {
 
         const FString AssetPath = "/Game/Logi_ThermalCamera/Materials";
@@ -2162,17 +2162,17 @@ namespace Logi::ThermalCamera
 
         /**/
         
-        bool bSuccess = LogiUtils::SaveAssetToDisk(Material);
+        bool bSaved = LogiUtils::SaveAssetToDisk(Material);
 
-        if (bSuccess)
+        if (bSaved)
         {
             StatusMessage = FString::Printf(TEXT("Material %s created and successfully saved to: %s"), *Material->GetName(), *FullAssetPath);
-            MFcreated = true;
+            bSuccess = true;
         }
         else
         {
             StatusMessage = FString::Printf(TEXT("Material %s created, but failed to save properly. Manual save required: %s"), *Material->GetName(), *FullAssetPath);
-            MFcreated = true;
+            bSuccess = true;
         }
         
     }

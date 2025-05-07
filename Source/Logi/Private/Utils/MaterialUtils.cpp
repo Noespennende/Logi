@@ -28,7 +28,7 @@
 #include "Materials/MaterialParameterCollection.h"
 #include "Materials/MaterialExpressionFunctionOutput.h"
 
-#include "Enums/EThermalSettingsParamType.h"
+#include "Utils/EThermalSettingsParamType.h"
 
 
 namespace Logi::MaterialUtils

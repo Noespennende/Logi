@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include <optional>
 
+#include "EThermalSettingsParamType.h"
 #include "Materials/MaterialExpressionAdd.h"
 #include "Materials/MaterialExpressionAppendVector.h"
 #include "Materials/MaterialExpressionClamp.h"

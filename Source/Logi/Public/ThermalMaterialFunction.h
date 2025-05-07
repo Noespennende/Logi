@@ -6,6 +6,6 @@ class UMaterialFunction;
 
 namespace ThermalMaterialFunction
 {
-	void CreateMaterialFunction(bool& MFcreated, FString& StatusMessage);
+	void CreateMaterialFunction(bool& bSuccess, FString& StatusMessage);
 };
 

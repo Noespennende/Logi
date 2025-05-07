@@ -18,13 +18,13 @@
 namespace ThermalMaterialFunction
 {
     
-    void CreateMaterialFunction(bool& mfCreated, FString& statusMessage)
+    void CreateMaterialFunction(bool& bSuccess, FString& StatusMessage)
     {
 
-        FString AssetPath = "/Game/Logi_ThermalCamera/Materials";
-        FString AssetName = "MF_Logi_ThermalMaterialFunction";
+        const FString AssetPath = "/Game/Logi_ThermalCamera/Materials";
+        const FString AssetName = "MF_Logi_ThermalMaterialFunction";
 
-        FString FullAssetPath = AssetPath / AssetName;
+        const FString FullAssetPath = AssetPath / AssetName;
 
         // Get AssetTools-module
         FAssetToolsModule& AssetToolsModule = FModuleManager::GetModuleChecked<FAssetToolsModule>("AssetTools");
@@ -60,59 +60,59 @@ namespace ThermalMaterialFunction
 
 
         // Creating MaterialAttributes-node
-        FVector2D NodeMaterialAttributesPos(-0, -0);
+        const FVector2D NodeMaterialAttributesPos(-0, -0);
         UMaterialExpressionMakeMaterialAttributes* NodeMaterialAttributes = Logi::MaterialUtils::CreateMaterialAttributesNode(MaterialFunction, NodeMaterialAttributesPos);
         Expressions.Add(NodeMaterialAttributes);
         
         // Constant3Vector-node, the color to be linked to Specular
-        FVector2D NodeSpecularColorPos(-400, 0);
-        FLinearColor SpecularColor(0.0f, 0.0f, 0.0f);
+        const FVector2D NodeSpecularColorPos(-400, 0);
+        const FLinearColor SpecularColor(0.0f, 0.0f, 0.0f);
         UMaterialExpressionConstant3Vector* NodeSpecularColor = Logi::MaterialUtils::CreateConstant3VectorNode(MaterialFunction, NodeSpecularColorPos, SpecularColor);
         Expressions.Add(NodeSpecularColor);
 
         // LERP-node
-        FVector2D NodeLerpPos(-200, 300);
+        const FVector2D NodeLerpPos(-200, 300);
         UMaterialExpressionLinearInterpolate* NodeLerp = Logi::MaterialUtils::CreateLerpNode(MaterialFunction, NodeLerpPos);
         Expressions.Add(NodeLerp);
 
 
         // Create CurrentTemperature-node (Lerp A)
-        FVector2D NodeCurrentTemperaturePos(-496, 250);
+        const FVector2D NodeCurrentTemperaturePos(-496, 250);
         UMaterialExpressionScalarParameter* NodeCurrentTemperature = Logi::MaterialUtils::CreateScalarParameterNode(MaterialFunction, NodeCurrentTemperaturePos, "CurrentTemperature", 1.0f);
         Expressions.Add(NodeCurrentTemperature);
         
 
         // Create BaseTemperature-node (Lerp B)
-        FVector2D NodeBaseTemperaturePos(-496, 350);
+        const FVector2D NodeBaseTemperaturePos(-496, 350);
         UMaterialExpressionScalarParameter* NodeBaseTemperature = Logi::MaterialUtils::CreateScalarParameterNode(MaterialFunction, NodeBaseTemperaturePos, "BaseTemperature", 0.0f);
         Expressions.Add(NodeBaseTemperature);
         
         // Create Fresnel-node (Lerp Alpha)
-        FVector2D NodeLerpTempPos(-512, 512);
+        const FVector2D NodeLerpTempPos(-512, 512);
         UMaterialExpressionFresnel* NodeFresnel = Logi::MaterialUtils::CreateFresnelNode(MaterialFunction, NodeLerpTempPos, 0.04f);
         Expressions.Add(NodeFresnel);
 
 
         // Create 1.2-node (Fresnel ExponentIn input)
-        FVector2D NodeExponentInParamPos(-716, 512);
+        const FVector2D NodeExponentInParamPos(-716, 512);
         UMaterialExpressionScalarParameter* NodeExponentInParam = Logi::MaterialUtils::CreateScalarParameterNode(MaterialFunction, NodeExponentInParamPos, "ExponentIn", 1.2f);
         Expressions.Add(NodeExponentInParam);
 
 
         // Create ComponentMask-node
-        FVector2D NodeMaskPos(-670, 620);
+        const FVector2D NodeMaskPos(-670, 620);
         UMaterialExpressionComponentMask* NodeComponentMask = Logi::MaterialUtils::CreateMaskNode(MaterialFunction, NodeMaskPos, true, true, true);
         Expressions.Add(NodeComponentMask);
 
         
         // Create PixelNormalWS
-        FVector2D NodePixelNormalWSPos(-850, 620);
+        const FVector2D NodePixelNormalWSPos(-850, 620);
         UMaterialExpressionPixelNormalWS* NodePixelNormalWS = Logi::MaterialUtils::CreatePixelNormalWSNode(MaterialFunction, NodePixelNormalWSPos);
         Expressions.Add(NodePixelNormalWS);
 
         
         // Create Output-node
-        FVector2D NodeOutputResultPos(400, 0);
+        const FVector2D NodeOutputResultPos(400, 0);
         UMaterialExpressionFunctionOutput* NodeOutputResult = Logi::MaterialUtils::CreateOutputResultNode(MaterialFunction, NodeOutputResultPos, "Result");
         Expressions.Add(NodeOutputResult);
 
@@ -155,17 +155,17 @@ namespace ThermalMaterialFunction
 
         /**/
         
-        bool bSuccess = Logi::LogiUtils::SaveAssetToDisk(MaterialFunction);
+        bool bSaved = Logi::LogiUtils::SaveAssetToDisk(MaterialFunction);
 
-        if (bSuccess)
+        if (bSaved)
         {
-            statusMessage = FString::Printf(TEXT("Material %s created and successfully saved to: %s"), *MaterialFunction->GetName(), *FullAssetPath);
-            mfCreated = true;
+            StatusMessage = FString::Printf(TEXT("Material %s created and successfully saved to: %s"), *MaterialFunction->GetName(), *FullAssetPath);
+            bSuccess = true;
         }
         else
         {
-            statusMessage = FString::Printf(TEXT("Material %s created, but failed to save properly. Manual save required: %s"), *MaterialFunction->GetName(), *FullAssetPath);
-            mfCreated = true;
+            StatusMessage = FString::Printf(TEXT("Material %s created, but failed to save properly. Manual save required: %s"), *MaterialFunction->GetName(), *FullAssetPath);
+            bSuccess = true;
         }
 
     }
