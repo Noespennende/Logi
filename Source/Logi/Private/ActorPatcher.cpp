@@ -386,7 +386,7 @@ namespace Logi::ActorPatcher
 		FName ThermalControllerVariableName = FName("Logi_ThermalController");
 
 		//Adds thermal controller referense variable
-		Logi::BlueprintUtils::AddThermalControlerReferenceToBlueprint(Blueprint, ThermalControllerVariableName, false);
+		Logi::BlueprintUtils::AddThermalControllerReferenceToBlueprint(Blueprint, ThermalControllerVariableName, false);
 		
 		
 		//Create a variable setter node for the Logi_ThermalController variable
@@ -430,19 +430,19 @@ namespace Logi::ActorPatcher
 		Schema->TryCreateConnection(SetThermalController->GetThenPin(), DynamicMaterialInstanceNode->GetExecPin());
 
 		//Add dynamic material instance variable to blueprint
-		FName dynamicMaterialInstanceVariableName = Logi::BlueprintUtils::AddMaterialInstanceVariableToBlueprint(Blueprint);
+		FName DynamicMaterialInstanceVariableName = Logi::BlueprintUtils::AddMaterialInstanceVariableToBlueprint(Blueprint);
 
 		// Update xPosition
 		XPosition += 500;
 
 		//Create a setter node for the dynamic material instance variable
-		UK2Node_VariableSet* SetDynamicMaterialInstanceNode = Logi::BlueprintUtils::CreateBPSetterNode(FunctionGraph, dynamicMaterialInstanceVariableName, XPosition, 0);
+		UK2Node_VariableSet* SetDynamicMaterialInstanceNode = Logi::BlueprintUtils::CreateBPSetterNode(FunctionGraph, DynamicMaterialInstanceVariableName, XPosition, 0);
 
 		//Connect exec pin of the dynamic material instance node to the setter node
 		Schema->TryCreateConnection(DynamicMaterialInstanceNode->GetThenPin(), SetDynamicMaterialInstanceNode->GetExecPin());
 
 		//Connect the return value of the dynamic material instance node to the setter node
-		Schema->TryCreateConnection(DynamicMaterialInstanceNode->FindPin(TEXT("ReturnValue")), SetDynamicMaterialInstanceNode->FindPin(dynamicMaterialInstanceVariableName.ToString()));
+		Schema->TryCreateConnection(DynamicMaterialInstanceNode->FindPin(TEXT("ReturnValue")), SetDynamicMaterialInstanceNode->FindPin(DynamicMaterialInstanceVariableName.ToString()));
 
 	}
 

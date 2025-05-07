@@ -6,46 +6,46 @@
 namespace Logi::BlueprintUtils
 {
 
-	void AddVariableToBlueprintClass(UBlueprint* blueprint, FName varName, FEdGraphPinType pinType, bool bInstanceEditable, FString defaultValue);
+	void AddVariableToBlueprintClass(UBlueprint* Blueprint, const FName& VarName, const FEdGraphPinType& PinType, bool bInstanceEditable, const FString& DefaultValue);
 	
-	FName AddMaterialInstanceVariableToBlueprint(UBlueprint* blueprint);
+	FName AddMaterialInstanceVariableToBlueprint(UBlueprint* Blueprint);
 	
-	void AddThermalControlerReferenceToBlueprint(UBlueprint* blueprint, FName varName, bool bInstanceEditable);
+	void AddThermalControllerReferenceToBlueprint(UBlueprint* Blueprint, const FName& VarName, bool bInstanceEditable);
 
-	UEdGraphNode* AddNodeToBlueprint(UBlueprint* Blueprint, FName FunctionName, UClass* Class, FVector Location);
+	UEdGraphNode* AddNodeToBlueprint(UBlueprint* Blueprint, const FName& FunctionName, UClass* Class, const FVector& Location);
 
-	UEdGraphNode* AddNodeToBlueprintFunction(UEdGraph* functionGraph, FName functionName, UClass* nodeClass, FVector location);
+	UEdGraphNode* AddNodeToBlueprintFunction(UEdGraph* FunctionGraph, const FName& FunctionName, UClass* NodeClass, const FVector& Location);
 
-	UK2Node_IfThenElse* CreateBPBranchNode(UEdGraph* eventGraph, int xPosition, int yPosition);
+	UK2Node_IfThenElse* CreateBPBranchNode(UEdGraph* EventGraph, int XPosition, int YPosition);
 
-	UK2Node_VariableGet* CreateBPGetterNode(UEdGraph* eventGraph, FName variableName, int xPosition, int yPosition);
+	UK2Node_VariableGet* CreateBPGetterNode(UEdGraph* EventGraph, const FName& VariableName, int XPosition, int YPosition);
 
-	UK2Node_VariableGet* CreateBPExternalGetterNode(UEdGraph* eventGraph, FName variableName, const TCHAR* externalClassFilepath, int xPosition, int yPosition);
+	UK2Node_VariableGet* CreateBPExternalGetterNode(UEdGraph* EventGraph, const FName& VariableName, const TCHAR* ExternalClassFilepath, int XPosition, int YPosition);
 
-	UK2Node_GetArrayItem* CreateBPArrayGetterNode(UEdGraph* functionGraph, int xPosition, int yPosition);
+	UK2Node_GetArrayItem* CreateBPArrayGetterNode(UEdGraph* FunctionGraph, int XPosition, int YPosition);
 
-	UK2Node_VariableSet* CreateBPSetterNode(UEdGraph* functionGraph, FName variableName, int xPosition, int yPosition);
+	UK2Node_VariableSet* CreateBPSetterNode(UEdGraph* FunctionGraph, const FName& VariableName, int XPosition, int YPosition);
 
-	UK2Node_Select* CreateBPSelectNode(UEdGraph* functionGraph, int xPosition, int yPosition);
+	UK2Node_Select* CreateBPSelectNode(UEdGraph* FunctionGraph, int XPosition, int YPosition);
 
-	UK2Node_CallFunction* CreateBPSetMaterialNode(UEdGraph* functionGraph, int xPosition, int yPosition);
+	UK2Node_CallFunction* CreateBPSetMaterialNode(UEdGraph* FunctionGraph, int XPosition, int YPosition);
 
-	UK2Node_CallFunction* CreateBPScalarParameterNode(UEdGraph* eventGraph, int xPosition, int yPosition);
+	UK2Node_CallFunction* CreateBPScalarParameterNode(UEdGraph* EventGraph, int XPosition, int YPosition);
 
-	UK2Node_CallFunction* CreateBPDynamicMaterialInstanceScalarParameterNode(UEdGraph* eventGraph, int xPosition, int yPosition);
+	UK2Node_CallFunction* CreateBPDynamicMaterialInstanceScalarParameterNode(UEdGraph* EventGraph, int XPosition, int YPosition);
 
-	UK2Node_CallFunction* CreateBPVectorParameterNode(UEdGraph* eventGraph, int xPosition, int yPosition);
+	UK2Node_CallFunction* CreateBPVectorParameterNode(UEdGraph* EventGraph, int XPosition, int YPosition);
 
-	UK2Node_CallFunction* CreateBPNormalizeToRangeNode(UEdGraph* eventGraph , int xPosition, int yPosition);
+	UK2Node_CallFunction* CreateBPNormalizeToRangeNode(UEdGraph* EventGraph , int XPosition, int YPosition);
 
-	UK2Node_CallFunction* CreateBPMakeVectorNode(UEdGraph* eventGraph, int xPosition, int yPosition);
+	UK2Node_CallFunction* CreateBPMakeVectorNode(UEdGraph* EventGraph, int XPosition, int YPosition);
 
-	UK2Node_CallFunction* CreateBPSetRenderDepthNode(UEdGraph* functionGraph, bool defaultValue, int xPosition, int yPosition);
+	UK2Node_CallFunction* CreateBPSetRenderDepthNode(UEdGraph* FunctionGraph, bool bDefaultValue, int XPosition, int YPosition);
 
-	UK2Node_CallFunction* CreateBPGetAllActorsOfClassNode(UEdGraph* functionGraph, int xPosition, int yPosition);
+	UK2Node_CallFunction* CreateBPGetAllActorsOfClassNode(UEdGraph* FunctionGraph, int XPosition, int YPosition);
 
-	UK2Node_CallFunction* CreateBPDynamicMaterialInstanceNode(UEdGraph* functionGraph, int xPosition, int yPosition);
+	UK2Node_CallFunction* CreateBPDynamicMaterialInstanceNode(UEdGraph* FunctionGraph, int XPosition, int YPosition);
 
-	UK2Node_CallFunction* CreateBPCallFunctionNode(UEdGraph* eventGraph, FName functionName, int xPosition, int yPosition);
+	UK2Node_CallFunction* CreateBPCallFunctionNode(UEdGraph* EventGraph, const FName& FunctionName, int XPosition, int YPosition);
 	
 };

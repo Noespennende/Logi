@@ -46,69 +46,69 @@
 
 namespace Logi::BlueprintUtils
 {
-	FName AddMaterialInstanceVariableToBlueprint(UBlueprint* blueprint) {
+	FName AddMaterialInstanceVariableToBlueprint(UBlueprint* Blueprint) {
 
 	//Validate blueprint
-	if (blueprint == nullptr) {
+	if (Blueprint == nullptr) {
 		UE_LOG(LogTemp, Error, TEXT("Adding variable to blueprint failed because the blueprint is null"));
 		return FName("");
 	}
 
 	//Create a new variable in the blueprint
-	const FName variableName = FBlueprintEditorUtils::FindUniqueKismetName(blueprint, TEXT("Logi_DynamicMaterialInstance"));
-	FEdGraphPinType variableType;
-	variableType.PinCategory = UEdGraphSchema_K2::PC_Object;
-	variableType.PinSubCategoryObject = UMaterialInstanceDynamic::StaticClass();
+	const FName VariableName = FBlueprintEditorUtils::FindUniqueKismetName(Blueprint, TEXT("Logi_DynamicMaterialInstance"));
+	FEdGraphPinType VariableType;
+	VariableType.PinCategory = UEdGraphSchema_K2::PC_Object;
+	VariableType.PinSubCategoryObject = UMaterialInstanceDynamic::StaticClass();
 
 	//Add variable to the blueprint
-	FBlueprintEditorUtils::AddMemberVariable(blueprint, variableName, variableType);
+	FBlueprintEditorUtils::AddMemberVariable(Blueprint, VariableName, VariableType);
 
-	return variableName;
+	return VariableName;
 }
 	
-	void AddThermalControlerReferenceToBlueprint(UBlueprint* blueprint, FName varName, bool bInstanceEditable) {
+	void AddThermalControllerReferenceToBlueprint(UBlueprint* Blueprint,const FName& VarName, const bool bInstanceEditable) {
 
-		if (!blueprint) {
+		if (!Blueprint) {
 			UE_LOG(LogTemp, Error, TEXT("Blueprint is null, can't add reference"));
 			return;
 		}
 
-		if (FBlueprintEditorUtils::FindNewVariableIndex(blueprint, varName) != INDEX_NONE) {
-			UE_LOG(LogTemp, Warning, TEXT("Variable '%s' already exists in blueprint '%s'"), *varName.ToString(), *blueprint->GetName());
+		if (FBlueprintEditorUtils::FindNewVariableIndex(Blueprint, VarName) != INDEX_NONE) {
+			UE_LOG(LogTemp, Warning, TEXT("Variable '%s' already exists in blueprint '%s'"), *VarName.ToString(), *Blueprint->GetName());
 			return;
 		}
 
 		// Load the blueprint asset (not just the generated class directly)
-		UBlueprint* controllerBP = Cast<UBlueprint>(StaticLoadObject(UBlueprint::StaticClass(), nullptr, TEXT("/Game/Logi_ThermalCamera/Actors/BP_Logi_ThermalController.BP_Logi_ThermalController")));
-		if (!controllerBP || !controllerBP->GeneratedClass) {
+		UBlueprint* ControllerBP = Cast<UBlueprint>(StaticLoadObject(UBlueprint::StaticClass(), nullptr, TEXT("/Game/Logi_ThermalCamera/Actors/BP_Logi_ThermalController.BP_Logi_ThermalController")));
+		if (!ControllerBP || !ControllerBP->GeneratedClass) {
 			UE_LOG(LogTemp, Error, TEXT("Could not load BP_Logi_ThermalController Blueprint or its GeneratedClass"));
 			return;
 		}
 
 		// Use the generated class (this ensures Blueprint properties are recognized)
-		UClass* controllerClass = controllerBP->GeneratedClass;
+		UClass* ControllerClass = ControllerBP->GeneratedClass;
 
 		// Create pin type
-		FEdGraphPinType controllerRefType;
-		controllerRefType.PinCategory = UEdGraphSchema_K2::PC_Object;
-		controllerRefType.PinSubCategoryObject = controllerClass;
+		FEdGraphPinType ControllerRefType;
+		ControllerRefType.PinCategory = UEdGraphSchema_K2::PC_Object;
+		ControllerRefType.PinSubCategoryObject = ControllerClass;
 
 		// Add the variable
-		FBlueprintEditorUtils::AddMemberVariable(blueprint, varName, controllerRefType);
+		FBlueprintEditorUtils::AddMemberVariable(Blueprint, VarName, ControllerRefType);
 
 		//Set variable as blueprint editable
-		FBlueprintEditorUtils::SetBlueprintOnlyEditableFlag(blueprint, varName, true);
+		FBlueprintEditorUtils::SetBlueprintOnlyEditableFlag(Blueprint, VarName, true);
 
 		// Make it instance editable
 		if (bInstanceEditable) {
-			FBlueprintEditorUtils::SetBlueprintOnlyEditableFlag(blueprint, varName, !bInstanceEditable);
-			FBlueprintEditorUtils::SetBlueprintVariableMetaData(blueprint, varName, nullptr, FBlueprintMetadata::MD_Private, TEXT("false"));
-			FBlueprintEditorUtils::SetBlueprintVariableMetaData(blueprint, varName, nullptr, TEXT("EditAnywhere"), TEXT("true"));
-			FBlueprintEditorUtils::SetBlueprintVariableMetaData(blueprint, varName, nullptr, FBlueprintMetadata::MD_ExposeOnSpawn, TEXT("true"));
+			FBlueprintEditorUtils::SetBlueprintOnlyEditableFlag(Blueprint, VarName, !bInstanceEditable);
+			FBlueprintEditorUtils::SetBlueprintVariableMetaData(Blueprint, VarName, nullptr, FBlueprintMetadata::MD_Private, TEXT("false"));
+			FBlueprintEditorUtils::SetBlueprintVariableMetaData(Blueprint, VarName, nullptr, TEXT("EditAnywhere"), TEXT("true"));
+			FBlueprintEditorUtils::SetBlueprintVariableMetaData(Blueprint, VarName, nullptr, FBlueprintMetadata::MD_ExposeOnSpawn, TEXT("true"));
 		}
 	}
 
-	UEdGraphNode* AddNodeToBlueprint(UBlueprint* Blueprint, FName FunctionName, UClass* Class, FVector Location)
+	UEdGraphNode* AddNodeToBlueprint(UBlueprint* Blueprint, const FName& FunctionName, UClass* Class, const FVector& Location)
 	{
 		if (!Blueprint)
 		{
@@ -151,19 +151,19 @@ namespace Logi::BlueprintUtils
 
 	}
 
-	UEdGraphNode* AddNodeToBlueprintFunction(UEdGraph* functionGraph, FName functionName, UClass* nodeClass, FVector location) {
+	UEdGraphNode* AddNodeToBlueprintFunction(UEdGraph* FunctionGraph, const FName& FunctionName, UClass* NodeClass, const FVector& Location) {
 
 		//validate function graph
-		if (!functionGraph) {
+		if (!FunctionGraph) {
 			UE_LOG(LogTemp, Error, TEXT("Function graph is a nullpointer, can't add node"));
 			return nullptr;
 		}
 
 		//Find node class function
-		UFunction* function = nodeClass->FindFunctionByName(functionName);
+		UFunction* Function = NodeClass->FindFunctionByName(FunctionName);
 
 		//Validate node class function
-		if (!function)
+		if (!Function)
 		{
 			// The function does not exist in the blueprint class, handle the error
 			UE_LOG(LogTemp, Warning, TEXT("node class function not found"));
@@ -171,309 +171,309 @@ namespace Logi::BlueprintUtils
 		}
 
 		// Create a new function node in the function graph
-		UEdGraphNode* newNode = NewObject<UEdGraphNode>(functionGraph);
+		UEdGraphNode* NewNode = NewObject<UEdGraphNode>(FunctionGraph);
 
 		//Create spawner to spawn the node
-		UBlueprintFunctionNodeSpawner* FunctionNodeSpawner = UBlueprintFunctionNodeSpawner::Create(function);
+		UBlueprintFunctionNodeSpawner* FunctionNodeSpawner = UBlueprintFunctionNodeSpawner::Create(Function);
 
 		//Spawn the node
 		if (FunctionNodeSpawner)
 		{
 			FunctionNodeSpawner->SetFlags(RF_Transactional);
-			newNode = FunctionNodeSpawner->Invoke(functionGraph, IBlueprintNodeBinder::FBindingSet(), FVector2D(location.X, location.Y));
-			return newNode;
+			NewNode = FunctionNodeSpawner->Invoke(FunctionGraph, IBlueprintNodeBinder::FBindingSet(), FVector2D(Location.X, Location.Y));
+			return NewNode;
 		}
 
 		return nullptr;
 	}
 
-	UK2Node_IfThenElse* CreateBPBranchNode(UEdGraph* eventGraph, int xPosition, int yPosition) {
-		UK2Node_IfThenElse* branchNode = NewObject<UK2Node_IfThenElse>(eventGraph);
-		branchNode->AllocateDefaultPins();
-		eventGraph->AddNode(branchNode);
-		branchNode->NodePosX = xPosition;
-		branchNode->NodePosY = yPosition;
-		branchNode->NodeGuid = FGuid::NewGuid();
+	UK2Node_IfThenElse* CreateBPBranchNode(UEdGraph* EventGraph, int XPosition, int YPosition) {
+		UK2Node_IfThenElse* BranchNode = NewObject<UK2Node_IfThenElse>(EventGraph);
+		BranchNode->AllocateDefaultPins();
+		EventGraph->AddNode(BranchNode);
+		BranchNode->NodePosX = XPosition;
+		BranchNode->NodePosY = YPosition;
+		BranchNode->NodeGuid = FGuid::NewGuid();
 
-		return branchNode;
+		return BranchNode;
 	}
 
-	UK2Node_VariableGet* CreateBPGetterNode(UEdGraph* eventGraph, FName variableName, int xPosition, int yPosition) {
-		UK2Node_VariableGet* getNode = NewObject<UK2Node_VariableGet>(eventGraph);
-		getNode->VariableReference.SetSelfMember(variableName);
-		getNode->AllocateDefaultPins();
-		eventGraph->AddNode(getNode);
-		getNode->NodePosX = xPosition;
-		getNode->NodePosY = yPosition;
-		getNode->NodeGuid = FGuid::NewGuid();
+	UK2Node_VariableGet* CreateBPGetterNode(UEdGraph* EventGraph, const FName& VariableName, int XPosition, int YPosition) {
+		UK2Node_VariableGet* GetNode = NewObject<UK2Node_VariableGet>(EventGraph);
+		GetNode->VariableReference.SetSelfMember(VariableName);
+		GetNode->AllocateDefaultPins();
+		EventGraph->AddNode(GetNode);
+		GetNode->NodePosX = XPosition;
+		GetNode->NodePosY = YPosition;
+		GetNode->NodeGuid = FGuid::NewGuid();
 
-		return getNode;
+		return GetNode;
 	}
 
-	UK2Node_VariableGet* CreateBPExternalGetterNode(UEdGraph* eventGraph, FName variableName, const TCHAR* externalClassFilepath, int xPosition, int yPosition) {
-		UK2Node_VariableGet* getNode = NewObject<UK2Node_VariableGet>(eventGraph);
-		getNode->VariableReference.SetExternalMember(variableName, Cast<UClass>(StaticLoadObject(UClass::StaticClass(), nullptr, externalClassFilepath)));
-		getNode->AllocateDefaultPins();
-		eventGraph->AddNode(getNode);
-		getNode->NodePosX = xPosition;
-		getNode->NodePosY = yPosition;
-		getNode->NodeGuid = FGuid::NewGuid();
-		return getNode;
+	UK2Node_VariableGet* CreateBPExternalGetterNode(UEdGraph* EventGraph, const FName& VariableName, const TCHAR* ExternalClassFilepath, int XPosition, int YPosition) {
+		UK2Node_VariableGet* GetNode = NewObject<UK2Node_VariableGet>(EventGraph);
+		GetNode->VariableReference.SetExternalMember(VariableName, Cast<UClass>(StaticLoadObject(UClass::StaticClass(), nullptr, ExternalClassFilepath)));
+		GetNode->AllocateDefaultPins();
+		EventGraph->AddNode(GetNode);
+		GetNode->NodePosX = XPosition;
+		GetNode->NodePosY = YPosition;
+		GetNode->NodeGuid = FGuid::NewGuid();
+		return GetNode;
 	}
 
-	UK2Node_GetArrayItem* CreateBPArrayGetterNode(UEdGraph* functionGraph, int xPosition, int yPosition) {
-		UK2Node_GetArrayItem* arrayGetNode = NewObject<UK2Node_GetArrayItem>(functionGraph);
-		functionGraph->AddNode(arrayGetNode);
-		arrayGetNode->NodePosX = xPosition;
-		arrayGetNode->NodePosY = yPosition;
-		arrayGetNode->AllocateDefaultPins();
-		arrayGetNode->NodeGuid = FGuid::NewGuid();
+	UK2Node_GetArrayItem* CreateBPArrayGetterNode(UEdGraph* FunctionGraph, int XPosition, int YPosition) {
+		UK2Node_GetArrayItem* ArrayGetNode = NewObject<UK2Node_GetArrayItem>(FunctionGraph);
+		FunctionGraph->AddNode(ArrayGetNode);
+		ArrayGetNode->NodePosX = XPosition;
+		ArrayGetNode->NodePosY = YPosition;
+		ArrayGetNode->AllocateDefaultPins();
+		ArrayGetNode->NodeGuid = FGuid::NewGuid();
 
-		return arrayGetNode;
+		return ArrayGetNode;
 	}
 
-	UK2Node_VariableSet* CreateBPSetterNode(UEdGraph* functionGraph, FName variableName, int xPosition, int yPosition) {
-		UK2Node_VariableSet* setterNode = NewObject<UK2Node_VariableSet>(functionGraph);
-		functionGraph->AddNode(setterNode, false, false);
-		setterNode->VariableReference.SetSelfMember(variableName);
-		setterNode->NodePosX = xPosition;
-		setterNode->NodePosY = yPosition;
-		setterNode->AllocateDefaultPins();
-		setterNode->ReconstructNode();
-		setterNode->NodeGuid = FGuid::NewGuid();
+	UK2Node_VariableSet* CreateBPSetterNode(UEdGraph* FunctionGraph, const FName& VariableName, int XPosition, int YPosition) {
+		UK2Node_VariableSet* SetterNode = NewObject<UK2Node_VariableSet>(FunctionGraph);
+		FunctionGraph->AddNode(SetterNode, false, false);
+		SetterNode->VariableReference.SetSelfMember(VariableName);
+		SetterNode->NodePosX = XPosition;
+		SetterNode->NodePosY = YPosition;
+		SetterNode->AllocateDefaultPins();
+		SetterNode->ReconstructNode();
+		SetterNode->NodeGuid = FGuid::NewGuid();
 
-		return setterNode;
+		return SetterNode;
 	}
 
-	UK2Node_Select* CreateBPSelectNode(UEdGraph* functionGraph, int xPosition, int yPosition) {
+	UK2Node_Select* CreateBPSelectNode(UEdGraph* FunctionGraph, int XPosition, int YPosition) {
 		
 		//Validate function graph
-		if (!functionGraph)
+		if (!FunctionGraph)
 		{
 			UE_LOG(LogTemp, Error, TEXT("Function graph is nullptr! Cannot create Select node in function CreateBPSelectNode."));
 			return nullptr;
 		}
 
-		UK2Node_Select* selectNode = NewObject<UK2Node_Select>(functionGraph);
+		UK2Node_Select* selectNode = NewObject<UK2Node_Select>(FunctionGraph);
 		selectNode->SetFlags(RF_Transactional);
-		selectNode->NodePosX = xPosition;
-		selectNode->NodePosY = yPosition;
+		selectNode->NodePosX = XPosition;
+		selectNode->NodePosY = YPosition;
 		selectNode->NodeGuid = FGuid::NewGuid();
 
 		selectNode->ReconstructNode();
 
-		FEdGraphPinType materialPinType;
-		materialPinType.PinCategory = UEdGraphSchema_K2::PC_Object;
-		materialPinType.PinSubCategoryObject = UMaterialInterface::StaticClass();
+		FEdGraphPinType MaterialPinType;
+		MaterialPinType.PinCategory = UEdGraphSchema_K2::PC_Object;
+		MaterialPinType.PinSubCategoryObject = UMaterialInterface::StaticClass();
 
 		for (UEdGraphPin* Pin : selectNode->Pins)
 		{
 			if (Pin->PinName.ToString().StartsWith("Option") || Pin->PinName == "ReturnValue")
 			{
-				Pin->PinType = materialPinType;
+				Pin->PinType = MaterialPinType;
 			}
 		}
 
-		functionGraph->AddNode(selectNode);
+		FunctionGraph->AddNode(selectNode);
 
 
 		return selectNode;
 	}
 
-	UK2Node_CallFunction* CreateBPSetMaterialNode(UEdGraph* functionGraph, int xPosition, int yPosition) {
+	UK2Node_CallFunction* CreateBPSetMaterialNode(UEdGraph* FunctionGraph, int XPosition, int YPosition) {
 		//Validate function graph
-		if (!functionGraph)
+		if (!FunctionGraph)
 		{
 			UE_LOG(LogTemp, Error, TEXT("Function graph is nullptr! Cannot create Select node in function CreateBPSetMaterialNode."));
 			return nullptr;
 		}
 
-		UK2Node_CallFunction* setMaterialNode = NewObject<UK2Node_CallFunction>(functionGraph);
-		functionGraph->AddNode(setMaterialNode);
-		setMaterialNode->NodePosX = xPosition;
-		setMaterialNode->NodePosY = yPosition;
-		setMaterialNode->NodeGuid = FGuid::NewGuid();
-		setMaterialNode->FunctionReference.SetExternalMember(
+		UK2Node_CallFunction* SetMaterialNode = NewObject<UK2Node_CallFunction>(FunctionGraph);
+		FunctionGraph->AddNode(SetMaterialNode);
+		SetMaterialNode->NodePosX = XPosition;
+		SetMaterialNode->NodePosY = YPosition;
+		SetMaterialNode->NodeGuid = FGuid::NewGuid();
+		SetMaterialNode->FunctionReference.SetExternalMember(
 			FName(TEXT("SetMaterial")),
 			UPrimitiveComponent::StaticClass()
 		);
 
-		setMaterialNode->AllocateDefaultPins();
+		SetMaterialNode->AllocateDefaultPins();
 
-		return setMaterialNode;
+		return SetMaterialNode;
 	}
 
-	UK2Node_CallFunction* CreateBPScalarParameterNode(UEdGraph* eventGraph, int xPosition, int yPosition) {
-		UK2Node_CallFunction* scalarParameterNode = NewObject<UK2Node_CallFunction>(eventGraph);
-		scalarParameterNode->FunctionReference.SetExternalMember(FName("SetScalarParameterValue"), UKismetMaterialLibrary::StaticClass());
-		scalarParameterNode->AllocateDefaultPins();
-		eventGraph->AddNode(scalarParameterNode);
-		scalarParameterNode->NodePosX = xPosition;
-		scalarParameterNode->NodePosY = yPosition;
-		scalarParameterNode->NodeGuid = FGuid::NewGuid();
+	UK2Node_CallFunction* CreateBPScalarParameterNode(UEdGraph* EventGraph, int XPosition, int YPosition) {
+		UK2Node_CallFunction* ScalarParameterNode = NewObject<UK2Node_CallFunction>(EventGraph);
+		ScalarParameterNode->FunctionReference.SetExternalMember(FName("SetScalarParameterValue"), UKismetMaterialLibrary::StaticClass());
+		ScalarParameterNode->AllocateDefaultPins();
+		EventGraph->AddNode(ScalarParameterNode);
+		ScalarParameterNode->NodePosX = XPosition;
+		ScalarParameterNode->NodePosY = YPosition;
+		ScalarParameterNode->NodeGuid = FGuid::NewGuid();
 
-		return scalarParameterNode;
+		return ScalarParameterNode;
 	}
 
-	UK2Node_CallFunction* CreateBPDynamicMaterialInstanceScalarParameterNode(UEdGraph* eventGraph, int xPosition, int yPosition) {
+	UK2Node_CallFunction* CreateBPDynamicMaterialInstanceScalarParameterNode(UEdGraph* EventGraph, int XPosition, int YPosition) {
 
-		UFunction* function = UMaterialInstanceDynamic::StaticClass()->FindFunctionByName(FName("SetScalarParameterValue"));
-		if (!function)
+		UFunction* Function = UMaterialInstanceDynamic::StaticClass()->FindFunctionByName(FName("SetScalarParameterValue"));
+		if (!Function)
 		{
 			UE_LOG(LogTemp, Error, TEXT("Could not find UMaterialInstanceDynamic::SetScalarParameterValue"));
 			return nullptr;
 		}
 
-		UK2Node_CallFunction* scalarParameterNode = NewObject<UK2Node_CallFunction>(eventGraph);
-		scalarParameterNode->SetFromFunction(function);
-		scalarParameterNode->AllocateDefaultPins();
-		eventGraph->AddNode(scalarParameterNode, false, false);
-		scalarParameterNode->NodePosX = xPosition;
-		scalarParameterNode->NodePosY = yPosition;
-		scalarParameterNode->ReconstructNode();
-		scalarParameterNode->NodeGuid = FGuid::NewGuid();
+		UK2Node_CallFunction* ScalarParameterNode = NewObject<UK2Node_CallFunction>(EventGraph);
+		ScalarParameterNode->SetFromFunction(Function);
+		ScalarParameterNode->AllocateDefaultPins();
+		EventGraph->AddNode(ScalarParameterNode, false, false);
+		ScalarParameterNode->NodePosX = XPosition;
+		ScalarParameterNode->NodePosY = YPosition;
+		ScalarParameterNode->ReconstructNode();
+		ScalarParameterNode->NodeGuid = FGuid::NewGuid();
 
-		return scalarParameterNode;
+		return ScalarParameterNode;
 	}
 
-	UK2Node_CallFunction* CreateBPVectorParameterNode(UEdGraph* eventGraph, int xPosition, int yPosition) {
-		UK2Node_CallFunction* vectorNode = NewObject<UK2Node_CallFunction>(eventGraph);
-		vectorNode->FunctionReference.SetExternalMember(FName("SetVectorParameterValue"), UKismetMaterialLibrary::StaticClass());
-		vectorNode->AllocateDefaultPins();
-		eventGraph->AddNode(vectorNode);
-		vectorNode->NodePosX = xPosition;
-		vectorNode->NodePosY = yPosition;
-		vectorNode->NodeGuid = FGuid::NewGuid();
+	UK2Node_CallFunction* CreateBPVectorParameterNode(UEdGraph* EventGraph, int XPosition, int YPosition) {
+		UK2Node_CallFunction* VectorNode = NewObject<UK2Node_CallFunction>(EventGraph);
+		VectorNode->FunctionReference.SetExternalMember(FName("SetVectorParameterValue"), UKismetMaterialLibrary::StaticClass());
+		VectorNode->AllocateDefaultPins();
+		EventGraph->AddNode(VectorNode);
+		VectorNode->NodePosX = XPosition;
+		VectorNode->NodePosY = YPosition;
+		VectorNode->NodeGuid = FGuid::NewGuid();
 
-		return vectorNode;
+		return VectorNode;
 	}
 
-	UK2Node_CallFunction* CreateBPNormalizeToRangeNode(UEdGraph* eventGraph , int xPosition, int yPosition) {
-		UK2Node_CallFunction* normalizeToRangeNode = NewObject<UK2Node_CallFunction>(eventGraph);
-		normalizeToRangeNode->FunctionReference.SetExternalMember(FName("NormalizeToRange"), UKismetMathLibrary::StaticClass());
-		normalizeToRangeNode->AllocateDefaultPins();
-		eventGraph->AddNode(normalizeToRangeNode);
-		normalizeToRangeNode->NodePosX = xPosition;
-		normalizeToRangeNode->NodePosY = yPosition;
-		normalizeToRangeNode->NodeGuid = FGuid::NewGuid();
+	UK2Node_CallFunction* CreateBPNormalizeToRangeNode(UEdGraph* EventGraph , int XPosition, int YPosition) {
+		UK2Node_CallFunction* NormalizeToRangeNode = NewObject<UK2Node_CallFunction>(EventGraph);
+		NormalizeToRangeNode->FunctionReference.SetExternalMember(FName("NormalizeToRange"), UKismetMathLibrary::StaticClass());
+		NormalizeToRangeNode->AllocateDefaultPins();
+		EventGraph->AddNode(NormalizeToRangeNode);
+		NormalizeToRangeNode->NodePosX = XPosition;
+		NormalizeToRangeNode->NodePosY = YPosition;
+		NormalizeToRangeNode->NodeGuid = FGuid::NewGuid();
 
-		return normalizeToRangeNode;
+		return NormalizeToRangeNode;
 	}
 
-	UK2Node_CallFunction* CreateBPMakeVectorNode(UEdGraph* eventGraph, int xPosition, int yPosition) {
-		UK2Node_CallFunction* makeVectorNode = NewObject<UK2Node_CallFunction>(eventGraph);
-		makeVectorNode->FunctionReference.SetExternalMember(
+	UK2Node_CallFunction* CreateBPMakeVectorNode(UEdGraph* EventGraph, int XPosition, int YPosition) {
+		UK2Node_CallFunction* MakeVectorNode = NewObject<UK2Node_CallFunction>(EventGraph);
+		MakeVectorNode->FunctionReference.SetExternalMember(
 			GET_FUNCTION_NAME_CHECKED(UKismetMathLibrary, MakeVector),
 			UKismetMathLibrary::StaticClass()
 		);
-		makeVectorNode->AllocateDefaultPins();
-		eventGraph->AddNode(makeVectorNode);
-		makeVectorNode->NodePosX = xPosition;
-		makeVectorNode->NodePosY = yPosition;
-		makeVectorNode->NodeGuid = FGuid::NewGuid();
+		MakeVectorNode->AllocateDefaultPins();
+		EventGraph->AddNode(MakeVectorNode);
+		MakeVectorNode->NodePosX = XPosition;
+		MakeVectorNode->NodePosY = YPosition;
+		MakeVectorNode->NodeGuid = FGuid::NewGuid();
 
-		return makeVectorNode;
+		return MakeVectorNode;
 	}
 
-	UK2Node_CallFunction* CreateBPSetRenderDepthNode(UEdGraph* functionGraph, bool defaultValue, int xPosition, int yPosition) {
-		UK2Node_CallFunction* setRenderDepthNode = NewObject<UK2Node_CallFunction>(functionGraph);
-		setRenderDepthNode->FunctionReference.SetExternalMember(FName("SetRenderCustomDepth"), UPrimitiveComponent::StaticClass());
-		setRenderDepthNode->AllocateDefaultPins();
-		functionGraph->AddNode(setRenderDepthNode);
-		setRenderDepthNode->NodePosX = xPosition;
-		setRenderDepthNode->NodePosY = yPosition;
-		setRenderDepthNode->NodeGuid = FGuid::NewGuid();
+	UK2Node_CallFunction* CreateBPSetRenderDepthNode(UEdGraph* FunctionGraph, bool bDefaultValue, int XPosition, int YPosition) {
+		UK2Node_CallFunction* SetRenderDepthNode = NewObject<UK2Node_CallFunction>(FunctionGraph);
+		SetRenderDepthNode->FunctionReference.SetExternalMember(FName("SetRenderCustomDepth"), UPrimitiveComponent::StaticClass());
+		SetRenderDepthNode->AllocateDefaultPins();
+		FunctionGraph->AddNode(SetRenderDepthNode);
+		SetRenderDepthNode->NodePosX = XPosition;
+		SetRenderDepthNode->NodePosY = YPosition;
+		SetRenderDepthNode->NodeGuid = FGuid::NewGuid();
 
 		//Finds the value pin
-		UEdGraphPin* valuePin = setRenderDepthNode->FindPin(FName("bValue"));
+		UEdGraphPin* valuePin = SetRenderDepthNode->FindPin(FName("bValue"));
 
 		//Sets the value pin as default value
 		if (valuePin) {
-			valuePin->DefaultValue = defaultValue ? TEXT("true") : TEXT("false");
+			valuePin->DefaultValue = bDefaultValue ? TEXT("true") : TEXT("false");
 		}
 
-		return setRenderDepthNode;
+		return SetRenderDepthNode;
 	}
 
-	UK2Node_CallFunction* CreateBPGetAllActorsOfClassNode(UEdGraph* functionGraph, int xPosition, int yPosition) {
-		UK2Node_CallFunction* getAllActorsNode = NewObject<UK2Node_CallFunction>(functionGraph);
-		getAllActorsNode->FunctionReference.SetExternalMember(FName("GetAllActorsOfClass"), UGameplayStatics::StaticClass());
-		getAllActorsNode->NodePosX = xPosition;
-		getAllActorsNode->NodePosY = yPosition;
-		getAllActorsNode->NodeGuid = FGuid::NewGuid();
-		getAllActorsNode->AllocateDefaultPins();
-		functionGraph->AddNode(getAllActorsNode);
+	UK2Node_CallFunction* CreateBPGetAllActorsOfClassNode(UEdGraph* FunctionGraph, int XPosition, int YPosition) {
+		UK2Node_CallFunction* GetAllActorsNode = NewObject<UK2Node_CallFunction>(FunctionGraph);
+		GetAllActorsNode->FunctionReference.SetExternalMember(FName("GetAllActorsOfClass"), UGameplayStatics::StaticClass());
+		GetAllActorsNode->NodePosX = XPosition;
+		GetAllActorsNode->NodePosY = YPosition;
+		GetAllActorsNode->NodeGuid = FGuid::NewGuid();
+		GetAllActorsNode->AllocateDefaultPins();
+		FunctionGraph->AddNode(GetAllActorsNode);
 
-		return getAllActorsNode;
+		return GetAllActorsNode;
 	}
 
-	UK2Node_CallFunction* CreateBPDynamicMaterialInstanceNode(UEdGraph* functionGraph, int xPosition, int yPosition) {
+	UK2Node_CallFunction* CreateBPDynamicMaterialInstanceNode(UEdGraph* FunctionGraph, int XPosition, int YPosition) {
 
 		//Validate function graph
-		if (!functionGraph) {
+		if (!FunctionGraph) {
 			UE_LOG(LogTemp, Error, TEXT("Function graph is a nullpointer, can't add node"));
 			return nullptr;
 		}
 
 		//Get the target function
-		UFunction* targetFunction = UKismetMaterialLibrary::StaticClass()->FindFunctionByName(GET_FUNCTION_NAME_CHECKED(UKismetMaterialLibrary, CreateDynamicMaterialInstance));
+		UFunction* TargetFunction = UKismetMaterialLibrary::StaticClass()->FindFunctionByName(GET_FUNCTION_NAME_CHECKED(UKismetMaterialLibrary, CreateDynamicMaterialInstance));
 
 		//Validate target function
-		if (!targetFunction) {
+		if (!TargetFunction) {
 			UE_LOG(LogTemp, Error, TEXT("Target function is a nullpointer, can't add node"));
 			return nullptr;
 		}
 
 		//Create a new function node in the function graph
-		UK2Node_CallFunction* dynamicMaterialInstanceNode = NewObject<UK2Node_CallFunction>(functionGraph);
-		functionGraph->AddNode(dynamicMaterialInstanceNode, false, false);
-		dynamicMaterialInstanceNode->SetFromFunction(targetFunction);
-		dynamicMaterialInstanceNode->AllocateDefaultPins();
-		dynamicMaterialInstanceNode->NodePosX = xPosition;
-		dynamicMaterialInstanceNode->NodePosY = yPosition;
-		dynamicMaterialInstanceNode->NodeGuid = FGuid::NewGuid();
-		dynamicMaterialInstanceNode->ReconstructNode();
+		UK2Node_CallFunction* DynamicMaterialInstanceNode = NewObject<UK2Node_CallFunction>(FunctionGraph);
+		FunctionGraph->AddNode(DynamicMaterialInstanceNode, false, false);
+		DynamicMaterialInstanceNode->SetFromFunction(TargetFunction);
+		DynamicMaterialInstanceNode->AllocateDefaultPins();
+		DynamicMaterialInstanceNode->NodePosX = XPosition;
+		DynamicMaterialInstanceNode->NodePosY = YPosition;
+		DynamicMaterialInstanceNode->NodeGuid = FGuid::NewGuid();
+		DynamicMaterialInstanceNode->ReconstructNode();
 
-		return dynamicMaterialInstanceNode;
+		return DynamicMaterialInstanceNode;
 
 	}
 
-	UK2Node_CallFunction* CreateBPCallFunctionNode(UEdGraph* eventGraph, FName functionName, int xPosition, int yPosition) {
-		UK2Node_CallFunction* functionCallNode = NewObject<UK2Node_CallFunction>(eventGraph);
-		eventGraph->AddNode(functionCallNode);
-		functionCallNode->FunctionReference.SetSelfMember(functionName);
-		functionCallNode->NodePosX = xPosition;
-		functionCallNode->NodePosY = yPosition;
-		functionCallNode->AllocateDefaultPins();
-		functionCallNode->NodeGuid = FGuid::NewGuid();
+	UK2Node_CallFunction* CreateBPCallFunctionNode(UEdGraph* EventGraph, const FName& FunctionName, int XPosition, int YPosition) {
+		UK2Node_CallFunction* FunctionCallNode = NewObject<UK2Node_CallFunction>(EventGraph);
+		EventGraph->AddNode(FunctionCallNode);
+		FunctionCallNode->FunctionReference.SetSelfMember(FunctionName);
+		FunctionCallNode->NodePosX = XPosition;
+		FunctionCallNode->NodePosY = YPosition;
+		FunctionCallNode->AllocateDefaultPins();
+		FunctionCallNode->NodeGuid = FGuid::NewGuid();
 
-		return functionCallNode;
+		return FunctionCallNode;
 	}
 
-	void AddVariableToBlueprintClass(UBlueprint* blueprint, FName varName, FEdGraphPinType pinType, bool bInstanceEditable, FString defaultValue) {
+	void AddVariableToBlueprintClass(UBlueprint* Blueprint, const FName& VarName, const FEdGraphPinType& PinType, bool bInstanceEditable, const FString& DefaultValue) {
 	
 		//Validate blueprint
-		if (blueprint == nullptr) {
+		if (Blueprint == nullptr) {
 			UE_LOG(LogTemp, Error, TEXT("Adding variable to blueprint failed because the blueprint is null"));
 			return;
 		}
 
 		// Check if the variable already exists, if so it skips the creation
-		if (FBlueprintEditorUtils::FindNewVariableIndex(blueprint, varName) != INDEX_NONE) {
-			UE_LOG(LogTemp, Warning, TEXT("Variable '%s' already exists in the blueprint '%s', skipping the creation of variable."), *varName.ToString(), *blueprint->GetName());
+		if (FBlueprintEditorUtils::FindNewVariableIndex(Blueprint, VarName) != INDEX_NONE) {
+			UE_LOG(LogTemp, Warning, TEXT("Variable '%s' already exists in the blueprint '%s', skipping the creation of variable."), *VarName.ToString(), *Blueprint->GetName());
 			return;
 		}
 
 
-		FBlueprintEditorUtils::AddMemberVariable(blueprint, varName, pinType, defaultValue);
+		FBlueprintEditorUtils::AddMemberVariable(Blueprint, VarName, PinType, DefaultValue);
 
 
 		//Sets innstance editable
 		if (bInstanceEditable) {
-			FBlueprintEditorUtils::SetBlueprintOnlyEditableFlag(blueprint, varName, !bInstanceEditable);
-			FBlueprintEditorUtils::SetBlueprintVariableMetaData(blueprint, varName, nullptr, FBlueprintMetadata::MD_Private, TEXT("false"));
-			FBlueprintEditorUtils::SetBlueprintVariableMetaData(blueprint, varName, nullptr, "MD_EditAnywhere", TEXT("true"));
-			FBlueprintEditorUtils::SetBlueprintVariableMetaData(blueprint, varName, nullptr, FBlueprintMetadata::MD_ExposeOnSpawn, TEXT("true"));
+			FBlueprintEditorUtils::SetBlueprintOnlyEditableFlag(Blueprint, VarName, !bInstanceEditable);
+			FBlueprintEditorUtils::SetBlueprintVariableMetaData(Blueprint, VarName, nullptr, FBlueprintMetadata::MD_Private, TEXT("false"));
+			FBlueprintEditorUtils::SetBlueprintVariableMetaData(Blueprint, VarName, nullptr, "MD_EditAnywhere", TEXT("true"));
+			FBlueprintEditorUtils::SetBlueprintVariableMetaData(Blueprint, VarName, nullptr, FBlueprintMetadata::MD_ExposeOnSpawn, TEXT("true"));
 
 		}
 	}
