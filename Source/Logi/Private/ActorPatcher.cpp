@@ -483,14 +483,22 @@ namespace Logi::ActorPatcher
 
 		int xPosition = 300;
 
-		//create branch node for Logi_Hot variable
+		//create branch node for ThermalControllerActive variable
 		UK2Node_IfThenElse* branchNode = Logi::BlueprintUtils::CreateBPBranchNode(FunctionGraph, xPosition, 0);
 
-		//Create getter for Logi_hot variable
-		UK2Node_VariableGet* logiHotGetNode = Logi::BlueprintUtils::CreateBPGetterNode(FunctionGraph, FName("Logi_Hot"), xPosition, 200);
+		//Thermal Controller filepath
+		const TCHAR* thermalControllerFilePath = TEXT("/Game/Logi_ThermalCamera/Actors/BP_Logi_ThermalController.BP_Logi_ThermalController_C");
 
-		//connect Logi hot getter node to branch nodes condition pin
-		branchNode->GetConditionPin()->MakeLinkTo(logiHotGetNode->FindPin(FName("Logi_Hot")));
+
+		//Get Thermal Controllers ThermalCameraActive variable
+		UK2Node_VariableGet* getThermalController = Logi::BlueprintUtils::CreateBPGetterNode(FunctionGraph, FName("Logi_ThermalController"), xPosition - 500, 200);
+		UK2Node_VariableGet* getThermalControllerThermalCameraActive = Logi::BlueprintUtils::CreateBPExternalGetterNode(FunctionGraph, FName("ThermalCameraActive"), thermalControllerFilePath, xPosition - 300,200);
+
+		//Connect ThermalController getter node to the external getter node
+		Schema->TryCreateConnection(getThermalController->GetValuePin(), getThermalControllerThermalCameraActive->FindPin(FName("self")));
+
+		//connect ThermalControllerActive getter node to branch nodes condition pin
+		branchNode->GetConditionPin()->MakeLinkTo(getThermalControllerThermalCameraActive->FindPin(FName("ThermalCameraActive")));
 
 		//Connect the entry node to the branch node
 		Schema->TryCreateConnection(EntryNode->FindPin(UEdGraphSchema_K2::PN_Then), branchNode->GetExecPin());
@@ -524,17 +532,13 @@ namespace Logi::ActorPatcher
 		Schema->TryCreateConnection(setLogiMaterialIndexNodeZero->GetThenPin(), setCurrentTemperatureScalarParameterNode->GetExecPin());
 		Schema->TryCreateConnection(setLogiMaterialIndexNodeOne->GetThenPin(), setCurrentTemperatureScalarParameterNode->GetExecPin());
 		
-
-		//Thermal Controller filepath
-		const TCHAR* thermalControllerFilePath = TEXT("/Game/Logi_ThermalCamera/Actors/BP_Logi_ThermalController.BP_Logi_ThermalController_C");
-
 		//create normalize to range node setup for CurrentTemperature
 		UK2Node_CallFunction* normalizeToRangeNode = Logi::BlueprintUtils::CreateBPNormalizeToRangeNode(FunctionGraph, xPosition, 300);
 		UK2Node_VariableGet* getLogiCurrentTemperature =  Logi::BlueprintUtils::CreateBPGetterNode(FunctionGraph, FName("Logi_CurrentTemperature"), xPosition - 250, 300);
 		Schema->TryCreateConnection(getLogiCurrentTemperature->GetValuePin(), normalizeToRangeNode->FindPin(FName("Value")));
-		UK2Node_VariableGet* getThermalController = Logi::BlueprintUtils::CreateBPGetterNode(FunctionGraph, FName("Logi_ThermalController"), xPosition - 550, 400);
+		getThermalController = Logi::BlueprintUtils::CreateBPGetterNode(FunctionGraph, FName("Logi_ThermalController"), xPosition - 550, 400);
 		UK2Node_VariableGet* getThermalControllerThermalCameraRangeMin = Logi::BlueprintUtils::CreateBPExternalGetterNode(FunctionGraph, FName("ThermalCameraRangeMin"), thermalControllerFilePath, xPosition - 300, 350);
-		UK2Node_VariableGet* getThermalControllerThermalCameraRangeMax = Logi::BlueprintUtils::CreateBPExternalGetterNode(FunctionGraph, FName("ThermalCameraRangeMin"), thermalControllerFilePath, xPosition - 300, 450);
+		UK2Node_VariableGet* getThermalControllerThermalCameraRangeMax = Logi::BlueprintUtils::CreateBPExternalGetterNode(FunctionGraph, FName("ThermalCameraRangeMax"), thermalControllerFilePath, xPosition - 300, 450);
 		
 		Schema->TryCreateConnection(getThermalController->GetValuePin(), getThermalControllerThermalCameraRangeMin->FindPin(FName("self")));
 		Schema->TryCreateConnection(getThermalController->GetValuePin(), getThermalControllerThermalCameraRangeMax->FindPin(FName("self")));
@@ -557,7 +561,7 @@ namespace Logi::ActorPatcher
 		Schema->TryCreateConnection(getLogiMaxTemperature->GetValuePin(), normalizeToRangeNode->FindPin(FName("Value")));
 		getThermalController = Logi::BlueprintUtils::CreateBPGetterNode(FunctionGraph, FName("Logi_ThermalController"), xPosition - 550, 400);
 		getThermalControllerThermalCameraRangeMin = Logi::BlueprintUtils::CreateBPExternalGetterNode(FunctionGraph, FName("ThermalCameraRangeMin"), thermalControllerFilePath, xPosition - 300, 350);
-		getThermalControllerThermalCameraRangeMax = Logi::BlueprintUtils::CreateBPExternalGetterNode(FunctionGraph, FName("ThermalCameraRangeMin"), thermalControllerFilePath, xPosition - 300, 450);
+		getThermalControllerThermalCameraRangeMax = Logi::BlueprintUtils::CreateBPExternalGetterNode(FunctionGraph, FName("ThermalCameraRangeMax"), thermalControllerFilePath, xPosition - 300, 450);
 
 		Schema->TryCreateConnection(getThermalController->GetValuePin(), getThermalControllerThermalCameraRangeMin->FindPin(FName("self")));
 		Schema->TryCreateConnection(getThermalController->GetValuePin(), getThermalControllerThermalCameraRangeMax->FindPin(FName("self")));
@@ -584,7 +588,7 @@ namespace Logi::ActorPatcher
 		Schema->TryCreateConnection(getLogiBaseTemperature->GetValuePin(), normalizeToRangeNode->FindPin(FName("Value")));
 		getThermalController = Logi::BlueprintUtils::CreateBPGetterNode(FunctionGraph, FName("Logi_ThermalController"), xPosition - 550, 400);
 		getThermalControllerThermalCameraRangeMin = Logi::BlueprintUtils::CreateBPExternalGetterNode(FunctionGraph, FName("ThermalCameraRangeMin"), thermalControllerFilePath, xPosition - 300, 350);
-		getThermalControllerThermalCameraRangeMax = Logi::BlueprintUtils::CreateBPExternalGetterNode(FunctionGraph, FName("ThermalCameraRangeMin"), thermalControllerFilePath, xPosition - 300, 450);
+		getThermalControllerThermalCameraRangeMax = Logi::BlueprintUtils::CreateBPExternalGetterNode(FunctionGraph, FName("ThermalCameraRangeMax"), thermalControllerFilePath, xPosition - 300, 450);
 
 		Schema->TryCreateConnection(getThermalController->GetValuePin(), getThermalControllerThermalCameraRangeMin->FindPin(FName("self")));
 		Schema->TryCreateConnection(getThermalController->GetValuePin(), getThermalControllerThermalCameraRangeMax->FindPin(FName("self")));

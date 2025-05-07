@@ -247,6 +247,8 @@ namespace Logi::BlueprintUtils
 
 	UK2Node_Select* CreateBPSelectNode(UEdGraph* FunctionGraph, int XPosition, int YPosition) {
 		
+		UE_LOG(LogTemp, Error, TEXT("HIIIT"));
+
 		//Validate function graph
 		if (!FunctionGraph)
 		{
@@ -270,6 +272,7 @@ namespace Logi::BlueprintUtils
 		{
 			if (Pin->PinName.ToString().StartsWith("Option") || Pin->PinName == "ReturnValue")
 			{
+				Pin->Modify();
 				Pin->PinType = MaterialPinType;
 			}
 		}
