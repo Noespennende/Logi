@@ -12,7 +12,7 @@ namespace Logi::LogiUtils
 		if (!Asset) return false;
 
 		UPackage* Package = Asset->GetOutermost();
-		FString PackageFilename = FPackageName::LongPackageNameToFilename(Package->GetName(), FPackageName::GetAssetPackageExtension());
+		const FString PackageFilename = FPackageName::LongPackageNameToFilename(Package->GetName(), FPackageName::GetAssetPackageExtension());
 
 		return UPackage::SavePackage(Package, Asset, *PackageFilename, SaveArgs);
 	}

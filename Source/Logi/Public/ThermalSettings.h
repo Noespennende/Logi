@@ -1,8 +1,8 @@
 ﻿#pragma once
 
-namespace MPCThermalSettings
+namespace Logi::MPCThermalSettings
 {
 
-	static void SetupThermalSettings(UWorld* World, bool& success, FString& statusMessage);
+	static void SetupThermalSettings(UWorld* World, bool& bSuccess, FString& StatusMessage);
 	
 };

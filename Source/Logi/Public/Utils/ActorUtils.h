@@ -35,7 +35,7 @@
 #include "GameFramework/Actor.h"
 #include "Engine/SimpleConstructionScript.h"
 #include "Engine/SCS_Node.h"
-#include "Logi_Outliner.h"
+#include "LogiOutliner.h"
 #include "Materials/Material.h"
 #include "Materials/MaterialExpressionMaterialFunctionCall.h"
 #include "Materials/MaterialExpression.h"

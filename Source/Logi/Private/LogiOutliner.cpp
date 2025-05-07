@@ -1,4 +1,4 @@
-#include "Logi_Outliner.h"
+#include "LogiOutliner.h"
 #include "Engine/World.h"
 #include "GameFramework/Actor.h"
 #include "Engine/Selection.h"
@@ -21,10 +21,10 @@
 
 
 // Main method, that adds everything to the Outliner 
-void FLogiOutliner::AddLogiLogicToOutliner(UWorld* World, bool& success, FString& statusMessage) {
+void FLogiOutliner::AddLogiLogicToOutliner(UWorld* World, bool& bSuccess, FString& StatusMessage) {
 
     AddThermalCameraToOutliner(World);
-    AddThermalPostProcessVolumeToOutliner(World, success, statusMessage);
+    AddThermalPostProcessVolumeToOutliner(World, bSuccess, StatusMessage);
 
 }
 
@@ -32,9 +32,9 @@ void FLogiOutliner::AddLogiLogicToOutliner(UWorld* World, bool& success, FString
 void FLogiOutliner::AddThermalCameraToOutliner(UWorld* World) {
     
     
-    FString BlueprintPath = "/Game/Logi_ThermalCamera/Actors/BP_Logi_ThermalController";
+    const FString BlueprintPath = "/Game/Logi_ThermalCamera/Actors/BP_Logi_ThermalController";
 
-    FString BlueprintLabel = TEXT("BP_Logi_ThermalController");
+    const FString BlueprintLabel = TEXT("BP_Logi_ThermalController");
 
     UObject* BlueprintObject = StaticLoadObject(UObject::StaticClass(), nullptr, *BlueprintPath);
     
@@ -59,7 +59,7 @@ void FLogiOutliner::AddThermalCameraToOutliner(UWorld* World) {
         }
     }
     else {
-        // If blueprint does not exists, spawn/add the blueprint
+        // If blueprint does not exist, spawn/add the blueprint
         SpawnNewBlueprint(World, Blueprint);
     }
 
@@ -67,10 +67,10 @@ void FLogiOutliner::AddThermalCameraToOutliner(UWorld* World) {
 
 
 // Show overwrite pop-up
-bool FLogiOutliner::OverwritePopup(FString nameOfFile) {
+bool FLogiOutliner::OverwritePopup(const FString& NameOfFile) {
     // Pop-up Yes/No alternatives
     
-    FText DialogText = FText::Format(FText::FromString(TEXT("The file '{0}' already exists in the scene. Do you want to overwrite it?")), FText::FromString(nameOfFile));
+    const FText DialogText = FText::Format(FText::FromString(TEXT("The file '{0}' already exists in the scene. Do you want to overwrite it?")), FText::FromString(NameOfFile));
     EAppReturnType::Type Response = FMessageDialog::Open(EAppMsgType::YesNo, DialogText);
 
     return Response == EAppReturnType::Yes; // If user chooses "Yes", return true
@@ -85,8 +85,10 @@ AActor* FLogiOutliner::FindActorInOutlinerByLabel(UWorld* World, const FString& 
     {
         AActor* Actor = *It;
 
-        if (Actor->GetFolderPath().ToString().Equals(TargetFolder) &&
-            Actor->GetActorLabel().Equals(ActorLabel))
+        const FString FolderPath = Actor->GetFolderPath().ToString();
+        const FString Label = Actor->GetActorLabel();
+
+        if (FolderPath.Equals(TargetFolder) && Label.Equals(ActorLabel))
         {
             UE_LOG(LogTemp, Log, TEXT("Found existing actor: %s in folder %s"), *ActorLabel, *TargetFolder);
             return Actor;
@@ -113,11 +115,13 @@ void FLogiOutliner::DeleteActorInOutliner(AActor* Actor) {
 void FLogiOutliner::SpawnNewBlueprint(UWorld* World, UBlueprint* Blueprint) {
     
         if (Blueprint && Blueprint->GeneratedClass) {
-            FActorSpawnParameters SpawnParams;
-            FVector SpawnLocation(0.0f, 0.0f, 50.0f);
-            FRotator SpawnRotation(0.0f, 0.0f, 0.0f);
+            
+            const FActorSpawnParameters SpawnParams;
+            const FVector SpawnLocation(0.0f, 0.0f, 50.0f);
+            const FRotator SpawnRotation(0.0f, 0.0f, 0.0f);
 
             AActor* SpawnedActor = World->SpawnActor<AActor>(Blueprint->GeneratedClass, SpawnLocation, SpawnRotation, SpawnParams);
+
             if (SpawnedActor) {
                 SpawnedActor->SetFolderPath(FName(TEXT("Logi_ThermalCamera")));
                 UE_LOG(LogTemp, Log, TEXT("Spawned blueprint in scene, located in Outliner-folder"));
@@ -134,42 +138,45 @@ void FLogiOutliner::SpawnNewBlueprint(UWorld* World, UBlueprint* Blueprint) {
 
 
 
-void FLogiOutliner::AddThermalPostProcessVolumeToOutliner(UWorld* World, bool& success, FString& statusMessage)
+void FLogiOutliner::AddThermalPostProcessVolumeToOutliner(UWorld* World, bool& bSuccess, FString& StatusMessage)
 {
     
     
-    FString ThermalPostProcessVolumeLabel = TEXT("ThermalPostProcessVolume");
+     const FString ThermalPostProcessVolumeLabel = TEXT("ThermalPostProcessVolume");
 
     // Check if ThermalPostProcessVolume already exists in Outliner/Scene
     AActor* ExistingActor = FindActorInOutlinerByLabel(World, ThermalPostProcessVolumeLabel);
 
-    if (ExistingActor) {
-
+    if (ExistingActor)
+    {
         UE_LOG(LogTemp, Log, TEXT("ThermalPostProcessVolume already exists in scene under 'Logi_ThermalCamera'."));
 
-        if (OverwritePopup(ThermalPostProcessVolumeLabel)) {
-
-
+        if (OverwritePopup(ThermalPostProcessVolumeLabel))
+        {
             DeleteActorInOutliner(ExistingActor);
-            CreateThermalPostProcessVolume(World, success, statusMessage);
+            CreateThermalPostProcessVolume(World, bSuccess, StatusMessage);
         }
-
+        else
+        {
+            bSuccess = false;
+            StatusMessage = TEXT("User chose not to overwrite existing ThermalPostProcessVolume.");
+        }
     }
     else {
 
         // If not, create/add new
-        CreateThermalPostProcessVolume(World, success, statusMessage);
+        CreateThermalPostProcessVolume(World, bSuccess, StatusMessage);
     }
 
 }
 
 
 
-void FLogiOutliner::CreateThermalPostProcessVolume(UWorld* World, bool& success, FString& statusMessage){
+void FLogiOutliner::CreateThermalPostProcessVolume(UWorld* World, bool& bSuccess, FString& StatusMessage){
     
     FActorSpawnParameters SpawnParams;
-    FVector SpawnLocation(0.0f, 0.0f, 0.0f);
-    FRotator SpawnRotation(0.0f, 0.0f, 0.0f);
+    const FVector SpawnLocation(0.0f, 0.0f, 0.0f);
+    const FRotator SpawnRotation(0.0f, 0.0f, 0.0f);
 
     APostProcessVolume* NewVolume = World->SpawnActor<APostProcessVolume>(APostProcessVolume::StaticClass(), SpawnLocation, SpawnRotation, SpawnParams);
 
@@ -184,12 +191,15 @@ void FLogiOutliner::CreateThermalPostProcessVolume(UWorld* World, bool& success,
     }
     else
     {
-        UE_LOG(LogTemp, Error, TEXT("Failed to spawn ThermalPostProcessVolume."));
+        bSuccess = false;
+        StatusMessage = TEXT("Failed to spawn ThermalPostProcessVolume.");
+        return;
     }
 
-    // Add PostProcess Material to the ThermalPostProcessVolume - PP_ThermalCamera 
-    // !!! Switch out "/Game/IR_Materials/PP_ThermalCamera" with "/Game/Logi_ThermalCamera/Materials/PP_ThermalCamera" when added
-    UMaterialInterface* PostProcessMaterial = LoadObject<UMaterialInterface>(nullptr, TEXT("/Game/Logi_ThermalCamera/Materials/PP_Logi_ThermalCamera")); 
+    // Add PostProcess Material to the ThermalPostProcessVolume - PP_Logi_ThermalCamera 
+    const FString MaterialPath = TEXT("/Game/Logi_ThermalCamera/Materials/PP_Logi_ThermalCamera");
+    UMaterialInterface* PostProcessMaterial = LoadObject<UMaterialInterface>(nullptr, *MaterialPath);
+
     if (PostProcessMaterial)
     {
         FWeightedBlendable Blendable;
@@ -203,18 +213,18 @@ void FLogiOutliner::CreateThermalPostProcessVolume(UWorld* World, bool& success,
         UE_LOG(LogTemp, Error, TEXT("Failed to load PostProcessMaterial."));
     }
 
-    bool bSuccess = Logi::LogiUtils::SaveAssetToDisk(NewVolume);
+    const bool bSaved = Logi::LogiUtils::SaveAssetToDisk(NewVolume);
 
-    if (bSuccess)
+    if (bSaved)
     {
 		
-        statusMessage = FString::Printf(TEXT("Actor %s added and successfully saved to: %s"), *NewVolume->GetName(), *NewVolume->GetPathName());
-        success = true;
+        StatusMessage = FString::Printf(TEXT("Actor %s added and successfully saved to: %s"), *NewVolume->GetName(), *NewVolume->GetPathName());
+        bSuccess = true;
     }
     else
     {
-        statusMessage = FString::Printf(TEXT("Actor %s added, but failed to save properly. Manual save will be required: %s"), *NewVolume->GetName(), *NewVolume->GetPathName());
-        success = true;
+        StatusMessage = FString::Printf(TEXT("Actor %s added, but failed to save properly. Manual save will be required: %s"), *NewVolume->GetName(), *NewVolume->GetPathName());
+        bSuccess = true;
     }
 
 }

@@ -27,7 +27,7 @@
 #include "Components/PrimitiveComponent.h"
 
 #include "ThermalMaterialFunction.h"
-#include "Logi_Outliner.h"
+#include "LogiOutliner.h"
 #include "ThermalCamera.h"
 #include "ActorPatcher.h"
 #include "FolderStructureHandler.h"
@@ -108,7 +108,7 @@ void FLogiModule::PluginButtonClicked()
 	}
 
 	// Create ThermalSettings
-	MPCThermalSettings::SetupThermalSettings(World, success, statusMessage);
+	Logi::MPCThermalSettings::SetupThermalSettings(World, success, statusMessage);
 
 	//Log status - ThermalSettings
 	UE_LOG(LogTemp, Warning, TEXT("%s"), *statusMessage);
