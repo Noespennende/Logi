@@ -7,5 +7,5 @@ class UMaterialFunction;
 
 namespace Logi::ThermalCamera
 {
-	void CreateThermalCamera(bool& MFcreated, FString& statusMessage);
+	void CreateThermalCamera(bool& MFcreated, FString& StatusMessage);
 };
