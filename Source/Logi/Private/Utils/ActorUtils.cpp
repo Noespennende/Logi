@@ -6,16 +6,16 @@
 namespace Logi::ActorUtils
 {
 
-	TArray<FName> FindAllMeshComponentsInBlueprint(UBlueprint* Blueprint) {
+	TArray<FName> FindAllMeshComponentsInBlueprint(const UBlueprint* Blueprint) {
 		TArray<FName> MeshComponentNames;
 
 		//Iterate over all nodes in the blueprint
-		for (USCS_Node* Node : Blueprint->SimpleConstructionScript->GetAllNodes()) {
+		for (const USCS_Node* Node : Blueprint->SimpleConstructionScript->GetAllNodes()) {
 			//Check if the node is a nullptr if so, skip
 			if (!Node) continue;
 
 			//Check if the node has a component class
-			UClass* ComponentClass = Node->ComponentClass;
+			const UClass* ComponentClass = Node->ComponentClass;
 
 			//Check if the component class is a child of the skeletal mesh component or static mesh component
 			if (ComponentClass->IsChildOf(USkeletalMeshComponent::StaticClass()) || ComponentClass->IsChildOf(UStaticMeshComponent::StaticClass())) {
@@ -27,7 +27,7 @@ namespace Logi::ActorUtils
 		return MeshComponentNames;
 	}
 
-	TArray<UMaterialInterface*> FindAllMaterialsFromActorScsNode(USCS_Node* ScsNode) {
+	TArray<UMaterialInterface*> FindAllMaterialsFromActorScsNode(const USCS_Node* ScsNode) {
 		TArray<UMaterialInterface*> Materials;
 
 		//Validate the scs node
@@ -37,7 +37,7 @@ namespace Logi::ActorUtils
 		}
 
 		//Get the mesh component from the SCS node
-		UMeshComponent* MeshComponent = Cast<UMeshComponent>(ScsNode->ComponentTemplate);
+		const UMeshComponent* MeshComponent = Cast<UMeshComponent>(ScsNode->ComponentTemplate);
 
 		//Validate the mesh component
 		if (!MeshComponent) {
@@ -50,7 +50,7 @@ namespace Logi::ActorUtils
 		return Materials;
 	}
 
-	TArray<USCS_Node*> FindUscsNodesForMeshComponentsFromBlueprint(UBlueprint* Blueprint) {
+	TArray<USCS_Node*> FindUscsNodesForMeshComponentsFromBlueprint(const UBlueprint* Blueprint) {
 
 		TArray<USCS_Node*> Nodes;
 
@@ -63,7 +63,7 @@ namespace Logi::ActorUtils
 		for (USCS_Node* Node : Blueprint->SimpleConstructionScript->GetAllNodes()) {
 			if (!Node) continue;
 
-			UClass* ComponentClass = Node->ComponentClass;
+			const UClass* ComponentClass = Node->ComponentClass;
 
 			if (ComponentClass->IsChildOf(USkeletalMeshComponent::StaticClass()) ||
 				ComponentClass->IsChildOf(UStaticMeshComponent::StaticClass()))
@@ -76,10 +76,10 @@ namespace Logi::ActorUtils
 
 	}
 
-	UMeshComponent* FindActorMeshComponentFromName(UBlueprint* Blueprint, const FName& MeshComponentName) {
+	UMeshComponent* FindActorMeshComponentFromName(const UBlueprint* Blueprint, const FName& MeshComponentName) {
 
 		//Find the actor default object in the blueprint
-		AActor* ActorDefaultObject = Cast<AActor>(Blueprint->GeneratedClass->GetDefaultObject());
+		const AActor* ActorDefaultObject = Cast<AActor>(Blueprint->GeneratedClass->GetDefaultObject());
 
 		//Validate actor default object
 		if (!ActorDefaultObject) {

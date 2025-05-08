@@ -3,6 +3,6 @@
 namespace Logi::MPCThermalSettings
 {
 
-	static void SetupThermalSettings(UWorld* World, bool& bSuccess, FString& StatusMessage);
+	static void SetupThermalSettings(const UWorld* World, bool& bSuccess, FString& StatusMessage);
 	
 };

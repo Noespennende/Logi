@@ -31,7 +31,7 @@
 namespace Logi::MaterialUtils
 {
     // Utility function for checking valid Outer type for node creations
-    bool IsOuterAMaterialOrFunction(UObject* Outer);
+    bool IsOuterAMaterialOrFunction(const UObject* Outer);
 
     // General Utility Nodes
     UMaterialExpressionLinearInterpolate* CreateLerpNode(UObject* Outer, const FVector2D& EditorPos);

@@ -12,9 +12,9 @@ namespace Logi::BlueprintUtils
 	
 	void AddThermalControllerReferenceToBlueprint(UBlueprint* Blueprint, const FName& VarName, bool bInstanceEditable);
 
-	UEdGraphNode* AddNodeToBlueprint(UBlueprint* Blueprint, const FName& FunctionName, UClass* Class, const FVector& Location);
+	UEdGraphNode* AddNodeToBlueprint(UBlueprint* Blueprint, const FName& FunctionName, const UClass* Class, const FVector& Location);
 
-	UEdGraphNode* AddNodeToBlueprintFunction(UEdGraph* FunctionGraph, const FName& FunctionName, UClass* NodeClass, const FVector& Location);
+	UEdGraphNode* AddNodeToBlueprintFunction(UEdGraph* FunctionGraph, const FName& FunctionName, const UClass* NodeClass, const FVector& Location);
 
 	UK2Node_IfThenElse* CreateBPBranchNode(UEdGraph* EventGraph, int XPosition, int YPosition);
 

@@ -34,7 +34,7 @@
 namespace Logi::MaterialUtils
 {
 
-    bool IsOuterAMaterialOrFunction(UObject* Outer)
+    bool IsOuterAMaterialOrFunction(const UObject* Outer)
     {
         return Outer && (Outer->IsA<UMaterial>() || Outer->IsA<UMaterialFunctionInterface>());
     }
@@ -198,7 +198,7 @@ namespace Logi::MaterialUtils
         return IfNode;
     }
 
-    UMaterialExpressionClamp* CreateClampNode(UObject* Outer, const FVector2D& EditorPos, std::optional<float> MinValue, std::optional<float> MaxValue)
+    UMaterialExpressionClamp* CreateClampNode(UObject* Outer, const FVector2D& EditorPos, const std::optional<float> MinValue, const std::optional<float> MaxValue)
     {
         // If Outer is not a UMaterial or UMaterialFunctionInterface(UMaterialFunction + others)
         if (!IsOuterAMaterialOrFunction(Outer))
@@ -241,7 +241,7 @@ namespace Logi::MaterialUtils
         return FloorNode;
     }
 
-    UMaterialExpressionConstant* CreateConstantNode(UObject* Outer, const FVector2D& EditorPos, float Value)
+    UMaterialExpressionConstant* CreateConstantNode(UObject* Outer, const FVector2D& EditorPos, const float Value)
     {
         // If Outer is not a UMaterial or UMaterialFunctionInterface(UMaterialFunction + others)
         if (!IsOuterAMaterialOrFunction(Outer))
@@ -258,7 +258,7 @@ namespace Logi::MaterialUtils
         return ConstantNode;
     }
 
-    UMaterialExpressionConstant2Vector* CreateConstant2VectorNode(UObject* Outer, const FVector2D& EditorPos, float XValue, float YValue)
+    UMaterialExpressionConstant2Vector* CreateConstant2VectorNode(UObject* Outer, const FVector2D& EditorPos, const float XValue, const float YValue)
     {
         // If Outer is not a UMaterial or UMaterialFunctionInterface(UMaterialFunction + others)
         if (!IsOuterAMaterialOrFunction(Outer))
@@ -374,7 +374,7 @@ namespace Logi::MaterialUtils
         return AppendVectorNode;
     }
 
-    UMaterialExpressionComponentMask* CreateMaskNode(UObject* Outer, const FVector2D& EditorPos, bool R, bool G, bool B)
+    UMaterialExpressionComponentMask* CreateMaskNode(UObject* Outer, const FVector2D& EditorPos, const bool R, const bool G, const bool B)
     {
         // If Outer is not a UMaterial or UMaterialFunctionInterface(UMaterialFunction + others)
         if (!IsOuterAMaterialOrFunction(Outer))
@@ -410,7 +410,7 @@ namespace Logi::MaterialUtils
         UMaterialExpressionMaterialFunctionCall* MaterialFunctionNode = NewObject<UMaterialExpressionMaterialFunctionCall>(Outer);
         
         // ScreenResolution MaterialFunction
-        FString FilePath = TEXT("MaterialFunction'/Engine/Functions/Engine_MaterialFunctions02/ScreenResolution.ScreenResolution'");
+        const FString FilePath = TEXT("MaterialFunction'/Engine/Functions/Engine_MaterialFunctions02/ScreenResolution.ScreenResolution'");
         UMaterialFunction* MFScreenResolutionNode = LoadObject<UMaterialFunction>(nullptr, *FilePath);
         
         if (MFScreenResolutionNode)
@@ -474,7 +474,7 @@ namespace Logi::MaterialUtils
         UMaterialExpressionMaterialFunctionCall* MaterialFunctionNode = NewObject<UMaterialExpressionMaterialFunctionCall>(Outer);
         
         // 3ColorBlend MaterialFunction
-        FString FilePath = TEXT("MaterialFunction'/Engine/Functions/Engine_MaterialFunctions01/ImageAdjustment/3ColorBlend.3ColorBlend'");
+        const FString FilePath = TEXT("MaterialFunction'/Engine/Functions/Engine_MaterialFunctions01/ImageAdjustment/3ColorBlend.3ColorBlend'");
         UMaterialFunction* MFThreeColorBlendNode = LoadObject<UMaterialFunction>(nullptr, *FilePath);
         
         
@@ -517,7 +517,7 @@ namespace Logi::MaterialUtils
 
     // === Parameter & Collection Nodes ===
 
-    UMaterialExpressionScalarParameter* CreateScalarParameterNode(UObject* Outer, const FVector2D& EditorPos, const FName& ParameterName, float DefaultValue)
+    UMaterialExpressionScalarParameter* CreateScalarParameterNode(UObject* Outer, const FVector2D& EditorPos, const FName& ParameterName, const float DefaultValue)
     {
         // If Outer is not a UMaterial or UMaterialFunctionInterface(UMaterialFunction + others)
         if (!IsOuterAMaterialOrFunction(Outer))
@@ -535,7 +535,7 @@ namespace Logi::MaterialUtils
         return ScalarParameterNode;
     }
 
-    UMaterialExpressionCollectionParameter* CreateThermalSettingsCPNode(UObject* Outer, const FVector2D& EditorPos, const FName& ParameterName, EThermalSettingsParamType ParamType)
+    UMaterialExpressionCollectionParameter* CreateThermalSettingsCPNode(UObject* Outer, const FVector2D& EditorPos, const FName& ParameterName, const EThermalSettingsParamType ParamType)
     {
 
         // If Outer is not a UMaterial or UMaterialFunctionInterface(UMaterialFunction + others)
@@ -548,7 +548,7 @@ namespace Logi::MaterialUtils
         UE_LOG(LogTemp, Warning, TEXT("Starting to create Collection Parameter Node"));
 
         /* Load MPC_ThermalSettings */
-        FString MPCPath = TEXT("/Game/Logi_ThermalCamera/Materials/MPC_Logi_ThermalSettings");
+        const FString MPCPath = TEXT("/Game/Logi_ThermalCamera/Materials/MPC_Logi_ThermalSettings");
         UMaterialParameterCollection* MPC_ThermalSettings = LoadObject<UMaterialParameterCollection>(nullptr, *MPCPath);
         
         if (!MPC_ThermalSettings)
@@ -644,7 +644,7 @@ namespace Logi::MaterialUtils
         return Comment;
     }
     
-    UMaterialExpressionFresnel* CreateFresnelNode(UObject* Outer, const FVector2D& EditorPos, std::optional<float> BaseReflectFractionValue, std::optional<float> ExponentValue)
+    UMaterialExpressionFresnel* CreateFresnelNode(UObject* Outer, const FVector2D& EditorPos, const std::optional<float> BaseReflectFractionValue, const std::optional<float> ExponentValue)
     {
 
         // If Outer is not a UMaterial or UMaterialFunctionInterface(UMaterialFunction + others)
@@ -701,7 +701,7 @@ namespace Logi::MaterialUtils
         }
 
         // 1) Load the MF asset with SceneTexturePP functionality inside
-        FString FilePath = TEXT("/Logi/MF_Logi_SceneTexturePostProcess.MF_Logi_SceneTexturePostProcess");
+        const FString FilePath = TEXT("/Logi/MF_Logi_SceneTexturePostProcess.MF_Logi_SceneTexturePostProcess");
         UMaterialFunction* MaterialFunction = LoadObject<UMaterialFunction>(nullptr, *FilePath);
 
         if (!MaterialFunction)
@@ -731,7 +731,7 @@ namespace Logi::MaterialUtils
         }
 
         // 1) Load the MF asset with SceneTexturePP functionality inside
-        FString FilePath = TEXT("/Logi/MF_Logi_SceneTextureBaseColor.MF_Logi_SceneTextureBaseColor");
+        const FString FilePath = TEXT("/Logi/MF_Logi_SceneTextureBaseColor.MF_Logi_SceneTextureBaseColor");
         UMaterialFunction* MaterialFunction = LoadObject<UMaterialFunction>(nullptr, *FilePath);
 
         if (!MaterialFunction)
@@ -761,7 +761,7 @@ namespace Logi::MaterialUtils
         }
 
         // 1) Load the MF asset with SceneTexturePP functionality inside
-        FString FilePath = TEXT("/Logi/MF_Logi_SceneTextureWorldNormal.MF_Logi_SceneTextureWorldNormal");
+        const FString FilePath = TEXT("/Logi/MF_Logi_SceneTextureWorldNormal.MF_Logi_SceneTextureWorldNormal");
         UMaterialFunction* MaterialFunction = LoadObject<UMaterialFunction>(nullptr, *FilePath);
 
         if (!MaterialFunction)
@@ -791,7 +791,7 @@ namespace Logi::MaterialUtils
         }
 
         // 1) Load the MF asset with SceneTexturePP functionality inside
-        FString FilePath = TEXT("/Logi/MF_Logi_SceneTextureSceneDepth.MF_Logi_SceneTextureSceneDepth");
+        const FString FilePath = TEXT("/Logi/MF_Logi_SceneTextureSceneDepth.MF_Logi_SceneTextureSceneDepth");
         UMaterialFunction* MaterialFunction = LoadObject<UMaterialFunction>(nullptr, *FilePath);
 
         if (!MaterialFunction)
@@ -821,7 +821,7 @@ namespace Logi::MaterialUtils
         }
 
         // 1) Load the MF asset with SceneTexturePP functionality inside
-        FString FilePath = TEXT("/Logi/MF_Logi_SceneTextureCustomDepth.MF_Logi_SceneTextureCustomDepth");
+        const FString FilePath = TEXT("/Logi/MF_Logi_SceneTextureCustomDepth.MF_Logi_SceneTextureCustomDepth");
         UMaterialFunction* MaterialFunction = LoadObject<UMaterialFunction>(nullptr, *FilePath);
 
         if (!MaterialFunction)

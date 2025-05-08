@@ -79,8 +79,10 @@ namespace Logi::ThermalController
 		
 		//Iterate over all the nodes in the blueprints event graph
 		for (UEdGraphNode* Node : EventGraph->Nodes) {
+			
 			//Check if the node is an event node
 			if (UK2Node_Event* EventNode = Cast<UK2Node_Event>(Node)) {
+				
 				//Check if the event node is the event tick node
 				if (EventNode->EventReference.GetMemberName() == FName("ReceiveTick")) {
 					EventTick = EventNode;
@@ -108,7 +110,7 @@ namespace Logi::ThermalController
 		}
 		
 		//Create a new branch node
-		UK2Node_IfThenElse* BranchNode = BlueprintUtils::CreateBPBranchNode(EventGraph, 300, 420);
+		const UK2Node_IfThenElse* BranchNode = BlueprintUtils::CreateBPBranchNode(EventGraph, 300, 420);
 
 		//Connect the event tick node to the branch node
 		UEdGraphPin* ExecPin = EventTick->FindPin(UEdGraphSchema_K2::PN_Then);
@@ -119,14 +121,14 @@ namespace Logi::ThermalController
 		}
 
 		//Create ThermalCameraActive variable get node
-		UK2Node_VariableGet* ThermalCameraActiveGetNode = BlueprintUtils::CreateBPGetterNode(EventGraph, FName("ThermalCameraActive"), 100, 550);
+		const UK2Node_VariableGet* ThermalCameraActiveGetNode = BlueprintUtils::CreateBPGetterNode(EventGraph, FName("ThermalCameraActive"), 100, 550);
 
 		//Connect the ThermalCameraActive variable get node to the branch node
 		Schema->TryCreateConnection(ThermalCameraActiveGetNode->FindPin(FName("ThermalCameraActive")), BranchNode->GetConditionPin());
 
 
 		//Create scalar parameter node - Thermal Camera Toggle true
-		UK2Node_CallFunction* ThermalToggleTrueScalarParameterNode = BlueprintUtils::CreateBPScalarParameterNode(EventGraph, 600, 200);
+		const UK2Node_CallFunction* ThermalToggleTrueScalarParameterNode = BlueprintUtils::CreateBPScalarParameterNode(EventGraph, 600, 200);
 		//Set node input for parameterName and value for Thermal Camera Toggle true
 		UEdGraphPin* ParamNamePin = ThermalToggleTrueScalarParameterNode->FindPin(FName("ParameterName"));
 		UEdGraphPin* ParamValuePin = ThermalToggleTrueScalarParameterNode->FindPin(FName("ParameterValue"));
@@ -136,7 +138,7 @@ namespace Logi::ThermalController
 		CollectionPin->DefaultObject = ThermalSettings;
 
 		//Create scalar parameter node - Thermal Camera Toggle false
-		UK2Node_CallFunction* ThermalToggleFalseScalarParameterNode = BlueprintUtils::CreateBPScalarParameterNode(EventGraph, 600, 600);
+		const UK2Node_CallFunction* ThermalToggleFalseScalarParameterNode = BlueprintUtils::CreateBPScalarParameterNode(EventGraph, 600, 600);
 		//Set node input for parameterName and value for  ThermalCameraToggle False
 		ParamNamePin = ThermalToggleFalseScalarParameterNode->FindPin(FName("ParameterName"));
 		ParamValuePin = ThermalToggleFalseScalarParameterNode->FindPin(FName("ParameterValue"));
@@ -155,6 +157,7 @@ namespace Logi::ThermalController
 		// Create vector parameter nodes for Cold, Mid, Hot, BackgroundTemp temperatures
 		FVector2D NodePosition(1000, 420);
 		const TArray<FString> VectorParams = { "Cold", "Mid", "Hot"};
+
 		UK2Node_CallFunction* PreviousNode = nullptr;
 
 		//Create vector parameter nodes
@@ -212,10 +215,10 @@ namespace Logi::ThermalController
 			ParamPin->DefaultValue = Param;
 
 			//create assosiated Getter node for value parameter and add it to the graph
-			UK2Node_VariableGet* GetNode = BlueprintUtils::CreateBPGetterNode(EventGraph, FName(*Param), (NodePosition.X - 100), (NodePosition.Y + 300));
+			const UK2Node_VariableGet* GetNode = BlueprintUtils::CreateBPGetterNode(EventGraph, FName(*Param), (NodePosition.X - 100), (NodePosition.Y + 300));
 
 			//Spawn normalize to range node
-			UK2Node_CallFunction* NormalizeToRangeNode = BlueprintUtils::CreateBPNormalizeToRangeNode(EventGraph, (NodePosition.X), (NodePosition.Y + 350));
+			const UK2Node_CallFunction* NormalizeToRangeNode = BlueprintUtils::CreateBPNormalizeToRangeNode(EventGraph, (NodePosition.X), (NodePosition.Y + 350));
 			//Find normalize to range nodes range min and max pins
 			UEdGraphPin* RangeMinPin = NormalizeToRangeNode->FindPin(FName("RangeMin"));
 			UEdGraphPin* RangeMaxPin = NormalizeToRangeNode->FindPin(FName("RangeMax"));
@@ -223,8 +226,8 @@ namespace Logi::ThermalController
 			//Spawn getter node for camera range and add them to the background temparature's normalize node
 			if (Param == "BackgroundTemperature" || Param == "SkyTemperature") {
 				//Spawn thermal camera range getters
-				UK2Node_VariableGet* ThermalCameraRangeMinNode = BlueprintUtils::CreateBPGetterNode(EventGraph, FName("ThermalCameraRangeMin"), GetNode->NodePosX-150, (NodePosition.Y + 400));
-				UK2Node_VariableGet* ThermalCameraRangeMaxNode = BlueprintUtils::CreateBPGetterNode(EventGraph, FName("ThermalCameraRangeMax"), GetNode->NodePosX-150, (NodePosition.Y + 500));
+				const UK2Node_VariableGet* ThermalCameraRangeMinNode = BlueprintUtils::CreateBPGetterNode(EventGraph, FName("ThermalCameraRangeMin"), GetNode->NodePosX-150, (NodePosition.Y + 400));
+				const UK2Node_VariableGet* ThermalCameraRangeMaxNode = BlueprintUtils::CreateBPGetterNode(EventGraph, FName("ThermalCameraRangeMax"), GetNode->NodePosX-150, (NodePosition.Y + 500));
 
 
 				//Connect getter nodes to normalize to range node
@@ -256,16 +259,16 @@ namespace Logi::ThermalController
 		}
 
 		//create NoiseSize variable getter node
-		UK2Node_VariableGet* NoiseSizeGet = BlueprintUtils::CreateBPGetterNode(EventGraph, FName("NoiseSize"), NodePosition.X, (NodePosition.Y + 200));
+		const UK2Node_VariableGet* NoiseSizeGet = BlueprintUtils::CreateBPGetterNode(EventGraph, FName("NoiseSize"), NodePosition.X, (NodePosition.Y + 200));
 
 		//Update node position
 		NodePosition.X += 250;
 
 		//Create makevector node to convert NoiseSize in to a 3D vector
-		UK2Node_CallFunction* MakeVectorNode = BlueprintUtils::CreateBPMakeVectorNode(EventGraph, NodePosition.X, (NodePosition.Y + 200));
+		const UK2Node_CallFunction* MakeVectorNode = BlueprintUtils::CreateBPMakeVectorNode(EventGraph, NodePosition.X, (NodePosition.Y + 200));
 
 		//Create NoiseVector setter node
-		UK2Node_VariableSet* SetVectorNode = BlueprintUtils::CreateBPSetterNode(EventGraph, FName("NoiseVector"), NodePosition.X, NodePosition.Y);
+		const UK2Node_VariableSet* SetVectorNode = BlueprintUtils::CreateBPSetterNode(EventGraph, FName("NoiseVector"), NodePosition.X, NodePosition.Y);
 
 
 		//Connect NoiseSize to MakeVector.X/Y/Z
@@ -284,7 +287,7 @@ namespace Logi::ThermalController
 		NodePosition.X += 250;
 
 		//Create Noisesize setVectorParameterValue node
-		UK2Node_CallFunction* NoiseSizeVectorNode = BlueprintUtils::CreateBPVectorParameterNode(EventGraph, NodePosition.X, NodePosition.Y);
+		const UK2Node_CallFunction* NoiseSizeVectorNode = BlueprintUtils::CreateBPVectorParameterNode(EventGraph, NodePosition.X, NodePosition.Y);
 
 		//Find the collection pin of the noiseSize vector parameter node and set it to the ThermalSettings
 		UEdGraphPin* NoiseSizeCollectionPin = NoiseSizeVectorNode->FindPin(FName("Collection"));
@@ -299,7 +302,7 @@ namespace Logi::ThermalController
 
 
 		//Create getter node for the NoiseVector variable
-		UK2Node_VariableGet* GetNoiseVectorNode = BlueprintUtils::CreateBPGetterNode(EventGraph, FName("NoiseVector"), NodePosition.X, (NodePosition.Y + 300));
+		const UK2Node_VariableGet* GetNoiseVectorNode = BlueprintUtils::CreateBPGetterNode(EventGraph, FName("NoiseVector"), NodePosition.X, (NodePosition.Y + 300));
 
 		//Connect the NoiseVector getter node to the NoiseSize setVectorParameterValue node
 		Schema->TryCreateConnection(GetNoiseVectorNode->FindPin(FName("NoiseVector")), NoiseSizeVectorNode->FindPin(FName("ParameterValue")));

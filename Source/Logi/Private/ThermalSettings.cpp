@@ -8,7 +8,7 @@
 
 namespace Logi::MPCThermalSettings
 {
-	UMaterialParameterCollection* EnsureThermalSettingsExist(UWorld* World)
+	UMaterialParameterCollection* EnsureThermalSettingsExist(const UWorld* World)
 	{
 		if (!World) return nullptr;
 
@@ -71,7 +71,7 @@ namespace Logi::MPCThermalSettings
 		return ThermalSettings;
 	}
 
-	void MPCThermalSettings::SetupThermalSettings(UWorld* World, bool& bSuccess, FString& StatusMessage)
+	void MPCThermalSettings::SetupThermalSettings(const UWorld* World, bool& bSuccess, FString& StatusMessage)
 	{
 		if (!World) return;
 
@@ -116,7 +116,7 @@ namespace Logi::MPCThermalSettings
 
 		for (const TPair<FName, FLinearColor>& VectorPair : VectorsRequired)
 		{
-			bool bExists = ThermalSettings->VectorParameters.ContainsByPredicate(
+			const bool bExists = ThermalSettings->VectorParameters.ContainsByPredicate(
 				[&VectorPair](const FCollectionVectorParameter& Param) { return Param.ParameterName == VectorPair.Key; });
 
 			if (!bExists)
@@ -136,7 +136,7 @@ namespace Logi::MPCThermalSettings
 			FAssetRegistryModule::AssetCreated(ThermalSettings);
 
 
-			bool bSaved = Logi::LogiUtils::SaveAssetToDisk(ThermalSettings);
+			bool bSaved = LogiUtils::SaveAssetToDisk(ThermalSettings);
 
 			if (bSaved)
 			{

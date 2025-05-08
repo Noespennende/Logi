@@ -79,7 +79,7 @@ namespace Logi::BlueprintUtils
 		}
 
 		// Load the blueprint asset (not just the generated class directly)
-		UBlueprint* ControllerBP = Cast<UBlueprint>(StaticLoadObject(UBlueprint::StaticClass(), nullptr, TEXT("/Game/Logi_ThermalCamera/Actors/BP_Logi_ThermalController.BP_Logi_ThermalController")));
+		const UBlueprint* ControllerBP = Cast<UBlueprint>(StaticLoadObject(UBlueprint::StaticClass(), nullptr, TEXT("/Game/Logi_ThermalCamera/Actors/BP_Logi_ThermalController.BP_Logi_ThermalController")));
 		if (!ControllerBP || !ControllerBP->GeneratedClass) {
 			UE_LOG(LogTemp, Error, TEXT("Could not load BP_Logi_ThermalController Blueprint or its GeneratedClass"));
 			return;
@@ -108,7 +108,7 @@ namespace Logi::BlueprintUtils
 		}
 	}
 
-	UEdGraphNode* AddNodeToBlueprint(UBlueprint* Blueprint, const FName& FunctionName, UClass* Class, const FVector& Location)
+	UEdGraphNode* AddNodeToBlueprint(UBlueprint* Blueprint, const FName& FunctionName, const UClass* Class, const FVector& Location)
 	{
 		if (!Blueprint)
 		{
@@ -122,7 +122,7 @@ namespace Logi::BlueprintUtils
 			return nullptr;
 		}
 
-		UFunction* Function = Class->FindFunctionByName(FunctionName);
+		const UFunction* Function = Class->FindFunctionByName(FunctionName);
 		if (!Function)
 		{
 			// The function does not exist in the blueprint class, handle the error
@@ -151,7 +151,7 @@ namespace Logi::BlueprintUtils
 
 	}
 
-	UEdGraphNode* AddNodeToBlueprintFunction(UEdGraph* FunctionGraph, const FName& FunctionName, UClass* NodeClass, const FVector& Location) {
+	UEdGraphNode* AddNodeToBlueprintFunction(UEdGraph* FunctionGraph, const FName& FunctionName, const UClass* NodeClass, const FVector& Location) {
 
 		//validate function graph
 		if (!FunctionGraph) {
@@ -160,7 +160,7 @@ namespace Logi::BlueprintUtils
 		}
 
 		//Find node class function
-		UFunction* Function = NodeClass->FindFunctionByName(FunctionName);
+		const UFunction* Function = NodeClass->FindFunctionByName(FunctionName);
 
 		//Validate node class function
 		if (!Function)
@@ -187,7 +187,7 @@ namespace Logi::BlueprintUtils
 		return nullptr;
 	}
 
-	UK2Node_IfThenElse* CreateBPBranchNode(UEdGraph* EventGraph, int XPosition, int YPosition) {
+	UK2Node_IfThenElse* CreateBPBranchNode(UEdGraph* EventGraph, const int XPosition, const int YPosition) {
 		UK2Node_IfThenElse* BranchNode = NewObject<UK2Node_IfThenElse>(EventGraph);
 		BranchNode->AllocateDefaultPins();
 		EventGraph->AddNode(BranchNode);
@@ -198,7 +198,7 @@ namespace Logi::BlueprintUtils
 		return BranchNode;
 	}
 
-	UK2Node_VariableGet* CreateBPGetterNode(UEdGraph* EventGraph, const FName& VariableName, int XPosition, int YPosition) {
+	UK2Node_VariableGet* CreateBPGetterNode(UEdGraph* EventGraph, const FName& VariableName, const int XPosition, const int YPosition) {
 		UK2Node_VariableGet* GetNode = NewObject<UK2Node_VariableGet>(EventGraph);
 		GetNode->VariableReference.SetSelfMember(VariableName);
 		GetNode->AllocateDefaultPins();
@@ -210,7 +210,7 @@ namespace Logi::BlueprintUtils
 		return GetNode;
 	}
 
-	UK2Node_VariableGet* CreateBPExternalGetterNode(UEdGraph* EventGraph, const FName& VariableName, const TCHAR* ExternalClassFilepath, int XPosition, int YPosition) {
+	UK2Node_VariableGet* CreateBPExternalGetterNode(UEdGraph* EventGraph, const FName& VariableName, const TCHAR* ExternalClassFilepath, const int XPosition, const int YPosition) {
 		UK2Node_VariableGet* GetNode = NewObject<UK2Node_VariableGet>(EventGraph);
 		GetNode->VariableReference.SetExternalMember(VariableName, Cast<UClass>(StaticLoadObject(UClass::StaticClass(), nullptr, ExternalClassFilepath)));
 		GetNode->AllocateDefaultPins();
@@ -221,7 +221,7 @@ namespace Logi::BlueprintUtils
 		return GetNode;
 	}
 
-	UK2Node_GetArrayItem* CreateBPArrayGetterNode(UEdGraph* FunctionGraph, int XPosition, int YPosition) {
+	UK2Node_GetArrayItem* CreateBPArrayGetterNode(UEdGraph* FunctionGraph, const int XPosition, const int YPosition) {
 		UK2Node_GetArrayItem* ArrayGetNode = NewObject<UK2Node_GetArrayItem>(FunctionGraph);
 		FunctionGraph->AddNode(ArrayGetNode);
 		ArrayGetNode->NodePosX = XPosition;
@@ -232,7 +232,7 @@ namespace Logi::BlueprintUtils
 		return ArrayGetNode;
 	}
 
-	UK2Node_VariableSet* CreateBPSetterNode(UEdGraph* FunctionGraph, const FName& VariableName, int XPosition, int YPosition) {
+	UK2Node_VariableSet* CreateBPSetterNode(UEdGraph* FunctionGraph, const FName& VariableName, const int XPosition, const int YPosition) {
 		UK2Node_VariableSet* SetterNode = NewObject<UK2Node_VariableSet>(FunctionGraph);
 		FunctionGraph->AddNode(SetterNode, false, false);
 		SetterNode->VariableReference.SetSelfMember(VariableName);
@@ -245,10 +245,8 @@ namespace Logi::BlueprintUtils
 		return SetterNode;
 	}
 
-	UK2Node_Select* CreateBPSelectNode(UEdGraph* FunctionGraph, int XPosition, int YPosition) {
+	UK2Node_Select* CreateBPSelectNode(UEdGraph* FunctionGraph, const int XPosition, const int YPosition) {
 		
-		UE_LOG(LogTemp, Error, TEXT("HIIIT"));
-
 		//Validate function graph
 		if (!FunctionGraph)
 		{
@@ -256,19 +254,19 @@ namespace Logi::BlueprintUtils
 			return nullptr;
 		}
 
-		UK2Node_Select* selectNode = NewObject<UK2Node_Select>(FunctionGraph);
-		selectNode->SetFlags(RF_Transactional);
-		selectNode->NodePosX = XPosition;
-		selectNode->NodePosY = YPosition;
-		selectNode->NodeGuid = FGuid::NewGuid();
+		UK2Node_Select* SelectNode = NewObject<UK2Node_Select>(FunctionGraph);
+		SelectNode->SetFlags(RF_Transactional);
+		SelectNode->NodePosX = XPosition;
+		SelectNode->NodePosY = YPosition;
+		SelectNode->NodeGuid = FGuid::NewGuid();
 
-		selectNode->ReconstructNode();
+		SelectNode->ReconstructNode();
 
 		FEdGraphPinType MaterialPinType;
 		MaterialPinType.PinCategory = UEdGraphSchema_K2::PC_Object;
 		MaterialPinType.PinSubCategoryObject = UMaterialInterface::StaticClass();
 
-		for (UEdGraphPin* Pin : selectNode->Pins)
+		for (UEdGraphPin* Pin : SelectNode->Pins)
 		{
 			if (Pin->PinName.ToString().StartsWith("Option") || Pin->PinName == "ReturnValue")
 			{
@@ -277,13 +275,13 @@ namespace Logi::BlueprintUtils
 			}
 		}
 
-		FunctionGraph->AddNode(selectNode);
+		FunctionGraph->AddNode(SelectNode);
 
 
-		return selectNode;
+		return SelectNode;
 	}
 
-	UK2Node_CallFunction* CreateBPSetMaterialNode(UEdGraph* FunctionGraph, int XPosition, int YPosition) {
+	UK2Node_CallFunction* CreateBPSetMaterialNode(UEdGraph* FunctionGraph, const int XPosition, const int YPosition) {
 		//Validate function graph
 		if (!FunctionGraph)
 		{
@@ -306,7 +304,7 @@ namespace Logi::BlueprintUtils
 		return SetMaterialNode;
 	}
 
-	UK2Node_CallFunction* CreateBPScalarParameterNode(UEdGraph* EventGraph, int XPosition, int YPosition) {
+	UK2Node_CallFunction* CreateBPScalarParameterNode(UEdGraph* EventGraph, const int XPosition, const int YPosition) {
 		UK2Node_CallFunction* ScalarParameterNode = NewObject<UK2Node_CallFunction>(EventGraph);
 		ScalarParameterNode->FunctionReference.SetExternalMember(FName("SetScalarParameterValue"), UKismetMaterialLibrary::StaticClass());
 		ScalarParameterNode->AllocateDefaultPins();
@@ -318,9 +316,9 @@ namespace Logi::BlueprintUtils
 		return ScalarParameterNode;
 	}
 
-	UK2Node_CallFunction* CreateBPDynamicMaterialInstanceScalarParameterNode(UEdGraph* EventGraph, int XPosition, int YPosition) {
+	UK2Node_CallFunction* CreateBPDynamicMaterialInstanceScalarParameterNode(UEdGraph* EventGraph, const int XPosition, const int YPosition) {
 
-		UFunction* Function = UMaterialInstanceDynamic::StaticClass()->FindFunctionByName(FName("SetScalarParameterValue"));
+		const UFunction* Function = UMaterialInstanceDynamic::StaticClass()->FindFunctionByName(FName("SetScalarParameterValue"));
 		if (!Function)
 		{
 			UE_LOG(LogTemp, Error, TEXT("Could not find UMaterialInstanceDynamic::SetScalarParameterValue"));
@@ -339,7 +337,7 @@ namespace Logi::BlueprintUtils
 		return ScalarParameterNode;
 	}
 
-	UK2Node_CallFunction* CreateBPVectorParameterNode(UEdGraph* EventGraph, int XPosition, int YPosition) {
+	UK2Node_CallFunction* CreateBPVectorParameterNode(UEdGraph* EventGraph, const int XPosition, const int YPosition) {
 		UK2Node_CallFunction* VectorNode = NewObject<UK2Node_CallFunction>(EventGraph);
 		VectorNode->FunctionReference.SetExternalMember(FName("SetVectorParameterValue"), UKismetMaterialLibrary::StaticClass());
 		VectorNode->AllocateDefaultPins();
@@ -351,7 +349,7 @@ namespace Logi::BlueprintUtils
 		return VectorNode;
 	}
 
-	UK2Node_CallFunction* CreateBPNormalizeToRangeNode(UEdGraph* EventGraph , int XPosition, int YPosition) {
+	UK2Node_CallFunction* CreateBPNormalizeToRangeNode(UEdGraph* EventGraph , const int XPosition, const int YPosition) {
 		UK2Node_CallFunction* NormalizeToRangeNode = NewObject<UK2Node_CallFunction>(EventGraph);
 		NormalizeToRangeNode->FunctionReference.SetExternalMember(FName("NormalizeToRange"), UKismetMathLibrary::StaticClass());
 		NormalizeToRangeNode->AllocateDefaultPins();
@@ -363,7 +361,7 @@ namespace Logi::BlueprintUtils
 		return NormalizeToRangeNode;
 	}
 
-	UK2Node_CallFunction* CreateBPMakeVectorNode(UEdGraph* EventGraph, int XPosition, int YPosition) {
+	UK2Node_CallFunction* CreateBPMakeVectorNode(UEdGraph* EventGraph, const int XPosition, const int YPosition) {
 		UK2Node_CallFunction* MakeVectorNode = NewObject<UK2Node_CallFunction>(EventGraph);
 		MakeVectorNode->FunctionReference.SetExternalMember(
 			GET_FUNCTION_NAME_CHECKED(UKismetMathLibrary, MakeVector),
@@ -378,7 +376,7 @@ namespace Logi::BlueprintUtils
 		return MakeVectorNode;
 	}
 
-	UK2Node_CallFunction* CreateBPSetRenderDepthNode(UEdGraph* FunctionGraph, bool bDefaultValue, int XPosition, int YPosition) {
+	UK2Node_CallFunction* CreateBPSetRenderDepthNode(UEdGraph* FunctionGraph, const bool bDefaultValue, const int XPosition, const int YPosition) {
 		UK2Node_CallFunction* SetRenderDepthNode = NewObject<UK2Node_CallFunction>(FunctionGraph);
 		SetRenderDepthNode->FunctionReference.SetExternalMember(FName("SetRenderCustomDepth"), UPrimitiveComponent::StaticClass());
 		SetRenderDepthNode->AllocateDefaultPins();
@@ -388,17 +386,17 @@ namespace Logi::BlueprintUtils
 		SetRenderDepthNode->NodeGuid = FGuid::NewGuid();
 
 		//Finds the value pin
-		UEdGraphPin* valuePin = SetRenderDepthNode->FindPin(FName("bValue"));
+		UEdGraphPin* ValuePin = SetRenderDepthNode->FindPin(FName("bValue"));
 
 		//Sets the value pin as default value
-		if (valuePin) {
-			valuePin->DefaultValue = bDefaultValue ? TEXT("true") : TEXT("false");
+		if (ValuePin) {
+			ValuePin->DefaultValue = bDefaultValue ? TEXT("true") : TEXT("false");
 		}
 
 		return SetRenderDepthNode;
 	}
 
-	UK2Node_CallFunction* CreateBPGetAllActorsOfClassNode(UEdGraph* FunctionGraph, int XPosition, int YPosition) {
+	UK2Node_CallFunction* CreateBPGetAllActorsOfClassNode(UEdGraph* FunctionGraph, const int XPosition, const int YPosition) {
 		UK2Node_CallFunction* GetAllActorsNode = NewObject<UK2Node_CallFunction>(FunctionGraph);
 		GetAllActorsNode->FunctionReference.SetExternalMember(FName("GetAllActorsOfClass"), UGameplayStatics::StaticClass());
 		GetAllActorsNode->NodePosX = XPosition;
@@ -410,7 +408,7 @@ namespace Logi::BlueprintUtils
 		return GetAllActorsNode;
 	}
 
-	UK2Node_CallFunction* CreateBPDynamicMaterialInstanceNode(UEdGraph* FunctionGraph, int XPosition, int YPosition) {
+	UK2Node_CallFunction* CreateBPDynamicMaterialInstanceNode(UEdGraph* FunctionGraph, const int XPosition, const int YPosition) {
 
 		//Validate function graph
 		if (!FunctionGraph) {
@@ -419,7 +417,7 @@ namespace Logi::BlueprintUtils
 		}
 
 		//Get the target function
-		UFunction* TargetFunction = UKismetMaterialLibrary::StaticClass()->FindFunctionByName(GET_FUNCTION_NAME_CHECKED(UKismetMaterialLibrary, CreateDynamicMaterialInstance));
+		const UFunction* TargetFunction = UKismetMaterialLibrary::StaticClass()->FindFunctionByName(GET_FUNCTION_NAME_CHECKED(UKismetMaterialLibrary, CreateDynamicMaterialInstance));
 
 		//Validate target function
 		if (!TargetFunction) {
@@ -441,7 +439,7 @@ namespace Logi::BlueprintUtils
 
 	}
 
-	UK2Node_CallFunction* CreateBPCallFunctionNode(UEdGraph* EventGraph, const FName& FunctionName, int XPosition, int YPosition) {
+	UK2Node_CallFunction* CreateBPCallFunctionNode(UEdGraph* EventGraph, const FName& FunctionName, const int XPosition, const int YPosition) {
 		UK2Node_CallFunction* FunctionCallNode = NewObject<UK2Node_CallFunction>(EventGraph);
 		EventGraph->AddNode(FunctionCallNode);
 		FunctionCallNode->FunctionReference.SetSelfMember(FunctionName);
@@ -453,7 +451,7 @@ namespace Logi::BlueprintUtils
 		return FunctionCallNode;
 	}
 
-	void AddVariableToBlueprintClass(UBlueprint* Blueprint, const FName& VarName, const FEdGraphPinType& PinType, bool bInstanceEditable, const FString& DefaultValue) {
+	void AddVariableToBlueprintClass(UBlueprint* Blueprint, const FName& VarName, const FEdGraphPinType& PinType, const bool bInstanceEditable, const FString& DefaultValue) {
 	
 		//Validate blueprint
 		if (Blueprint == nullptr) {

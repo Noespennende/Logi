@@ -9,9 +9,9 @@ namespace Logi::ActorPatcher
 
 	static void AddLogiVariablesToActorBlueprint(const FAssetData& Actor);
 
-	static void AddNodeSetupToSetupFunction(UEdGraph* FunctionGraph, UK2Node_FunctionEntry* EntryNode);
+	static void AddNodeSetupToSetupFunction(UEdGraph* FunctionGraph, const UK2Node_FunctionEntry* EntryNode);
 
-	static void AddNodeSetupToUpdateThermalMaterialFunction(UEdGraph* FunctionGraph, UK2Node_FunctionEntry* EntryNode);
+	static void AddNodeSetupToUpdateThermalMaterialFunction(UEdGraph* FunctionGraph, const UK2Node_FunctionEntry* EntryNode);
 
 	static UEdGraph* AddSetupFunctionToNonLogiActor(const FAssetData& Actor);
 	
