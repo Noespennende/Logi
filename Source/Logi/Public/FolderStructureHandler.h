@@ -2,6 +2,6 @@
 
 namespace Logi::FolderStructureHandler
 {
-	void CreateFolderStructure(bool& folderCreated, FString& statusMessage);
+	void CreateFolderStructure(bool& bFolderCreated, FString& StatusMessage);
 	
 };

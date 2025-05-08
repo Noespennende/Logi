@@ -92,14 +92,14 @@ void FLogiModule::PluginButtonClicked()
 		return;
 	}
 
-	bool success;
-	FString statusMessage;
+	bool bSuccess;
+	FString StatusMessage;
 
 	// Create folder structure
-	Logi::FolderStructureHandler::CreateFolderStructure(success, statusMessage);
+	Logi::FolderStructureHandler::CreateFolderStructure(bSuccess, StatusMessage);
 
 	//Log status
-	UE_LOG(LogTemp, Warning, TEXT("%s"), *statusMessage);
+	UE_LOG(LogTemp, Warning, TEXT("%s"), *StatusMessage);
 
 	UWorld* World = GEditor->GetEditorWorldContext().World();
 	if (!World) {
@@ -108,42 +108,42 @@ void FLogiModule::PluginButtonClicked()
 	}
 
 	// Create ThermalSettings
-	Logi::MPCThermalSettings::SetupThermalSettings(World, success, statusMessage);
+	Logi::MPCThermalSettings::SetupThermalSettings(World, bSuccess, StatusMessage);
 
 	//Log status - ThermalSettings
-	UE_LOG(LogTemp, Warning, TEXT("%s"), *statusMessage);
+	UE_LOG(LogTemp, Warning, TEXT("%s"), *StatusMessage);
 
 	//Create ThermalController blueprint
-	Logi::ThermalController::CreateThermalController(success, statusMessage);
+	Logi::ThermalController::CreateThermalController(bSuccess, StatusMessage);
 
 	//Log status - ThermalController
-	UE_LOG(LogTemp, Warning, TEXT("%s"), *statusMessage);
+	UE_LOG(LogTemp, Warning, TEXT("%s"), *StatusMessage);
 
 	// Create ThermalMaterialFunction Material
-	ThermalMaterialFunction::CreateMaterialFunction(success, statusMessage);
+	ThermalMaterialFunction::CreateMaterialFunction(bSuccess, StatusMessage);
 
 	//Log status - ThermalMaterialFunction
-	UE_LOG(LogTemp, Warning, TEXT("%s"), *statusMessage);
+	UE_LOG(LogTemp, Warning, TEXT("%s"), *StatusMessage);
 
 	// Create ThermalCamera
-	Logi::ThermalCamera::CreateThermalCamera(success, statusMessage);
+	Logi::ThermalCamera::CreateThermalCamera(bSuccess, StatusMessage);
 
 	// Log status - ThermalCamera
-	UE_LOG(LogTemp, Warning, TEXT("%s"), *statusMessage);
+	UE_LOG(LogTemp, Warning, TEXT("%s"), *StatusMessage);
 
 	// Create ThermalMaterial
-	Logi::ActorPatcher::CreateThermalMaterial(success, statusMessage);
+	Logi::ActorPatcher::CreateThermalMaterial(bSuccess, StatusMessage);
 
 	// Log status - ThermalMaterial
-	UE_LOG(LogTemp, Warning, TEXT("%s"), *statusMessage);
+	UE_LOG(LogTemp, Warning, TEXT("%s"), *StatusMessage);
 
 	//Make all project actors logi compatible
 	Logi::ActorPatcher::MakeProjectBPActorsLogiCompatible();
 
-	FLogiOutliner::AddLogiLogicToOutliner(World, success, statusMessage);
+	Logi::LogiOutliner::AddLogiLogicToOutliner(World, bSuccess, StatusMessage);
 
 	//Log status
-	UE_LOG(LogTemp, Warning, TEXT("%s"), *statusMessage);
+	UE_LOG(LogTemp, Warning, TEXT("%s"), *StatusMessage);
 
 }
 
