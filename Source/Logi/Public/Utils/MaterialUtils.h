@@ -59,6 +59,7 @@ namespace Logi::MaterialUtils
     UMaterialExpressionMaterialFunctionCall* CreateScreenResolutionNode(UObject* Outer, const FVector2D& EditorPos);
     UMaterialExpressionMaterialFunctionCall* CreateViewSizeNode(UObject* Outer, const FVector2D& EditorPos);
     UMaterialExpressionMaterialFunctionCall* Create3ColorBlendNode(UObject* Outer, const FVector2D& EditorPos);
+    UMaterialExpressionMaterialFunctionCall* CreatCheapContrastRGBNode(UObject* Outer, const FVector2D& EditorPos);
     UMaterialExpressionFunctionOutput* CreateOutputResultNode(UObject* Outer, const FVector2D& EditorPos, const FName& OutputName);
 
     // Parameter & Collection Nodes

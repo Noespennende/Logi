@@ -15,12 +15,11 @@
 #include "Utils/MaterialUtils.h"
 
 
-namespace ThermalMaterialFunction
+namespace Logi::ThermalMaterialFunction
 {
     
     void CreateMaterialFunction(bool& bSuccess, FString& StatusMessage)
     {
-
         const FString AssetPath = "/Game/Logi_ThermalCamera/Materials";
         const FString AssetName = "MF_Logi_ThermalMaterialFunction";
 
@@ -70,50 +69,152 @@ namespace ThermalMaterialFunction
         UMaterialExpressionConstant3Vector* NodeSpecularColor = Logi::MaterialUtils::CreateConstant3VectorNode(MaterialFunction, NodeSpecularColorPos, SpecularColor);
         Expressions.Add(NodeSpecularColor);
 
-        // LERP-node
-        const FVector2D NodeLerpPos(-200, 300);
-        UMaterialExpressionLinearInterpolate* NodeLerp = Logi::MaterialUtils::CreateLerpNode(MaterialFunction, NodeLerpPos);
-        Expressions.Add(NodeLerp);
+        // 3ColorBlend-node
+        const FVector2D EmissiveColor3ColorBlendPos(-400, 300);
+        UMaterialExpressionMaterialFunctionCall* EmissiveColor3ColorBlendNode = MaterialUtils::Create3ColorBlendNode(MaterialFunction, EmissiveColor3ColorBlendPos);
+        Expressions.Add(EmissiveColor3ColorBlendNode);
 
+        EmissiveColor3ColorBlendNode->UpdateFromFunctionResource();
 
-        // Create CurrentTemperature-node (Lerp A)
-        const FVector2D NodeCurrentTemperaturePos(-496, 250);
-        UMaterialExpressionScalarParameter* NodeCurrentTemperature = Logi::MaterialUtils::CreateScalarParameterNode(MaterialFunction, NodeCurrentTemperaturePos, "CurrentTemperature", 1.0f);
-        Expressions.Add(NodeCurrentTemperature);
-        
-
-        // Create BaseTemperature-node (Lerp B)
-        const FVector2D NodeBaseTemperaturePos(-496, 350);
-        UMaterialExpressionScalarParameter* NodeBaseTemperature = Logi::MaterialUtils::CreateScalarParameterNode(MaterialFunction, NodeBaseTemperaturePos, "BaseTemperature", 0.0f);
+        // Create BaseTemperature-node (3ColorBlend A input)
+        const FVector2D NodeBaseTemperaturePos(-850, 0);
+        UMaterialExpressionScalarParameter* NodeBaseTemperature = MaterialUtils::CreateScalarParameterNode(MaterialFunction, NodeBaseTemperaturePos, "BaseTemperature", 0.0f);
         Expressions.Add(NodeBaseTemperature);
+
+        
+        // Create CurrentTemperature-node (3ColorBlend B input)
+        const FVector2D NodeCurrentTemperaturePos(-850, 250);
+        UMaterialExpressionScalarParameter* NodeCurrentTemperature = MaterialUtils::CreateScalarParameterNode(MaterialFunction, NodeCurrentTemperaturePos, "CurrentTemperature", 0.5f);
+        Expressions.Add(NodeCurrentTemperature);
+
+        // Create MaxTemperature-node (3ColorBlend C input)
+        const FVector2D NodeMaxTemperaturePos(-850, 500);
+        UMaterialExpressionScalarParameter* NodeMaxTemperature = MaterialUtils::CreateScalarParameterNode(MaterialFunction, NodeMaxTemperaturePos, "MaxTemperature", 1.0f);
+        Expressions.Add(NodeMaxTemperature);
+
+        // 3ColorBlend-node
+        const FVector2D AlphaColor3ColorBlendPos(-850, 750);
+        UMaterialExpressionMaterialFunctionCall* AlphaColor3ColorBlendNode = MaterialUtils::Create3ColorBlendNode(MaterialFunction, AlphaColor3ColorBlendPos);
+        Expressions.Add(AlphaColor3ColorBlendNode);
+
+        AlphaColor3ColorBlendNode->UpdateFromFunctionResource();
+
+        // Connecting nodes to the 3ColorBlend-node inputs
+        for (FFunctionExpressionInput& Input : EmissiveColor3ColorBlendNode->FunctionInputs)
+        {
+            if (Input.Input.InputName == TEXT("A"))
+            {
+                Input.Input.Connect(0, NodeBaseTemperature);
+            }
+            if (Input.Input.InputName == TEXT("B"))
+            {
+                Input.Input.Connect(0, NodeCurrentTemperature);
+            }
+            if (Input.Input.InputName == TEXT("C"))
+            {
+                Input.Input.Connect(0, NodeMaxTemperature);
+            }
+            if (Input.Input.InputName == TEXT("Alpha"))
+            {
+                Input.Input.Connect(0, AlphaColor3ColorBlendNode);
+            }
+        }
+
+        // Constant3Vector-node (Alpa3ColorBlend A input)
+        const FVector2D NodeAlpha3ColorBlendConstantAPos(-1350, 600);
+        const FLinearColor Alpha3ColorBlendConstantA(1.0f, 1.0f, 1.0f);
+        UMaterialExpressionConstant3Vector* NodeAlpha3ColorBlendConstantA = MaterialUtils::CreateConstant3VectorNode(MaterialFunction, NodeAlpha3ColorBlendConstantAPos,Alpha3ColorBlendConstantA);
+        Expressions.Add(NodeAlpha3ColorBlendConstantA);
+
+        // Constant3Vector-node (Alpa3ColorBlend B input)
+        const FVector2D NodeAlpha3ColorBlendConstantBPos(-1465, 870);
+        const FLinearColor Alpha3ColorBlendConstantB(0.067708f, 0.067708f, 0.067708f);
+        UMaterialExpressionConstant3Vector* NodeAlpha3ColorBlendConstantB = MaterialUtils::CreateConstant3VectorNode(MaterialFunction, NodeAlpha3ColorBlendConstantBPos, Alpha3ColorBlendConstantB);
+        Expressions.Add(NodeAlpha3ColorBlendConstantB);
+
+        // Constant3Vector-node (Alpa3ColorBlend C input)
+        const FVector2D NodeAlpha3ColorBlendConstantCPos(-1350, 1140);
+        const FLinearColor Alpha3ColorBlendConstantC(0.0f, 0.0f, 0.0f);
+        UMaterialExpressionConstant3Vector* NodeAlpha3ColorBlendConstantC = MaterialUtils::CreateConstant3VectorNode(MaterialFunction, NodeAlpha3ColorBlendConstantCPos, Alpha3ColorBlendConstantC);
+        Expressions.Add(NodeAlpha3ColorBlendConstantC);
+
+        // CheapContrast_RGB Node  (Alpha3ColorBlend Alpha input)
+        const FVector2D NodeCheapContrastRGBPos(-1310, 1390);
+        UMaterialExpressionMaterialFunctionCall* NodeCheapContrastRGB = MaterialUtils::CreatCheapContrastRGBNode(MaterialFunction, NodeCheapContrastRGBPos);
+        Expressions.Add(NodeCheapContrastRGB);
+
+        NodeCheapContrastRGB->UpdateFromFunctionResource();
+
+        // Connecting nodes to the Alpha3ColorBlend-node inputs
+        for (FFunctionExpressionInput& Input : AlphaColor3ColorBlendNode->FunctionInputs)
+        {
+            if (Input.Input.InputName == TEXT("A"))
+            {
+                Input.Input.Connect(0, NodeAlpha3ColorBlendConstantA);
+            }
+            if (Input.Input.InputName == TEXT("B"))
+            {
+                Input.Input.Connect(0, NodeAlpha3ColorBlendConstantB);
+            }
+            if (Input.Input.InputName == TEXT("C"))
+            {
+                Input.Input.Connect(0, NodeAlpha3ColorBlendConstantC);
+            }
+            if (Input.Input.InputName == TEXT("Alpha"))
+            {
+                Input.Input.Connect(0, NodeCheapContrastRGB);
+            }
+        }
+        
         
         // Create Fresnel-node (Lerp Alpha)
-        const FVector2D NodeLerpTempPos(-512, 512);
-        UMaterialExpressionFresnel* NodeFresnel = Logi::MaterialUtils::CreateFresnelNode(MaterialFunction, NodeLerpTempPos, 0.04f);
+        const FVector2D NodeFresnelPos(-1590, 1390);
+        UMaterialExpressionFresnel* NodeFresnel = MaterialUtils::CreateFresnelNode(MaterialFunction, NodeFresnelPos, 0.005f);
         Expressions.Add(NodeFresnel);
 
 
-        // Create 1.2-node (Fresnel ExponentIn input)
-        const FVector2D NodeExponentInParamPos(-716, 512);
-        UMaterialExpressionScalarParameter* NodeExponentInParam = Logi::MaterialUtils::CreateScalarParameterNode(MaterialFunction, NodeExponentInParamPos, "ExponentIn", 1.2f);
+        // Constant-node
+        const FVector2D ContrastConstantNode(-1540, 1605);
+        UMaterialExpressionConstant* NodeContrastConstant = MaterialUtils::CreateConstantNode(MaterialFunction, ContrastConstantNode, 0.1f);
+        Expressions.Add(NodeContrastConstant);
+
+        for (FFunctionExpressionInput& Input : NodeCheapContrastRGB->FunctionInputs)
+        {
+            if (Input.Input.InputName == TEXT("In"))
+            {
+                Input.Input.Connect(0, NodeFresnel);
+            }
+            if (Input.Input.InputName == TEXT("Contrast"))
+            {
+                Input.Input.Connect(0, NodeContrastConstant);
+            }
+        }
+
+        // Create ExponentIn-node (Fresnel ExponentIn input)
+        const FVector2D NodeExponentInParamPos(-1890, 1390);
+        UMaterialExpressionScalarParameter* NodeExponentInParam = MaterialUtils::CreateScalarParameterNode(MaterialFunction, NodeExponentInParamPos, "ExponentIn", 0.5f);
         Expressions.Add(NodeExponentInParam);
+        
+        NodeFresnel->ExponentIn.Connect(0, NodeExponentInParam);
 
-
-        // Create ComponentMask-node
-        const FVector2D NodeMaskPos(-670, 620);
-        UMaterialExpressionComponentMask* NodeComponentMask = Logi::MaterialUtils::CreateMaskNode(MaterialFunction, NodeMaskPos, true, true, true);
+        // ComponentMask-node
+        const FVector2D NodeMaskPos(-1890, 1605);
+        UMaterialExpressionComponentMask* NodeComponentMask = MaterialUtils::CreateMaskNode(MaterialFunction, NodeMaskPos, true, true, true);
         Expressions.Add(NodeComponentMask);
+
+        NodeFresnel->Normal.Connect(0, NodeComponentMask); // Link Mask to Normal on Fresnel
 
         
         // Create PixelNormalWS
-        const FVector2D NodePixelNormalWSPos(-850, 620);
-        UMaterialExpressionPixelNormalWS* NodePixelNormalWS = Logi::MaterialUtils::CreatePixelNormalWSNode(MaterialFunction, NodePixelNormalWSPos);
+        const FVector2D NodePixelNormalWSPos(-2090, 1605);
+        UMaterialExpressionPixelNormalWS* NodePixelNormalWS = MaterialUtils::CreatePixelNormalWSNode(MaterialFunction, NodePixelNormalWSPos);
         Expressions.Add(NodePixelNormalWS);
 
+        NodeComponentMask->Input.Connect(0, NodePixelNormalWS);
         
         // Create Output-node
         const FVector2D NodeOutputResultPos(400, 0);
-        UMaterialExpressionFunctionOutput* NodeOutputResult = Logi::MaterialUtils::CreateOutputResultNode(MaterialFunction, NodeOutputResultPos, "Result");
+        UMaterialExpressionFunctionOutput* NodeOutputResult = MaterialUtils::CreateOutputResultNode(MaterialFunction, NodeOutputResultPos, "Result");
         Expressions.Add(NodeOutputResult);
 
 
@@ -122,23 +223,18 @@ namespace ThermalMaterialFunction
         // Link SpecularColor to Specular
         NodeMaterialAttributes->Specular.Connect(0, NodeSpecularColor);
 
-        // Lerp-node connections
-        NodeLerp->A.Connect(0, NodeCurrentTemperature);
-        NodeLerp->B.Connect(0, NodeBaseTemperature);
-        NodeLerp->Alpha.Connect(0, NodeFresnel);
-
         // Fresnel connections
-        NodeFresnel->ExponentIn.Connect(0, NodeExponentInParam);
-        NodeFresnel->Normal.Connect(0, NodeComponentMask); // Link Mask to Normal on Fresnel
+        
+        
 
         // ComponentMask connections
-        NodeComponentMask->Input.Connect(0, NodePixelNormalWS);
+       
 
         // OutputResult connection
         NodeOutputResult->A.Connect(0, NodeMaterialAttributes); // A == the input on the "Output" node
 
         // Link Lerp to EmissiveColor on MaterialAttributes-node
-        NodeMaterialAttributes->EmissiveColor.Connect(0, NodeLerp);
+        NodeMaterialAttributes->EmissiveColor.Connect(0, EmissiveColor3ColorBlendNode);
 
 
         /* Finish */
@@ -155,7 +251,7 @@ namespace ThermalMaterialFunction
 
         /**/
         
-        bool bSaved = Logi::LogiUtils::SaveAssetToDisk(MaterialFunction);
+        bool bSaved = LogiUtils::SaveAssetToDisk(MaterialFunction);
 
         if (bSaved)
         {

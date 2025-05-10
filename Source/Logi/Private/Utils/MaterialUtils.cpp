@@ -495,6 +495,41 @@ namespace Logi::MaterialUtils
         return MaterialFunctionNode;
     }
 
+    UMaterialExpressionMaterialFunctionCall* CreatCheapContrastRGBNode(UObject* Outer, const FVector2D& EditorPos)
+    {
+        // If Outer is not a UMaterial or UMaterialFunctionInterface(UMaterialFunction + others)
+        if (!IsOuterAMaterialOrFunction(Outer))
+        {
+            UE_LOG(LogTemp, Error, TEXT("Invalid Outer passed to CreatCheapContrastRGBNode"));
+            return nullptr;
+        }
+        
+        // Opprett en MaterialExpressionMaterialFunctionCall-node
+        UMaterialExpressionMaterialFunctionCall* MaterialFunctionNode = NewObject<UMaterialExpressionMaterialFunctionCall>(Outer);
+        
+        // 3ColorBlend MaterialFunction
+        const FString FilePath = TEXT("MaterialFunction'/Engine/Functions/Engine_MaterialFunctions01/ImageAdjustment/CheapContrast_RGB.CheapContrast_RGB'");
+        UMaterialFunction* MFCheapContrastRGBNode = LoadObject<UMaterialFunction>(nullptr, *FilePath);
+        
+        
+        if (MFCheapContrastRGBNode)
+        {
+            // Assign CheapContrastRGB MF to the MaterialFunction
+            MaterialFunctionNode->MaterialFunction = MFCheapContrastRGBNode;
+
+            MaterialFunctionNode->MaterialExpressionEditorX = EditorPos.X;
+            MaterialFunctionNode->MaterialExpressionEditorY = EditorPos.Y;
+        }
+        else
+        {
+            UE_LOG(LogTemp, Warning, TEXT("Failed to load CheapContrast_RGB MaterialFunction in CreatCheapContrastRGBNode"));
+            return nullptr;
+        }
+
+        return MaterialFunctionNode;
+    }
+
+    
     UMaterialExpressionFunctionOutput* CreateOutputResultNode(UObject* Outer, const FVector2D& EditorPos, const FName& OutputName)
     {
         // If Outer is not a UMaterial or UMaterialFunctionInterface(UMaterialFunction + others)

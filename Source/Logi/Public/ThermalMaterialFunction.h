@@ -4,7 +4,7 @@
 
 class UMaterialFunction;
 
-namespace ThermalMaterialFunction
+namespace Logi::ThermalMaterialFunction
 {
 	void CreateMaterialFunction(bool& bSuccess, FString& StatusMessage);
 };

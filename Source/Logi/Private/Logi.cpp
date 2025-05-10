@@ -120,7 +120,7 @@ void FLogiModule::PluginButtonClicked()
 	UE_LOG(LogTemp, Warning, TEXT("%s"), *StatusMessage);
 
 	// Create ThermalMaterialFunction Material
-	ThermalMaterialFunction::CreateMaterialFunction(bSuccess, StatusMessage);
+	Logi::ThermalMaterialFunction::CreateMaterialFunction(bSuccess, StatusMessage);
 
 	//Log status - ThermalMaterialFunction
 	UE_LOG(LogTemp, Warning, TEXT("%s"), *StatusMessage);
