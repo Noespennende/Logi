@@ -185,11 +185,11 @@ namespace Logi::ActorPatcher
 		UE_LOG(LogTemp, Warning, TEXT("Adding variable to actor blueprint"));
 
 		//Add variables to the blueprint
-		Logi::BlueprintUtils::AddVariableToBlueprintClass(Blueprint, "Logi_Hot", BoolType, true, "false");
-		Logi::BlueprintUtils::AddVariableToBlueprintClass(Blueprint, "Logi_BaseTemperature", FloatType, true, "0.0");
-		Logi::BlueprintUtils::AddVariableToBlueprintClass(Blueprint, "Logi_MaxTemperature", FloatType, true, "25.0");
-		Logi::BlueprintUtils::AddVariableToBlueprintClass(Blueprint, "Logi_CurrentTemperature", FloatType, true, "25.0");
-		Logi::BlueprintUtils::AddVariableToBlueprintClass(Blueprint, "Logi_MaterialIndex", INTType, false, "0");
+		BlueprintUtils::AddVariableToBlueprintClass(Blueprint, "Logi_Hot", BoolType, true, "false");
+		BlueprintUtils::AddVariableToBlueprintClass(Blueprint, "Logi_BaseTemperature", FloatType, true, "0.0");
+		BlueprintUtils::AddVariableToBlueprintClass(Blueprint, "Logi_MaxTemperature", FloatType, true, "25.0");
+		BlueprintUtils::AddVariableToBlueprintClass(Blueprint, "Logi_CurrentTemperature", FloatType, true, "10.0");
+		BlueprintUtils::AddVariableToBlueprintClass(Blueprint, "Logi_MaterialIndex", INTType, false, "0");
 	}
 
 	void AddNodeSetupToSetupFunction(UEdGraph* FunctionGraph, const UK2Node_FunctionEntry* EntryNode) {
