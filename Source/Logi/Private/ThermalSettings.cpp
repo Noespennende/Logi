@@ -4,6 +4,7 @@
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "Materials/MaterialParameterCollection.h"
 #include "Materials/MaterialParameterCollectionInstance.h"
+#include "Utils/MaterialUtils.h"
 
 
 namespace Logi::MPCThermalSettings
@@ -22,37 +23,50 @@ namespace Logi::MPCThermalSettings
 		if (!ThermalSettings)
 		{
 			UPackage* Package = CreatePackage(*FString("/Game/Logi_ThermalCamera/Materials"));
-			ThermalSettings = NewObject<UMaterialParameterCollection>(Package, UMaterialParameterCollection::StaticClass(), FName("MPC_Logi_ThermalSettings"), RF_Public | RF_Standalone);
+			ThermalSettings = NewObject<UMaterialParameterCollection>(
+				Package, UMaterialParameterCollection::StaticClass(), FName("MPC_Logi_ThermalSettings"),
+				RF_Public | RF_Standalone);
 			if (ThermalSettings) {
+				
+				// Adding Scalar parameters
 
-				//Lambda functions for adding parameters to MPC
-				auto AddScalar = [&ThermalSettings](const FName& Name, const float DefaultValue) -> void {
-					FCollectionScalarParameter Param;
-					Param.ParameterName = Name;
-					Param.DefaultValue = DefaultValue;
-					ThermalSettings->ScalarParameters.Add(Param);
-					};
+				const FName ThermalCameraToggleName = FName("ThermalCameraToggle");
+				const float ThermalCameraToggleDefaultValue = 0.0f;
+				MaterialUtils::AddScalarParameter(ThermalSettings, ThermalCameraToggleName, ThermalCameraToggleDefaultValue);
 
-				auto AddVector = [&ThermalSettings](const FName& Name, const FLinearColor& DefaultValue) -> void {
-					FCollectionVectorParameter Param;
-					Param.ParameterName = Name;
-					Param.DefaultValue = DefaultValue;
-					ThermalSettings->VectorParameters.Add(Param);
-					};
-					
-				//Scalar parameters to be added
-				AddScalar(FName("ThermalCameraToggle"), 0.0);
-				AddScalar(FName("BackgroundTemperature"), 0.0);
-				AddScalar(FName("Blur"), 0.0);
-				AddScalar(FName("NoiseAmount"), 0.05);
-				AddScalar(FName("SkyTemperature"), 0.0);
+				const FName BackgroundTemperatureName = FName("BackgroundTemperature");
+				const float BackgroundTemperatureDefaultValue = 0.0f;
+				MaterialUtils::AddScalarParameter(ThermalSettings, BackgroundTemperatureName, BackgroundTemperatureDefaultValue);
 
+				const FName BlurName = FName("Blur");
+				const float BlurDefaultValue = 0.0f;
+				MaterialUtils::AddScalarParameter(ThermalSettings, BlurName, BlurDefaultValue);
 
-				//vector parameters to be added
-				AddVector(FName("Cold"), FLinearColor(1, 1, 1, 1));
-				AddVector(FName("Mid"), FLinearColor(0, 1, 0, 1));
-				AddVector(FName("Hot"), FLinearColor(1, 0, 0, 1));
-				AddVector(FName("NoiseSize"), FLinearColor(0, 0, 0, 0));
+				const FName NoiseAmountName = FName("NoiseAmount");
+				const float NoiseAmountDefaultValue = 0.05f;
+				MaterialUtils::AddScalarParameter(ThermalSettings, NoiseAmountName, NoiseAmountDefaultValue);
+
+				const FName SkyTemperatureName = FName("SkyTemperature");
+				const float SkyTemperatureDefaultValue = 0.0f;
+				MaterialUtils::AddScalarParameter(ThermalSettings, SkyTemperatureName, SkyTemperatureDefaultValue);
+				
+				// Adding Vector parameters
+
+				const FName ColdName = FName("Cold");
+				const FLinearColor ColdDefaultValue = FLinearColor(1, 1, 1, 1);
+				MaterialUtils::AddVectorParameter(ThermalSettings, ColdName, ColdDefaultValue);
+
+				const FName MidName = FName("Mid");
+				const FLinearColor MidDefaultValue = FLinearColor(0, 1, 0, 1);
+				MaterialUtils::AddVectorParameter(ThermalSettings, MidName, MidDefaultValue);
+
+				const FName HotName = FName("Hot");
+				const FLinearColor HotDefaultValue = FLinearColor(1, 0, 0, 1);
+				MaterialUtils::AddVectorParameter(ThermalSettings, HotName, HotDefaultValue);
+
+				const FName NoiseSizeName = FName("NoiseSize");
+				const FLinearColor NoiseSizeDefaultValue = FLinearColor(0, 0, 0, 0);
+				MaterialUtils::AddVectorParameter(ThermalSettings, NoiseSizeName, NoiseSizeDefaultValue);
 
 				//Save the MPC with parameters
 				ThermalSettings->MarkPackageDirty();
@@ -158,6 +172,7 @@ namespace Logi::MPCThermalSettings
 		UMaterialParameterCollectionInstance* Instance = World->GetParameterCollectionInstance(ThermalSettings);
 		if (Instance)
 		{
+			
 			Instance->SetScalarParameterValue(FName("ThermalCameraToggle"),0);
 			Instance->SetScalarParameterValue(FName("BackgroundTemperature"), 0);
 			Instance->SetScalarParameterValue(FName("Blur"), 0);

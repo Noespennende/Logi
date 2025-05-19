@@ -71,6 +71,10 @@ namespace Logi::MaterialUtils
     UMaterialExpressionFresnel* CreateFresnelNode(UObject* Outer, const FVector2D& EditorPos, std::optional<float> BaseReflectFractionValue = std::nullopt, std::optional<float> ExponentValue = std::nullopt);
     UMaterialExpressionMakeMaterialAttributes* CreateMaterialAttributesNode(UObject* Outer, const FVector2D& EditorPos);
 
+    // Material Parameter Collection Functions
+    void AddScalarParameter(UMaterialParameterCollection* Collection, const FName& ParameterName, float DefaultValue);
+    void AddVectorParameter(UMaterialParameterCollection* Collection, const FName& ParameterName, const FLinearColor& DefaultValue);
+    
     // !!! 5.3.2 Workaround node creations - replace with proper node creation for UE version 5.4+ (See documentation)
     UMaterialExpressionMaterialFunctionCall* CreateSceneTexturePostProcessNode(UObject* Outer, const FVector2D& EditorPos);
     UMaterialExpressionMaterialFunctionCall* CreateSceneTextureBaseColorNode(UObject* Outer, const FVector2D& EditorPos);

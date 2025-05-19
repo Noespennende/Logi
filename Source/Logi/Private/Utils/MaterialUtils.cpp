@@ -724,6 +724,28 @@ namespace Logi::MaterialUtils
     }
 
 
+    // === Material Parameter Collection Functions ===
+
+    void AddScalarParameter(UMaterialParameterCollection* Collection, const FName& ParameterName, const float DefaultValue)
+    {
+        if (!Collection) return;
+
+        FCollectionScalarParameter Param;
+        Param.ParameterName = ParameterName;
+        Param.DefaultValue = DefaultValue;
+        Collection->ScalarParameters.Add(Param);
+    }
+
+    void AddVectorParameter(UMaterialParameterCollection* Collection, const FName& ParameterName, const FLinearColor& DefaultValue)
+    {
+        if (!Collection) return;
+
+        FCollectionVectorParameter Param;
+        Param.ParameterName = ParameterName;
+        Param.DefaultValue = DefaultValue;
+        Collection->VectorParameters.Add(Param);
+    }
+
     // === !!! 5.3.2 Workaround node creations - replace with proper node creation for UE version 5.4+ (See documentation) ===
     
     UMaterialExpressionMaterialFunctionCall* CreateSceneTexturePostProcessNode(UObject* Outer, const FVector2D& EditorPos)
