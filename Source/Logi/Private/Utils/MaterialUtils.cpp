@@ -76,7 +76,8 @@ namespace Logi::MaterialUtils
     }
 
     // BValue first of the optionals, because it is most likely to be the one that has a set value, if not both does.
-    UMaterialExpressionMultiply* CreateMultiplyNode(UObject* Outer, const FVector2D& EditorPos, std::optional<float> BValue, std::optional<float> AValue)
+    UMaterialExpressionMultiply* CreateMultiplyNode(UObject* Outer, const FVector2D& EditorPos,
+                                                    std::optional<float> BValue, std::optional<float> AValue)
     {
         // If Outer is not a UMaterial or UMaterialFunctionInterface(UMaterialFunction + others)
         if (!IsOuterAMaterialOrFunction(Outer))
@@ -198,7 +199,8 @@ namespace Logi::MaterialUtils
         return IfNode;
     }
 
-    UMaterialExpressionClamp* CreateClampNode(UObject* Outer, const FVector2D& EditorPos, const std::optional<float> MinValue, const std::optional<float> MaxValue)
+    UMaterialExpressionClamp* CreateClampNode(UObject* Outer, const FVector2D& EditorPos,
+                                              const std::optional<float> MinValue, const std::optional<float> MaxValue)
     {
         // If Outer is not a UMaterial or UMaterialFunctionInterface(UMaterialFunction + others)
         if (!IsOuterAMaterialOrFunction(Outer))

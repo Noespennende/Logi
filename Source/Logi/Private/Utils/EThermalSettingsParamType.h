@@ -5,3 +5,6 @@ enum class EThermalSettingsParamType
 	Scalar,
 	Vector
 };
+
+
+

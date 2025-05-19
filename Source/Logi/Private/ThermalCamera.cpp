@@ -32,15 +32,15 @@
 #include "Materials/MaterialExpressionTextureCoordinate.h"
 #include "Materials/MaterialExpressionTime.h"
 #include "Materials/MaterialExpressionVectorNoise.h"
-
-#include "LogiUtils.h"
 #include "Utils/EThermalSettingsParamType.h"
+#include "Utils/LogiUtils.h"
 #include "Utils/MaterialUtils.h"
 
 namespace Logi::ThermalCamera
 {
     
-    static UMaterialExpressionLinearInterpolate* CreateNodeArea1(UMaterial* Material, TArray<TObjectPtr<UMaterialExpression>>& Expressions)
+    static UMaterialExpressionLinearInterpolate* CreateNodeArea1(UMaterial* Material,
+                                                                 TArray<TObjectPtr<UMaterialExpression>>& Expressions)
     {
         /* 1 - White area - Is Thermal Camera on? */
 
@@ -87,7 +87,8 @@ namespace Logi::ThermalCamera
         UMaterialExpressionAdd* Area2YellowAddNode = nullptr;
     };
 
-    static FNodeArea2Result CreateNodeArea2(UMaterial* Material, TArray<TObjectPtr<UMaterialExpression>>& Expressions, UMaterialExpressionLinearInterpolate* Area1WhiteLerpNode)
+    static FNodeArea2Result CreateNodeArea2(UMaterial* Material, TArray<TObjectPtr<UMaterialExpression>>& Expressions,
+                                            UMaterialExpressionLinearInterpolate* Area1WhiteLerpNode)
     {
         /* 2 - Yellow area  - Add noise */
 
@@ -266,7 +267,8 @@ namespace Logi::ThermalCamera
         return Result;
     }
 
-    static UMaterialExpressionAppendVector* CreateNodeArea3(UMaterial* Material, TArray<TObjectPtr<UMaterialExpression>>& Expressions)
+    static UMaterialExpressionAppendVector* CreateNodeArea3(UMaterial* Material,
+                                                            TArray<TObjectPtr<UMaterialExpression>>& Expressions)
     {
         /* 3 - White area - Add back the alpha channel to the image */
 
@@ -300,7 +302,8 @@ namespace Logi::ThermalCamera
         UMaterialExpressionMultiply* Area4AddSkyMultiplyNode = nullptr;
     };
 
-    static FNodeArea4Result CreateNodeArea4(UMaterial* Material, TArray<TObjectPtr<UMaterialExpression>>& Expressions)
+    static FNodeArea4Result CreateNodeArea4(UMaterial* Material,
+                                            TArray<TObjectPtr<UMaterialExpression>>& Expressions)
     {
         /* 4 - Blue area */
 
@@ -981,7 +984,8 @@ namespace Logi::ThermalCamera
         UMaterialExpressionLinearInterpolate* Area5GreenBlurLerpNode = nullptr;
     };
 
-    static FNodeArea5Result CreateNodeArea5(UMaterial* Material, TArray<TObjectPtr<UMaterialExpression>>& Expressions)
+    static FNodeArea5Result CreateNodeArea5(UMaterial* Material,
+                                            TArray<TObjectPtr<UMaterialExpression>>& Expressions)
     {
         FNodeArea5Result Result;
        
@@ -1528,7 +1532,8 @@ namespace Logi::ThermalCamera
         return Result;
     }
 
-    static UMaterialExpressionIf* CreateNodeArea6(UMaterial* Material, TArray<TObjectPtr<UMaterialExpression>>& Expressions)
+    static UMaterialExpressionIf* CreateNodeArea6(UMaterial* Material,
+                                                  TArray<TObjectPtr<UMaterialExpression>>& Expressions)
     {
         /* 6 - Orange area */
 

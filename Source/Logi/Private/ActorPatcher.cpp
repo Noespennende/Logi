@@ -484,15 +484,15 @@ namespace Logi::ActorPatcher
 		int xPosition = 300;
 
 		//create branch node for ThermalControllerActive variable
-		const UK2Node_IfThenElse* branchNode = Logi::BlueprintUtils::CreateBPBranchNode(FunctionGraph, xPosition, 0);
+		const UK2Node_IfThenElse* branchNode = BlueprintUtils::CreateBPBranchNode(FunctionGraph, xPosition, 0);
 
 		//Thermal Controller filepath
 		const TCHAR* thermalControllerFilePath = TEXT("/Game/Logi_ThermalCamera/Actors/BP_Logi_ThermalController.BP_Logi_ThermalController_C");
 
 
 		//Get Thermal Controllers ThermalCameraActive variable
-		const UK2Node_VariableGet* getThermalController = Logi::BlueprintUtils::CreateBPGetterNode(FunctionGraph, FName("Logi_ThermalController"), xPosition - 500, 200);
-		const UK2Node_VariableGet* getThermalControllerThermalCameraActive = Logi::BlueprintUtils::CreateBPExternalGetterNode(FunctionGraph, FName("ThermalCameraActive"), thermalControllerFilePath, xPosition - 300,200);
+		const UK2Node_VariableGet* getThermalController = BlueprintUtils::CreateBPGetterNode(FunctionGraph, FName("Logi_ThermalController"), xPosition - 500, 200);
+		const UK2Node_VariableGet* getThermalControllerThermalCameraActive = BlueprintUtils::CreateBPExternalGetterNode(FunctionGraph, FName("ThermalCameraActive"), thermalControllerFilePath, xPosition - 300,200);
 
 		//Connect ThermalController getter node to the external getter node
 		Schema->TryCreateConnection(getThermalController->GetValuePin(), getThermalControllerThermalCameraActive->FindPin(FName("self")));
@@ -506,8 +506,8 @@ namespace Logi::ActorPatcher
 		xPosition += 300;
 
 		//create setter nodes for Logi material index
-		const UK2Node_VariableSet* setLogiMaterialIndexNodeZero = Logi::BlueprintUtils::CreateBPSetterNode(FunctionGraph, FName("Logi_MaterialIndex"), xPosition, 100);
-		const UK2Node_VariableSet* setLogiMaterialIndexNodeOne = Logi::BlueprintUtils::CreateBPSetterNode(FunctionGraph, FName("Logi_MaterialIndex"), xPosition, -100);
+		const UK2Node_VariableSet* setLogiMaterialIndexNodeZero = BlueprintUtils::CreateBPSetterNode(FunctionGraph, FName("Logi_MaterialIndex"), xPosition, 100);
+		const UK2Node_VariableSet* setLogiMaterialIndexNodeOne = BlueprintUtils::CreateBPSetterNode(FunctionGraph, FName("Logi_MaterialIndex"), xPosition, -100);
 
 		//set Logi material index pin to 0
 		UEdGraphPin* setLogiMaterialIndexNodeZeroPin = setLogiMaterialIndexNodeZero->FindPin(FName("Logi_MaterialIndex"));
@@ -523,148 +523,146 @@ namespace Logi::ActorPatcher
 		xPosition += 600;
 
 		//create set scalar parameter value node for CurrentTemperature
-		const UK2Node_CallFunction* setCurrentTemperatureScalarParameterNode = Logi::BlueprintUtils::CreateBPDynamicMaterialInstanceScalarParameterNode(FunctionGraph, xPosition, 0);
-		setCurrentTemperatureScalarParameterNode->FindPin(FName("ParameterName"))->DefaultValue = TEXT("CurrentTemperature");
+		const UK2Node_CallFunction* SetCurrentTemperatureScalarParameterNode = BlueprintUtils::CreateBPDynamicMaterialInstanceScalarParameterNode(FunctionGraph, xPosition, 0);
+		SetCurrentTemperatureScalarParameterNode->FindPin(FName("ParameterName"))->DefaultValue = TEXT("CurrentTemperature");
 
 		//create getter node for getLogiDynamicMaterialInstance and connect it to the current temperature node
-		const UK2Node_VariableGet* getLogiLogiDynamicMaterialInstance = Logi::BlueprintUtils::CreateBPGetterNode(FunctionGraph, FName("Logi_DynamicMaterialInstance"), xPosition - 300, 100);
-		Schema->TryCreateConnection(getLogiLogiDynamicMaterialInstance->GetValuePin(), setCurrentTemperatureScalarParameterNode->FindPin(FName("self")));
-		Schema->TryCreateConnection(setLogiMaterialIndexNodeZero->GetThenPin(), setCurrentTemperatureScalarParameterNode->GetExecPin());
-		Schema->TryCreateConnection(setLogiMaterialIndexNodeOne->GetThenPin(), setCurrentTemperatureScalarParameterNode->GetExecPin());
+		const UK2Node_VariableGet* GetLogiLogiDynamicMaterialInstance = BlueprintUtils::CreateBPGetterNode(FunctionGraph, FName("Logi_DynamicMaterialInstance"), xPosition - 300, 100);
+		Schema->TryCreateConnection(GetLogiLogiDynamicMaterialInstance->GetValuePin(), SetCurrentTemperatureScalarParameterNode->FindPin(FName("self")));
+		Schema->TryCreateConnection(setLogiMaterialIndexNodeZero->GetThenPin(), SetCurrentTemperatureScalarParameterNode->GetExecPin());
+		Schema->TryCreateConnection(setLogiMaterialIndexNodeOne->GetThenPin(), SetCurrentTemperatureScalarParameterNode->GetExecPin());
 		
 		//create normalize to range node setup for CurrentTemperature
-		const UK2Node_CallFunction* normalizeToRangeNode = Logi::BlueprintUtils::CreateBPNormalizeToRangeNode(FunctionGraph, xPosition, 300);
-		const UK2Node_VariableGet* getLogiCurrentTemperature =  Logi::BlueprintUtils::CreateBPGetterNode(FunctionGraph, FName("Logi_CurrentTemperature"), xPosition - 250, 300);
-		Schema->TryCreateConnection(getLogiCurrentTemperature->GetValuePin(), normalizeToRangeNode->FindPin(FName("Value")));
-		getThermalController = Logi::BlueprintUtils::CreateBPGetterNode(FunctionGraph, FName("Logi_ThermalController"), xPosition - 550, 400);
-		const UK2Node_VariableGet* getThermalControllerThermalCameraRangeMin = Logi::BlueprintUtils::CreateBPExternalGetterNode(FunctionGraph, FName("ThermalCameraRangeMin"), thermalControllerFilePath, xPosition - 300, 350);
-		const UK2Node_VariableGet* getThermalControllerThermalCameraRangeMax = Logi::BlueprintUtils::CreateBPExternalGetterNode(FunctionGraph, FName("ThermalCameraRangeMax"), thermalControllerFilePath, xPosition - 300, 450);
+		const UK2Node_CallFunction* NormalizeToRangeNode = BlueprintUtils::CreateBPNormalizeToRangeNode(FunctionGraph, xPosition, 300);
+		const UK2Node_VariableGet* GetLogiCurrentTemperature =  BlueprintUtils::CreateBPGetterNode(FunctionGraph, FName("Logi_CurrentTemperature"), xPosition - 250, 300);
+		Schema->TryCreateConnection(GetLogiCurrentTemperature->GetValuePin(), NormalizeToRangeNode->FindPin(FName("Value")));
+		getThermalController = BlueprintUtils::CreateBPGetterNode(FunctionGraph, FName("Logi_ThermalController"), xPosition - 550, 400);
+		const UK2Node_VariableGet* GetThermalControllerThermalCameraRangeMin = BlueprintUtils::CreateBPExternalGetterNode(FunctionGraph, FName("ThermalCameraRangeMin"), thermalControllerFilePath, xPosition - 300, 350);
+		const UK2Node_VariableGet* GetThermalControllerThermalCameraRangeMax = BlueprintUtils::CreateBPExternalGetterNode(FunctionGraph, FName("ThermalCameraRangeMax"), thermalControllerFilePath, xPosition - 300, 450);
 		
-		Schema->TryCreateConnection(getThermalController->GetValuePin(), getThermalControllerThermalCameraRangeMin->FindPin(FName("self")));
-		Schema->TryCreateConnection(getThermalController->GetValuePin(), getThermalControllerThermalCameraRangeMax->FindPin(FName("self")));
+		Schema->TryCreateConnection(getThermalController->GetValuePin(), GetThermalControllerThermalCameraRangeMin->FindPin(FName("self")));
+		Schema->TryCreateConnection(getThermalController->GetValuePin(), GetThermalControllerThermalCameraRangeMax->FindPin(FName("self")));
 
-		Schema->TryCreateConnection(getThermalControllerThermalCameraRangeMin->GetValuePin(), normalizeToRangeNode->FindPin(FName("RangeMin")));
-		Schema->TryCreateConnection(getThermalControllerThermalCameraRangeMax->GetValuePin(), normalizeToRangeNode->FindPin(FName("RangeMax")));
-		Schema->TryCreateConnection(normalizeToRangeNode->GetReturnValuePin(), setCurrentTemperatureScalarParameterNode->FindPin(FName("Value")));
+		Schema->TryCreateConnection(GetThermalControllerThermalCameraRangeMin->GetValuePin(), NormalizeToRangeNode->FindPin(FName("RangeMin")));
+		Schema->TryCreateConnection(GetThermalControllerThermalCameraRangeMax->GetValuePin(), NormalizeToRangeNode->FindPin(FName("RangeMax")));
+		Schema->TryCreateConnection(NormalizeToRangeNode->GetReturnValuePin(), SetCurrentTemperatureScalarParameterNode->FindPin(FName("Value")));
 
 		
 		xPosition += 800;
 
 		//create set scalar parameter value node for  MaxTemperature node
-		const UK2Node_CallFunction* setMaxTemperatureScalarParameterNode = Logi::BlueprintUtils::CreateBPDynamicMaterialInstanceScalarParameterNode(FunctionGraph, xPosition, 0);
-		setMaxTemperatureScalarParameterNode->FindPin(FName("ParameterName"))->DefaultValue = TEXT("MaxTemperature");
-		Schema->TryCreateConnection(setCurrentTemperatureScalarParameterNode->GetThenPin(), setMaxTemperatureScalarParameterNode->GetExecPin());
+		const UK2Node_CallFunction* SetMaxTemperatureScalarParameterNode = BlueprintUtils::CreateBPDynamicMaterialInstanceScalarParameterNode(FunctionGraph, xPosition, 0);
+		SetMaxTemperatureScalarParameterNode->FindPin(FName("ParameterName"))->DefaultValue = TEXT("MaxTemperature");
+		Schema->TryCreateConnection(SetCurrentTemperatureScalarParameterNode->GetThenPin(), SetMaxTemperatureScalarParameterNode->GetExecPin());
 
 		//create normalize to range node setup for MaxTemperature
-		normalizeToRangeNode = Logi::BlueprintUtils::CreateBPNormalizeToRangeNode(FunctionGraph, xPosition, 300);
-		const UK2Node_VariableGet* getLogiMaxTemperature = Logi::BlueprintUtils::CreateBPGetterNode(FunctionGraph, FName("Logi_MaxTemperature"), xPosition - 250, 300);
-		Schema->TryCreateConnection(getLogiMaxTemperature->GetValuePin(), normalizeToRangeNode->FindPin(FName("Value")));
-		getThermalController = Logi::BlueprintUtils::CreateBPGetterNode(FunctionGraph, FName("Logi_ThermalController"), xPosition - 550, 400);
-		getThermalControllerThermalCameraRangeMin = Logi::BlueprintUtils::CreateBPExternalGetterNode(FunctionGraph, FName("ThermalCameraRangeMin"), thermalControllerFilePath, xPosition - 300, 350);
-		getThermalControllerThermalCameraRangeMax = Logi::BlueprintUtils::CreateBPExternalGetterNode(FunctionGraph, FName("ThermalCameraRangeMax"), thermalControllerFilePath, xPosition - 300, 450);
+		NormalizeToRangeNode = BlueprintUtils::CreateBPNormalizeToRangeNode(FunctionGraph, xPosition, 300);
+		const UK2Node_VariableGet* GetLogiMaxTemperature = BlueprintUtils::CreateBPGetterNode(FunctionGraph, FName("Logi_MaxTemperature"), xPosition - 250, 300);
+		Schema->TryCreateConnection(GetLogiMaxTemperature->GetValuePin(), NormalizeToRangeNode->FindPin(FName("Value")));
+		getThermalController = BlueprintUtils::CreateBPGetterNode(FunctionGraph, FName("Logi_ThermalController"), xPosition - 550, 400);
+		GetThermalControllerThermalCameraRangeMin = BlueprintUtils::CreateBPExternalGetterNode(FunctionGraph, FName("ThermalCameraRangeMin"), thermalControllerFilePath, xPosition - 300, 350);
+		GetThermalControllerThermalCameraRangeMax = BlueprintUtils::CreateBPExternalGetterNode(FunctionGraph, FName("ThermalCameraRangeMax"), thermalControllerFilePath, xPosition - 300, 450);
 
-		Schema->TryCreateConnection(getThermalController->GetValuePin(), getThermalControllerThermalCameraRangeMin->FindPin(FName("self")));
-		Schema->TryCreateConnection(getThermalController->GetValuePin(), getThermalControllerThermalCameraRangeMax->FindPin(FName("self")));
+		Schema->TryCreateConnection(getThermalController->GetValuePin(), GetThermalControllerThermalCameraRangeMin->FindPin(FName("self")));
+		Schema->TryCreateConnection(getThermalController->GetValuePin(), GetThermalControllerThermalCameraRangeMax->FindPin(FName("self")));
 
-		Schema->TryCreateConnection(getThermalControllerThermalCameraRangeMin->GetValuePin(), normalizeToRangeNode->FindPin(FName("RangeMin")));
-		Schema->TryCreateConnection(getThermalControllerThermalCameraRangeMax->GetValuePin(), normalizeToRangeNode->FindPin(FName("RangeMax")));
-		Schema->TryCreateConnection(normalizeToRangeNode->GetReturnValuePin(), setMaxTemperatureScalarParameterNode->FindPin(FName("Value")));
+		Schema->TryCreateConnection(GetThermalControllerThermalCameraRangeMin->GetValuePin(), NormalizeToRangeNode->FindPin(FName("RangeMin")));
+		Schema->TryCreateConnection(GetThermalControllerThermalCameraRangeMax->GetValuePin(), NormalizeToRangeNode->FindPin(FName("RangeMax")));
+		Schema->TryCreateConnection(NormalizeToRangeNode->GetReturnValuePin(), SetMaxTemperatureScalarParameterNode->FindPin(FName("Value")));
 
 
 		//create getter node for getLogiDynamicMaterialInstance and connect it to the Max temperature node
-		getLogiLogiDynamicMaterialInstance = Logi::BlueprintUtils::CreateBPGetterNode(FunctionGraph, FName("Logi_DynamicMaterialInstance"), xPosition - 300, 100);
-		Schema->TryCreateConnection(getLogiLogiDynamicMaterialInstance->GetValuePin(), setMaxTemperatureScalarParameterNode->FindPin(FName("self")));
+		GetLogiLogiDynamicMaterialInstance = BlueprintUtils::CreateBPGetterNode(FunctionGraph, FName("Logi_DynamicMaterialInstance"), xPosition - 300, 100);
+		Schema->TryCreateConnection(GetLogiLogiDynamicMaterialInstance->GetValuePin(), SetMaxTemperatureScalarParameterNode->FindPin(FName("self")));
 
 		xPosition += 800;
 
 		//create set scalar parameter value node for  BaseTemperature node
-		const UK2Node_CallFunction* setBaseTemperatureScalarParameterNode = Logi::BlueprintUtils::CreateBPDynamicMaterialInstanceScalarParameterNode(FunctionGraph, xPosition, 0);
-		setBaseTemperatureScalarParameterNode->FindPin(FName("ParameterName"))->DefaultValue = TEXT("BaseTemperature");
-		Schema->TryCreateConnection(setMaxTemperatureScalarParameterNode->GetThenPin(), setBaseTemperatureScalarParameterNode->GetExecPin());
+		const UK2Node_CallFunction* SetBaseTemperatureScalarParameterNode = BlueprintUtils::CreateBPDynamicMaterialInstanceScalarParameterNode(FunctionGraph, xPosition, 0);
+		SetBaseTemperatureScalarParameterNode->FindPin(FName("ParameterName"))->DefaultValue = TEXT("BaseTemperature");
+		Schema->TryCreateConnection(SetMaxTemperatureScalarParameterNode->GetThenPin(), SetBaseTemperatureScalarParameterNode->GetExecPin());
 
 		//create normalize to range node setup for MaxTemperature
-		normalizeToRangeNode = Logi::BlueprintUtils::CreateBPNormalizeToRangeNode(FunctionGraph, xPosition, 300);
-		const UK2Node_VariableGet* getLogiBaseTemperature = Logi::BlueprintUtils::CreateBPGetterNode(FunctionGraph, FName("Logi_BaseTemperature"), xPosition - 250, 300);
-		Schema->TryCreateConnection(getLogiBaseTemperature->GetValuePin(), normalizeToRangeNode->FindPin(FName("Value")));
-		getThermalController = Logi::BlueprintUtils::CreateBPGetterNode(FunctionGraph, FName("Logi_ThermalController"), xPosition - 550, 400);
-		getThermalControllerThermalCameraRangeMin = Logi::BlueprintUtils::CreateBPExternalGetterNode(FunctionGraph, FName("ThermalCameraRangeMin"), thermalControllerFilePath, xPosition - 300, 350);
-		getThermalControllerThermalCameraRangeMax = Logi::BlueprintUtils::CreateBPExternalGetterNode(FunctionGraph, FName("ThermalCameraRangeMax"), thermalControllerFilePath, xPosition - 300, 450);
+		NormalizeToRangeNode = BlueprintUtils::CreateBPNormalizeToRangeNode(FunctionGraph, xPosition, 300);
+		const UK2Node_VariableGet* GetLogiBaseTemperature = BlueprintUtils::CreateBPGetterNode(FunctionGraph, FName("Logi_BaseTemperature"), xPosition - 250, 300);
+		Schema->TryCreateConnection(GetLogiBaseTemperature->GetValuePin(), NormalizeToRangeNode->FindPin(FName("Value")));
+		getThermalController = BlueprintUtils::CreateBPGetterNode(FunctionGraph, FName("Logi_ThermalController"), xPosition - 550, 400);
+		GetThermalControllerThermalCameraRangeMin = BlueprintUtils::CreateBPExternalGetterNode(FunctionGraph, FName("ThermalCameraRangeMin"), thermalControllerFilePath, xPosition - 300, 350);
+		GetThermalControllerThermalCameraRangeMax = BlueprintUtils::CreateBPExternalGetterNode(FunctionGraph, FName("ThermalCameraRangeMax"), thermalControllerFilePath, xPosition - 300, 450);
 
-		Schema->TryCreateConnection(getThermalController->GetValuePin(), getThermalControllerThermalCameraRangeMin->FindPin(FName("self")));
-		Schema->TryCreateConnection(getThermalController->GetValuePin(), getThermalControllerThermalCameraRangeMax->FindPin(FName("self")));
+		Schema->TryCreateConnection(getThermalController->GetValuePin(), GetThermalControllerThermalCameraRangeMin->FindPin(FName("self")));
+		Schema->TryCreateConnection(getThermalController->GetValuePin(), GetThermalControllerThermalCameraRangeMax->FindPin(FName("self")));
 
-		Schema->TryCreateConnection(getThermalControllerThermalCameraRangeMin->GetValuePin(), normalizeToRangeNode->FindPin(FName("RangeMin")));
-		Schema->TryCreateConnection(getThermalControllerThermalCameraRangeMax->GetValuePin(), normalizeToRangeNode->FindPin(FName("RangeMax")));
-		Schema->TryCreateConnection(normalizeToRangeNode->GetReturnValuePin(), setBaseTemperatureScalarParameterNode->FindPin(FName("Value")));
+		Schema->TryCreateConnection(GetThermalControllerThermalCameraRangeMin->GetValuePin(), NormalizeToRangeNode->FindPin(FName("RangeMin")));
+		Schema->TryCreateConnection(GetThermalControllerThermalCameraRangeMax->GetValuePin(), NormalizeToRangeNode->FindPin(FName("RangeMax")));
+		Schema->TryCreateConnection(NormalizeToRangeNode->GetReturnValuePin(), SetBaseTemperatureScalarParameterNode->FindPin(FName("Value")));
 
 		//create getter node for getLogiDynamicMaterialInstance and connect it to the Base temperature node
-		getLogiLogiDynamicMaterialInstance = Logi::BlueprintUtils::CreateBPGetterNode(FunctionGraph, FName("Logi_DynamicMaterialInstance"), xPosition - 300, 100);
-		Schema->TryCreateConnection(getLogiLogiDynamicMaterialInstance->GetValuePin(), setBaseTemperatureScalarParameterNode->FindPin(FName("self")));
+		GetLogiLogiDynamicMaterialInstance = BlueprintUtils::CreateBPGetterNode(FunctionGraph, FName("Logi_DynamicMaterialInstance"), xPosition - 300, 100);
+		Schema->TryCreateConnection(GetLogiLogiDynamicMaterialInstance->GetValuePin(), SetBaseTemperatureScalarParameterNode->FindPin(FName("self")));
 
 		xPosition += 600;
 
 		//Create set material node setup for each mesh component in actor blueprint:
-		bool firstLoop = true;
-		const UK2Node_CallFunction* previousSetMaterialNode = nullptr;
-		for (const USCS_Node* meshComponent : meshComponents) {
+		bool bFirstLoop = true;
+		const UK2Node_CallFunction* PreviousSetMaterialNode = nullptr;
+		for (const USCS_Node* MeshComponent : meshComponents) {
 			//Get the mesh component materials:
-			TArray<UMaterialInterface*> meshComponentMaterials = ActorUtils::FindAllMaterialsFromActorScsNode(meshComponent);
+			TArray<UMaterialInterface*> MeshComponentMaterials = ActorUtils::FindAllMaterialsFromActorScsNode(MeshComponent);
 
-			int materialIndex = 0;
+			int MaterialIndex = 0;
 
 			//create a set material node for each material in the mesh component
-			for (UMaterialInterface* meshComponentMaterial : meshComponentMaterials) {
+			for (UMaterialInterface* MeshComponentMaterial : MeshComponentMaterials) {
 				//create set material node
-				UK2Node_CallFunction* setMaterialNode = Logi::BlueprintUtils::CreateBPSetMaterialNode(FunctionGraph, xPosition, 0);
+				UK2Node_CallFunction* SetMaterialNode = BlueprintUtils::CreateBPSetMaterialNode(FunctionGraph, xPosition, 0);
 
 				//Create getter node for the mesh component
-				const UK2Node_VariableGet* meshComponentGetterNode = Logi::BlueprintUtils::CreateBPGetterNode(FunctionGraph, meshComponent->GetVariableName(), xPosition - 150, 100);
+				const UK2Node_VariableGet* MeshComponentGetterNode = BlueprintUtils::CreateBPGetterNode(FunctionGraph, MeshComponent->GetVariableName(), xPosition - 150, 100);
 
 				//Connect the mesh component getter node to the Set material node
-				Schema->TryCreateConnection(meshComponentGetterNode->GetValuePin(), setMaterialNode->FindPin(FName("self")));
+				Schema->TryCreateConnection(MeshComponentGetterNode->GetValuePin(), SetMaterialNode->FindPin(FName("self")));
 
 				//Set the material index of the Set Material node
-				setMaterialNode->FindPin(FName("ElementIndex"))->DefaultValue = FString::FromInt(materialIndex);
+				SetMaterialNode->FindPin(FName("ElementIndex"))->DefaultValue = FString::FromInt(MaterialIndex);
 
 				//Create select node
-				const UK2Node_Select* selectNode = Logi::BlueprintUtils::CreateBPSelectNode(FunctionGraph, xPosition, 300);
+				const UK2Node_Select* SelectNode = BlueprintUtils::CreateBPSelectNode(FunctionGraph, xPosition, 300);
 
 				//Set the select node's option 0 pin to the mesh component material
-				selectNode->FindPin(FName("Option 0"))->DefaultObject = meshComponentMaterial;
+				SelectNode->FindPin(FName("Option 0"))->DefaultObject = MeshComponentMaterial;
 
 				//Create a getter node for the Logi_DynamicMaterialInstance variable
-				const UK2Node_VariableGet* getLogiDynamicMaterialInstance = Logi::BlueprintUtils::CreateBPGetterNode(FunctionGraph, FName("Logi_DynamicMaterialInstance"), xPosition - 250, 300);
+				const UK2Node_VariableGet* getLogiDynamicMaterialInstance = BlueprintUtils::CreateBPGetterNode(FunctionGraph, FName("Logi_DynamicMaterialInstance"), xPosition - 250, 300);
 
 				//Connect the Logi_DynamicMaterialInstance getter node to the select node
-				Schema->TryCreateConnection(getLogiDynamicMaterialInstance->GetValuePin(), selectNode->FindPin(FName("Option 1")));
+				Schema->TryCreateConnection(getLogiDynamicMaterialInstance->GetValuePin(), SelectNode->FindPin(FName("Option 1")));
 
 				//Connect the setMaterialNode to the select node
-				Schema->TryCreateConnection(selectNode->GetReturnValuePin(), setMaterialNode->FindPin(FName("Material")));
+				Schema->TryCreateConnection(SelectNode->GetReturnValuePin(), SetMaterialNode->FindPin(FName("Material")));
 
 
 				//Create getter node for material index
-				const UK2Node_VariableGet* materialIndexGetterNode = Logi::BlueprintUtils::CreateBPGetterNode(FunctionGraph, FName("Logi_MaterialIndex"), xPosition - 150, 600);
+				const UK2Node_VariableGet* MaterialIndexGetterNode = BlueprintUtils::CreateBPGetterNode(FunctionGraph, FName("Logi_MaterialIndex"), xPosition - 150, 600);
 
 				//Connect the material index getter node to the select node
-				Schema->TryCreateConnection(materialIndexGetterNode->GetValuePin(), selectNode->FindPin(FName("Index")));
+				Schema->TryCreateConnection(MaterialIndexGetterNode->GetValuePin(), SelectNode->FindPin(FName("Index")));
 
 				//Connect the exec pin of the select node to the set material node
-				if (firstLoop) {
-					Schema->TryCreateConnection(setBaseTemperatureScalarParameterNode->GetThenPin(), setMaterialNode->GetExecPin());
-					firstLoop = false;
+				if (bFirstLoop) {
+					Schema->TryCreateConnection(SetBaseTemperatureScalarParameterNode->GetThenPin(), SetMaterialNode->GetExecPin());
+					bFirstLoop = false;
 				}
 				else {
-					Schema->TryCreateConnection(previousSetMaterialNode->GetThenPin(), setMaterialNode->GetExecPin());
+					Schema->TryCreateConnection(PreviousSetMaterialNode->GetThenPin(), SetMaterialNode->GetExecPin());
 				}
 
-				previousSetMaterialNode = setMaterialNode;
+				PreviousSetMaterialNode = SetMaterialNode;
 
-				materialIndex++;
+				MaterialIndex++;
 				xPosition += 600;
 			}
 		}
-		
-
 	}
 
 	UEdGraph* AddSetupFunctionToNonLogiActor(const FAssetData& Actor) {
@@ -809,14 +807,14 @@ namespace Logi::ActorPatcher
 			}
 
 			//Check if the Logi_LogiThermalActorSetup function referece nodes already exists in the event graph
-			bool logiThermalActorSetupFunctionNodeAlreadyExists = false;
-			for (UEdGraphNode* node : EventGraph->Nodes)
+			bool bLogiThermalActorSetupFunctionNodeAlreadyExists = false;
+			for (UEdGraphNode* Node : EventGraph->Nodes)
 			{
-				if (UK2Node_CallFunction* callFuncNode = Cast<UK2Node_CallFunction>(node))
+				if (UK2Node_CallFunction* CallFuncNode = Cast<UK2Node_CallFunction>(Node))
 				{
-					if (callFuncNode->FunctionReference.GetMemberName() == FName("Logi_ThermalActorSetup"))
+					if (CallFuncNode->FunctionReference.GetMemberName() == FName("Logi_ThermalActorSetup"))
 					{
-						logiThermalActorSetupFunctionNodeAlreadyExists = true;
+						bLogiThermalActorSetupFunctionNodeAlreadyExists = true;
 						break;
 					}
 				}
@@ -838,7 +836,7 @@ namespace Logi::ActorPatcher
 
 
 			// Add call function for Logi_ThermalActorSetup function to actor blueprint if it does not already exist
-			if (!logiThermalActorSetupFunctionNodeAlreadyExists) {
+			if (!bLogiThermalActorSetupFunctionNodeAlreadyExists) {
 				// Find BeginPlay node
 				UK2Node_Event* BeginPlayNode = nullptr;
 				for (UEdGraphNode* Node : EventGraph->Nodes) {

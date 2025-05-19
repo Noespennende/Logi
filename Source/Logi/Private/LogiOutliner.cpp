@@ -8,7 +8,6 @@
 #include "UObject/ConstructorHelpers.h"
 #include "Blueprint/BlueprintSupport.h"
 #include "EngineUtils.h"
-#include "LogiUtils.h"
 #include "Framework/Application/SlateApplication.h"
 #include "Widgets/Docking/SDockTab.h"
 #include "Widgets/SWindow.h"
@@ -17,6 +16,7 @@
 #include "Framework/Notifications/NotificationManager.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/PostProcessVolume.h"
+#include "Utils/LogiUtils.h"
 
 
 namespace Logi::LogiOutliner

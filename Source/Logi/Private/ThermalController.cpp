@@ -27,7 +27,6 @@
 #include "K2Node_VariableSet.h"
 #include "Materials/MaterialParameterCollection.h"
 #include "Editor.h"
-#include "LogiUtils.h"
 #include "Engine/Blueprint.h"
 #include "GameFramework/Actor.h"
 #include "Engine/SimpleConstructionScript.h"
@@ -43,6 +42,7 @@
 #include "Materials/MaterialExpressionMaterialFunctionCall.h"
 #include "Components/PrimitiveComponent.h"
 #include "Utils/BlueprintUtils.h"
+#include "Utils/LogiUtils.h"
 
 namespace Logi::ThermalController
 {

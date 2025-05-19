@@ -4,7 +4,6 @@
 #include "Materials/MaterialExpressionConstant3Vector.h"
 #include "Materials/MaterialExpressionFunctionOutput.h"
 #include "AssetToolsModule.h"
-#include "LogiUtils.h"
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "Factories/MaterialFunctionFactoryNew.h"
 #include "Materials/MaterialExpressionLinearInterpolate.h"
@@ -12,6 +11,7 @@
 #include "Materials/MaterialExpressionFresnel.h"
 #include "Materials/MaterialExpressionPixelNormalWS.h"
 #include "Materials/MaterialExpressionComponentMask.h"
+#include "Utils/LogiUtils.h"
 #include "Utils/MaterialUtils.h"
 
 
@@ -60,13 +60,13 @@ namespace Logi::ThermalMaterialFunction
 
         // Creating MaterialAttributes-node
         const FVector2D NodeMaterialAttributesPos(-0, -0);
-        UMaterialExpressionMakeMaterialAttributes* NodeMaterialAttributes = Logi::MaterialUtils::CreateMaterialAttributesNode(MaterialFunction, NodeMaterialAttributesPos);
+        UMaterialExpressionMakeMaterialAttributes* NodeMaterialAttributes = MaterialUtils::CreateMaterialAttributesNode(MaterialFunction, NodeMaterialAttributesPos);
         Expressions.Add(NodeMaterialAttributes);
         
         // Constant3Vector-node, the color to be linked to Specular
         const FVector2D NodeSpecularColorPos(-400, 0);
         const FLinearColor SpecularColor(0.0f, 0.0f, 0.0f);
-        UMaterialExpressionConstant3Vector* NodeSpecularColor = Logi::MaterialUtils::CreateConstant3VectorNode(MaterialFunction, NodeSpecularColorPos, SpecularColor);
+        UMaterialExpressionConstant3Vector* NodeSpecularColor = MaterialUtils::CreateConstant3VectorNode(MaterialFunction, NodeSpecularColorPos, SpecularColor);
         Expressions.Add(NodeSpecularColor);
 
         // 3ColorBlend-node
@@ -192,7 +192,11 @@ namespace Logi::ThermalMaterialFunction
 
         // Create ExponentIn-node (Fresnel ExponentIn input)
         const FVector2D NodeExponentInParamPos(-1890, 1390);
-        UMaterialExpressionScalarParameter* NodeExponentInParam = MaterialUtils::CreateScalarParameterNode(MaterialFunction, NodeExponentInParamPos, "ExponentIn", 0.5f);
+        const FName NodeExponentInParamName("ExponentIn");
+        const float NodeExponentInParamDefaultValue = 0.5f;
+        
+        UMaterialExpressionScalarParameter* NodeExponentInParam = MaterialUtils::CreateScalarParameterNode(
+            MaterialFunction, NodeExponentInParamPos, NodeExponentInParamName, NodeExponentInParamDefaultValue);
         Expressions.Add(NodeExponentInParam);
         
         NodeFresnel->ExponentIn.Connect(0, NodeExponentInParam);
