@@ -1540,520 +1540,89 @@ namespace Logi::ThermalCamera
         /** Orange 6.1 - Create heat mask **/
         
         // Orange 6.1 comment box - Create heat mask
-        const FVector2D HeatMaskCommentPos(-7310, 1150);
-        const FVector2D HeatMaskCommentSize(1000, 670);
+        const FVector2D HeatMaskCommentPos(-7500, 1150);
+        const FVector2D HeatMaskCommentSize(1200, 700);
         const FString HeatMaskCommentText = TEXT("Create heat mask");
         const FColor HeatMaskCommentColor =FColor::FromHex(TEXT("FFD26BFF"));
         UMaterialExpressionComment* HeatMaskComment = MaterialUtils::CreateCommentNode(Material, HeatMaskCommentPos, HeatMaskCommentSize, HeatMaskCommentText, HeatMaskCommentColor);
         Expressions.Add(HeatMaskComment);
-
-
-        // If-node
+        
+        // First If-node
         const FVector2D HeatMaskIfNodePos(-6510, 1400);
         UMaterialExpressionIf* HeatMaskIfNode = MaterialUtils::CreateIfNode(Material, HeatMaskIfNodePos);
         Expressions.Add(HeatMaskIfNode);
-        
 
-        // Mask-node
-        const FVector2D HeatMaskMaskNode1Pos(-6760, 1250);
+
+        // If-node (Input A)
+        const FVector2D HeatMaskAIfNodePos(-6760, 1250);
+        UMaterialExpressionIf* HeatMaskAIfNode = MaterialUtils::CreateIfNode(Material, HeatMaskAIfNodePos);
+        Expressions.Add(HeatMaskAIfNode);
+        HeatMaskIfNode->A.Connect(0, HeatMaskAIfNode);
+
+
+        // Constant-node (Value 1e+08)
+        const FVector2D HeatMaskConstant1NodePos(-7150, 1400);
+        const float HeatMaskConstant1Value = 1e+08f;
+        UMaterialExpressionConstant* HeatMaskConstant1Node = MaterialUtils::CreateConstantNode(Material, HeatMaskConstant1NodePos, HeatMaskConstant1Value);
+        Expressions.Add(HeatMaskConstant1Node);
+
+        HeatMaskAIfNode->B.Connect(0, HeatMaskConstant1Node);
+
+
+        // Constant-node (Value 0)
+        const FVector2D HeatMaskConstant2NodePos(-7150, 1500);
+        const float HeatMaskConstant2Value = 0;
+        UMaterialExpressionConstant* HeatMaskConstant2Node = MaterialUtils::CreateConstantNode(Material, HeatMaskConstant2NodePos, HeatMaskConstant2Value);
+        Expressions.Add(HeatMaskConstant2Node);
+
+        HeatMaskAIfNode->AGreaterThanB.Connect(0, HeatMaskConstant2Node);
+        
+        // Mask-node 
+        const FVector2D HeatMaskMaskNode1Pos(-6960, 1250);
         UMaterialExpressionComponentMask* HeatMaskMaskNode1 = MaterialUtils::CreateMaskNode(Material, HeatMaskMaskNode1Pos, true, false, false);
         Expressions.Add(HeatMaskMaskNode1);
-        HeatMaskIfNode->A.Connect(0, HeatMaskMaskNode1);
+        HeatMaskAIfNode->A.Connect(0, HeatMaskMaskNode1);
+        HeatMaskAIfNode->ALessThanB.Connect(0, HeatMaskMaskNode1);
 
         // Add-node
-        const FVector2D HeatMaskAddNodePos(-6950, 1250);
+        const FVector2D HeatMaskAddNodePos(-7150, 1250);
         UMaterialExpressionAdd* HeatMaskAddNode = MaterialUtils::CreateAddNode(Material, HeatMaskAddNodePos);
         Expressions.Add(HeatMaskAddNode);
         HeatMaskMaskNode1->Input.Connect(0, HeatMaskAddNode);
 
         // SceneTexture:SceneDepth-node
-        const FVector2D HeatMaskSceneTextureSceneDepthNodePos(-7250, 1250);
+        const FVector2D HeatMaskSceneTextureSceneDepthNodePos(-7450, 1250);
         UMaterialExpressionMaterialFunctionCall* HeatMaskSceneTextureSceneDepthNode = MaterialUtils::CreateSceneTextureSceneDepthNode(Material, HeatMaskSceneTextureSceneDepthNodePos);
         Expressions.Add(HeatMaskSceneTextureSceneDepthNode);
         HeatMaskSceneTextureSceneDepthNode->UpdateFromFunctionResource();
         HeatMaskAddNode->A.Connect(0, HeatMaskSceneTextureSceneDepthNode);
 
 
-        // Mask-node
-        const FVector2D HeatMaskMaskNode2Pos(-6760, 1434);
+        // Mask-node (If B)
+        const FVector2D HeatMaskMaskNode2Pos(-6760, 1550);
         UMaterialExpressionComponentMask* HeatMaskMaskNode2 = MaterialUtils::CreateMaskNode(Material, HeatMaskMaskNode2Pos, true, false, false);
         Expressions.Add(HeatMaskMaskNode2);
         HeatMaskIfNode->B.Connect(0, HeatMaskMaskNode2);
 
+        // SceneTexture:CustomDepth-node const FVector2D HeatMaskAddNodePos(-7150, 1250);
+        const FVector2D HeatMaskSceneTextureCustomDepthNodePos(-7150, 1600);
+        UMaterialExpressionMaterialFunctionCall* HeatMaskSceneTextureCustomDepthNode = MaterialUtils::CreateSceneTextureCustomDepthNode(Material, HeatMaskSceneTextureCustomDepthNodePos);
+        Expressions.Add(HeatMaskSceneTextureCustomDepthNode);
+        HeatMaskSceneTextureCustomDepthNode->UpdateFromFunctionResource();
+        HeatMaskMaskNode2->Input.Connect(0, HeatMaskSceneTextureCustomDepthNode);
+
+        
         // Constant-node (Value 1)
-        const FVector2D HeatMaskConstantNode1Pos(-6760, 1550);
+        const FVector2D HeatMaskConstantNode1Pos(-6760, 1650);
         UMaterialExpressionConstant* HeatMaskConstantNode1 = MaterialUtils::CreateConstantNode(Material, HeatMaskConstantNode1Pos, 1.0f);
         Expressions.Add(HeatMaskConstantNode1);
         HeatMaskIfNode->AGreaterThanB.Connect(0, HeatMaskConstantNode1);
 
         // Constant-node (Value 0)
-        const FVector2D HeatMaskConstantNode2Pos(-6760, 1650);
+        const FVector2D HeatMaskConstantNode2Pos(-6760, 1750);
         UMaterialExpressionConstant* HeatMaskConstantNode2 = MaterialUtils::CreateConstantNode(Material, HeatMaskConstantNode2Pos, 0.0f);
         Expressions.Add(HeatMaskConstantNode2);
         HeatMaskIfNode->ALessThanB.Connect(0, HeatMaskConstantNode2);
-
-
-        /** Orange 5.2 - Custom depth blur control **/
-
-        // Orange comment box (5.2) - Custom depth blur control
-        const FVector2D OrangeBlurCommentPos(-8550, 1730);
-        const FVector2D OrangeBlurCommentSize(700, 550);
-        FString OrangeBlurCommentText = TEXT("CustomDepth blur control");
-        FColor OrangeBlurCommentColor =FColor::FromHex(TEXT("FFD26BFF"));
-        UMaterialExpressionComment* OrangeBlurComment = MaterialUtils::CreateCommentNode(Material, OrangeBlurCommentPos, OrangeBlurCommentSize, OrangeBlurCommentText, OrangeBlurCommentColor);
-        Expressions.Add(OrangeBlurComment);
-
-
-        // Lerp-node
-        const FVector2D OrangeBlurLerpNodePos(-8000, 1903);
-        UMaterialExpressionLinearInterpolate* OrangeBlurLerpNode = MaterialUtils::CreateLerpNode(Material, OrangeBlurLerpNodePos);
-        Expressions.Add(OrangeBlurLerpNode);
-        HeatMaskMaskNode2->Input.Connect(0, OrangeBlurLerpNode);
-        
-
-        // SceneTexture:CustomDepth-node
-        const FVector2D SceneTextureCustomDepthNodePos(-8400, 1830);
-        UMaterialExpressionMaterialFunctionCall* SceneTextureCustomDepthNode = MaterialUtils::CreateSceneTextureCustomDepthNode(Material, SceneTextureCustomDepthNodePos);
-        Expressions.Add(SceneTextureCustomDepthNode);
-        SceneTextureCustomDepthNode->UpdateFromFunctionResource();
-        OrangeBlurLerpNode->A.Connect(0, SceneTextureCustomDepthNode);
-
-
-        // Clamp-node
-        const FVector2D OrangeBlurClampNodePos(-8200, 2070);
-        UMaterialExpressionClamp* OrangeBlurClampNode = MaterialUtils::CreateClampNode(Material, OrangeBlurClampNodePos, 0.0f, 2.0f);
-        Expressions.Add(OrangeBlurClampNode);
-        OrangeBlurLerpNode->Alpha.Connect(0, OrangeBlurClampNode);
-
-        UE_LOG(LogTemp, Warning, TEXT("Hello OrangeBlurClampNode:"));
-
-        // ThermalSettingsBlur-node
-        const FVector2D OrangeBlurThermalSettingsBlurNodePos(-8450, 2070);
-        UMaterialExpressionCollectionParameter* OrangeBlurThermalSettingsBlurNode = MaterialUtils::CreateThermalSettingsCPNode(Material, OrangeBlurThermalSettingsBlurNodePos, TEXT("Blur"), EThermalSettingsParamType::Scalar);
-        Expressions.Add(OrangeBlurThermalSettingsBlurNode);
-        OrangeBlurClampNode->Input.Connect(0, OrangeBlurThermalSettingsBlurNode);
-
-
-        UE_LOG(LogTemp, Warning, TEXT("HEllo OrangeBlurThermalSettingsBlurNode:"));
-
-        /**/
-
-
-        /** Orange 5.3 - CustomDepth blur **/
-
-        // Orange comment box (5.3) - CustomDepth blur
-        const FVector2D CustomDepthCommentPos(-11500, 834);
-        const FVector2D CustomDepthCommentSize(2900, 1500);
-        FString CustomDepthCommentText = TEXT("CustomDepth blur");
-        FColor CustomDepthCommentColor =FColor::FromHex(TEXT("FFD26BFF"));
-        UMaterialExpressionComment* CustomDepthComment = MaterialUtils::CreateCommentNode(Material, CustomDepthCommentPos, CustomDepthCommentSize, CustomDepthCommentText, CustomDepthCommentColor);
-        Expressions.Add(CustomDepthComment);
-
-        
-
-        // Add-node
-        const FVector2D CustomDepthAddNodeStartPos(-8800, 1921);
-        UMaterialExpressionAdd* CustomDepthAddNodeStart = MaterialUtils::CreateAddNode(Material, CustomDepthAddNodeStartPos);
-        Expressions.Add(CustomDepthAddNodeStart);
-        
-        OrangeBlurLerpNode->B.Connect(0, CustomDepthAddNodeStart);
-
-        //* Groups of Add-nodes
-
-        
-        // Add-node 1
-        const FVector2D CustomDepthAddNode1Pos(-9100, 1794);
-        UMaterialExpressionAdd* CustomDepthAddNode1 = MaterialUtils::CreateAddNode(Material, CustomDepthAddNode1Pos);
-        Expressions.Add(CustomDepthAddNode1);
-
-        CustomDepthAddNodeStart->A.Connect(0, CustomDepthAddNode1);
-
-        // Add-node 2
-        const FVector2D CustomDepthAddNode2Pos(-9100, 1634);
-        UMaterialExpressionAdd* CustomDepthAddNode2 = MaterialUtils::CreateAddNode(Material, CustomDepthAddNode2Pos);
-        Expressions.Add(CustomDepthAddNode2);
-
-        CustomDepthAddNode1->A.Connect(0, CustomDepthAddNode2);
-
-        // Add-node 3
-        const FVector2D CustomDepthAddNode3Pos(-9100, 1474);
-        UMaterialExpressionAdd* CustomDepthAddNode3 = MaterialUtils::CreateAddNode(Material, CustomDepthAddNode3Pos);
-        Expressions.Add(CustomDepthAddNode3);
-
-        CustomDepthAddNode2->A.Connect(0, CustomDepthAddNode3);
-
-        // Add-node 4
-        const FVector2D CustomDepthAddNode4Pos(-9100, 1314);
-        UMaterialExpressionAdd* CustomDepthAddNode4 = MaterialUtils::CreateAddNode(Material, CustomDepthAddNode4Pos);
-        Expressions.Add(CustomDepthAddNode4);
-        
-        CustomDepthAddNode3->A.Connect(0, CustomDepthAddNode4);
-
-        // Add-node 5
-        const FVector2D CustomDepthAddNode5Pos(-9100, 1154);
-        UMaterialExpressionAdd* CustomDepthAddNode5 = MaterialUtils::CreateAddNode(Material, CustomDepthAddNode5Pos);
-        Expressions.Add(CustomDepthAddNode5);
-
-        CustomDepthAddNode4->A.Connect(0, CustomDepthAddNode5);
-
-        UE_LOG(LogTemp, Warning, TEXT("Hei? 1"));
-
-        //* Group of Multiply-nodes
-
-        // Multiply-node 1 -1880
-        const FVector2D CustomDepthMultiplyNode1Pos(-9400, 2044);
-        UMaterialExpressionMultiply* CustomDepthMultiplyNode1 = MaterialUtils::CreateMultiplyNode(Material, CustomDepthMultiplyNode1Pos, 0.1167f);
-        Expressions.Add(CustomDepthMultiplyNode1);
-        CustomDepthAddNodeStart->B.Connect(0, CustomDepthMultiplyNode1);
-
-        // Multiply-node 2
-        const FVector2D CustomDepthMultiplyNode2Pos(-9400, 1874);
-        UMaterialExpressionMultiply* CustomDepthMultiplyNode2 = MaterialUtils::CreateMultiplyNode(Material, CustomDepthMultiplyNode2Pos, 0.1167f);
-        Expressions.Add(CustomDepthMultiplyNode2);
-        CustomDepthAddNode1->B.Connect(0, CustomDepthMultiplyNode2);
-
-        // Multiply-node 3
-        const FVector2D CustomDepthMultiplyNode3Pos(-9400, 1714);
-        UMaterialExpressionMultiply* CustomDepthMultiplyNode3 = MaterialUtils::CreateMultiplyNode(Material, CustomDepthMultiplyNode3Pos, 0.1167f);
-        Expressions.Add(CustomDepthMultiplyNode3);
-        CustomDepthAddNode2->B.Connect(0, CustomDepthMultiplyNode3);
-
-        // Multiply-node 4
-        const FVector2D CustomDepthMultiplyNode4Pos(-9400, 1554);
-        UMaterialExpressionMultiply* CustomDepthMultiplyNode4 = MaterialUtils::CreateMultiplyNode(Material, CustomDepthMultiplyNode4Pos, 0.1167f);
-        Expressions.Add(CustomDepthMultiplyNode4);
-        CustomDepthAddNode3->B.Connect(0, CustomDepthMultiplyNode4);
-
-        // Multiply-node 5
-        const FVector2D CustomDepthMultiplyNode5Pos(-9400, 1394);
-        UMaterialExpressionMultiply* CustomDepthMultiplyNode5 = MaterialUtils::CreateMultiplyNode(Material, CustomDepthMultiplyNode5Pos, 0.1167f);
-        Expressions.Add(CustomDepthMultiplyNode5);
-        CustomDepthAddNode4->B.Connect(0, CustomDepthMultiplyNode5);
-
-        // Multiply-node 6
-        const FVector2D CustomDepthMultiplyNode6Pos(-9400, 1234);
-        UMaterialExpressionMultiply* CustomDepthMultiplyNode6 = MaterialUtils::CreateMultiplyNode(Material, CustomDepthMultiplyNode6Pos, 0.1167f);
-        Expressions.Add(CustomDepthMultiplyNode6);
-        CustomDepthAddNode5->B.Connect(0, CustomDepthMultiplyNode6);
-
-        // Multiply-node 7
-        const FVector2D CustomDepthMultiplyNode7Pos(-9400, 1094);
-        UMaterialExpressionMultiply* CustomDepthMultiplyNode7 = MaterialUtils::CreateMultiplyNode(Material, CustomDepthMultiplyNode7Pos, 0.3f);
-        Expressions.Add(CustomDepthMultiplyNode7);
-        CustomDepthAddNode5->A.Connect(0, CustomDepthMultiplyNode7);
-
-
-        UE_LOG(LogTemp, Warning, TEXT("Hei? 2"));
-        
-        //* Group of SceneTexture:CustomDepth-nodes
-
-        // SceneTexture:CustomDepth-node 1
-        const FVector2D SceneTextureCustomDepthNode1Pos(-9750, 2044);
-        UMaterialExpressionMaterialFunctionCall* SceneTextureCustomDepthNode1 = MaterialUtils::CreateSceneTextureCustomDepthNode(Material, SceneTextureCustomDepthNode1Pos);
-        Expressions.Add(SceneTextureCustomDepthNode1);
-        SceneTextureCustomDepthNode1->UpdateFromFunctionResource();
-        CustomDepthMultiplyNode1->A.Connect(0, SceneTextureCustomDepthNode1);
-        
-        // SceneTexture:CustomDepth-node 2
-        const FVector2D SceneTextureCustomDepthNode2Pos(-9750, 1874);
-        UMaterialExpressionMaterialFunctionCall* SceneTextureCustomDepthNode2 = MaterialUtils::CreateSceneTextureCustomDepthNode(Material, SceneTextureCustomDepthNode2Pos);
-        Expressions.Add(SceneTextureCustomDepthNode2);
-        SceneTextureCustomDepthNode2->UpdateFromFunctionResource();
-        CustomDepthMultiplyNode2->A.Connect(0, SceneTextureCustomDepthNode2);
-
-        // SceneTexture:CustomDepth-node 3
-        const FVector2D SceneTextureCustomDepthNode3Pos(-9750, 1714);
-        UMaterialExpressionMaterialFunctionCall* SceneTextureCustomDepthNode3 = MaterialUtils::CreateSceneTextureCustomDepthNode(Material, SceneTextureCustomDepthNode3Pos);
-        Expressions.Add(SceneTextureCustomDepthNode3);
-        SceneTextureCustomDepthNode3->UpdateFromFunctionResource();
-        CustomDepthMultiplyNode3->A.Connect(0, SceneTextureCustomDepthNode3);
-
-        // SceneTexture:CustomDepth-node 4
-        const FVector2D SceneTextureCustomDepthNode4Pos(-9750, 1554);
-        UMaterialExpressionMaterialFunctionCall* SceneTextureCustomDepthNode4 = MaterialUtils::CreateSceneTextureCustomDepthNode(Material, SceneTextureCustomDepthNode4Pos);
-        Expressions.Add(SceneTextureCustomDepthNode4);
-        SceneTextureCustomDepthNode4->UpdateFromFunctionResource();
-        CustomDepthMultiplyNode4->A.Connect(0, SceneTextureCustomDepthNode4);
-
-        // SceneTexture:CustomDepth-node 5
-        const FVector2D SceneTextureCustomDepthNode5Pos(-9750, 1394);
-        UMaterialExpressionMaterialFunctionCall* SceneTextureCustomDepthNode5 = MaterialUtils::CreateSceneTextureCustomDepthNode(Material, SceneTextureCustomDepthNode5Pos);
-        Expressions.Add(SceneTextureCustomDepthNode5);
-        SceneTextureCustomDepthNode5->UpdateFromFunctionResource();
-        CustomDepthMultiplyNode5->A.Connect(0, SceneTextureCustomDepthNode5);
-
-        // SceneTexture:CustomDepth-node 6
-        const FVector2D SceneTextureCustomDepthNode6Pos(-9750, 1234);
-        UMaterialExpressionMaterialFunctionCall* SceneTextureCustomDepthNode6 = MaterialUtils::CreateSceneTextureCustomDepthNode(Material, SceneTextureCustomDepthNode6Pos);
-        Expressions.Add(SceneTextureCustomDepthNode6);
-        SceneTextureCustomDepthNode6->UpdateFromFunctionResource();
-        CustomDepthMultiplyNode6->A.Connect(0, SceneTextureCustomDepthNode6);
-
-        // SceneTexture:CustomDepth-node 7
-        const FVector2D SceneTextureCustomDepthNode7Pos(-9750, 1094);
-        UMaterialExpressionMaterialFunctionCall* SceneTextureCustomDepthNode7 = MaterialUtils::CreateSceneTextureCustomDepthNode(Material, SceneTextureCustomDepthNode7Pos);
-        Expressions.Add(SceneTextureCustomDepthNode7);
-        SceneTextureCustomDepthNode7->UpdateFromFunctionResource();
-        CustomDepthMultiplyNode7->A.Connect(0, SceneTextureCustomDepthNode7);
-
-        UE_LOG(LogTemp, Warning, TEXT("Hei? 3"));
-
-        /*** Orange 5.3 White inside - UV Coordinates for color sample ***/
-        
-        // Orange 5.3 inside comment box - UV Coordinates for color sample
-        const FVector2D OrangeUVCoordCommentPos(-10550, 934);
-        const FVector2D OrangeUVCoordCCommentSize(700, 1350);
-        const FString OrangeUVCoordCCommentText = TEXT("UV Coordinates for color sample");
-        UMaterialExpressionComment* OrangeUVCoordComment = MaterialUtils::CreateCommentNode(Material, OrangeUVCoordCommentPos, OrangeUVCoordCCommentSize, OrangeUVCoordCCommentText);
-        Expressions.Add(OrangeUVCoordComment);
-
-
-        //* Groups of Add-nodes
-        
-        // Add-node 1
-        const FVector2D OrangeUVCoordAddNode1Pos(-10020, 2074);
-        UMaterialExpressionAdd* OrangeUVCoordAddNode1 = MaterialUtils::CreateAddNode(Material, OrangeUVCoordAddNode1Pos);
-        Expressions.Add(OrangeUVCoordAddNode1);
-        
-        for (FFunctionExpressionInput& Input : SceneTextureCustomDepthNode1->FunctionInputs)
-        {
-            if (Input.Input.InputName == TEXT("UVs"))
-            {
-                Input.Input.Connect(0, OrangeUVCoordAddNode1);
-            }
-        }
-
-        // Add-node 2 
-        const FVector2D OrangeUVCoordAddNode2Pos(-10020, 1914);
-        UMaterialExpressionAdd* OrangeUVCoordAddNode2 = MaterialUtils::CreateAddNode(Material, OrangeUVCoordAddNode2Pos);
-        Expressions.Add(OrangeUVCoordAddNode2);
-
-        for (FFunctionExpressionInput& Input : SceneTextureCustomDepthNode2->FunctionInputs)
-        {
-            if (Input.Input.InputName == TEXT("UVs"))
-            {
-                Input.Input.Connect(0, OrangeUVCoordAddNode2);
-            }
-        }
-
-        // Add-node 3 
-        const FVector2D OrangeUVCoordAddNode3Pos(-10020, 1754);
-        UMaterialExpressionAdd* OrangeUVCoordAddNode3 = MaterialUtils::CreateAddNode(Material, OrangeUVCoordAddNode3Pos);
-        Expressions.Add(OrangeUVCoordAddNode3);
-
-        for (FFunctionExpressionInput& Input : SceneTextureCustomDepthNode3->FunctionInputs)
-        {
-            if (Input.Input.InputName == TEXT("UVs"))
-            {
-                Input.Input.Connect(0, OrangeUVCoordAddNode3);
-            }
-        }
-
-        // Add-node 4 
-        const FVector2D OrangeUVCoordAddNode4Pos(-10020, 1594);
-        UMaterialExpressionAdd* OrangeUVCoordAddNode4 = MaterialUtils::CreateAddNode(Material, OrangeUVCoordAddNode4Pos);
-        Expressions.Add(OrangeUVCoordAddNode4);
-
-        for (FFunctionExpressionInput& Input : SceneTextureCustomDepthNode4->FunctionInputs)
-        {
-            if (Input.Input.InputName == TEXT("UVs"))
-            {
-                Input.Input.Connect(0, OrangeUVCoordAddNode4);
-            }
-        }
-
-        // Add-node 5 
-        const FVector2D OrangeUVCoordAddNode5Pos(-10020, 1434);
-        UMaterialExpressionAdd* OrangeUVCoordAddNode5 = MaterialUtils::CreateAddNode(Material, OrangeUVCoordAddNode5Pos);
-        Expressions.Add(OrangeUVCoordAddNode5);
-
-        for (FFunctionExpressionInput& Input : SceneTextureCustomDepthNode5->FunctionInputs)
-        {
-            if (Input.Input.InputName == TEXT("UVs"))
-            {
-                Input.Input.Connect(0, OrangeUVCoordAddNode5);
-            }
-        }
-        
-        // Add-node 6 
-        const FVector2D OrangeUVCoordAddNode6Pos(-10020, 1274);
-        UMaterialExpressionAdd* OrangeUVCoordAddNode6 = MaterialUtils::CreateAddNode(Material, OrangeUVCoordAddNode6Pos);
-        Expressions.Add(OrangeUVCoordAddNode6);
-
-        for (FFunctionExpressionInput& Input : SceneTextureCustomDepthNode6->FunctionInputs)
-        {
-            if (Input.Input.InputName == TEXT("UVs"))
-            {
-                Input.Input.Connect(0, OrangeUVCoordAddNode6);
-            }
-        }
-
-        // Add-node 7 
-        const FVector2D OrangeUVCoordAddNode7Pos(-10020, 1114);
-        UMaterialExpressionAdd* OrangeUVCoordAddNode7 = MaterialUtils::CreateAddNode(Material, OrangeUVCoordAddNode7Pos);
-        Expressions.Add(OrangeUVCoordAddNode7);
-
-        for (FFunctionExpressionInput& Input : SceneTextureCustomDepthNode7->FunctionInputs)
-        {
-            if (Input.Input.InputName == TEXT("UVs"))
-            {
-                Input.Input.Connect(0, OrangeUVCoordAddNode7);
-            }
-        }
-
-        UE_LOG(LogTemp, Warning, TEXT("Hei? 4"));
-
-        // TextureCoordinate-node
-        const FVector2D OrangeUVCoordTextureCoordinateNodePos(-10300, 984);
-        UMaterialExpressionTextureCoordinate* OrangeUVCoordTextureCoordinateNode = MaterialUtils::CreateTextureCoordinateNode(Material, OrangeUVCoordTextureCoordinateNodePos);
-        Expressions.Add(OrangeUVCoordTextureCoordinateNode);
-
-        OrangeUVCoordAddNode1->A.Connect(0, OrangeUVCoordTextureCoordinateNode);
-        OrangeUVCoordAddNode2->A.Connect(0, OrangeUVCoordTextureCoordinateNode);
-        OrangeUVCoordAddNode3->A.Connect(0, OrangeUVCoordTextureCoordinateNode);
-        OrangeUVCoordAddNode4->A.Connect(0, OrangeUVCoordTextureCoordinateNode);
-        OrangeUVCoordAddNode5->A.Connect(0, OrangeUVCoordTextureCoordinateNode);
-        OrangeUVCoordAddNode6->A.Connect(0, OrangeUVCoordTextureCoordinateNode);
-        OrangeUVCoordAddNode7->A.Connect(0, OrangeUVCoordTextureCoordinateNode);
-        
-
-        
-        //* Group of Multiply-nodes
-
-        // Multiply-node 1 -1880
-        const FVector2D OrangeUVCoordMultiplyNode1Pos(-10250, 2114);
-        UMaterialExpressionMultiply* OrangeUVCoordMultiplyNode1 = MaterialUtils::CreateMultiplyNode(Material, OrangeUVCoordMultiplyNode1Pos);
-        Expressions.Add(OrangeUVCoordMultiplyNode1);
-        OrangeUVCoordAddNode1->B.Connect(0, OrangeUVCoordMultiplyNode1);
-
-        // Multiply-node 2
-        const FVector2D OrangeUVCoordMultiplyNode2Pos(-10250, 1954);
-        UMaterialExpressionMultiply* OrangeUVCoordMultiplyNode2 = MaterialUtils::CreateMultiplyNode(Material, OrangeUVCoordMultiplyNode2Pos);
-        Expressions.Add(OrangeUVCoordMultiplyNode2);
-        OrangeUVCoordAddNode2->B.Connect(0, OrangeUVCoordMultiplyNode2);
-
-        // Multiply-node 3
-        const FVector2D OrangeUVCoordMultiplyNode3Pos(-10250, 1794);
-        UMaterialExpressionMultiply* OrangeUVCoordMultiplyNode3 = MaterialUtils::CreateMultiplyNode(Material, OrangeUVCoordMultiplyNode3Pos);
-        Expressions.Add(OrangeUVCoordMultiplyNode3);
-        OrangeUVCoordAddNode3->B.Connect(0, OrangeUVCoordMultiplyNode3);
-
-        // Multiply-node 4
-        const FVector2D OrangeUVCoordMultiplyNode4Pos(-10250, 1634);
-        UMaterialExpressionMultiply* OrangeUVCoordMultiplyNode4 = MaterialUtils::CreateMultiplyNode(Material, OrangeUVCoordMultiplyNode4Pos);
-        Expressions.Add(OrangeUVCoordMultiplyNode4);
-        OrangeUVCoordAddNode4->B.Connect(0, OrangeUVCoordMultiplyNode4);
-        
-        // Multiply-node 5
-        const FVector2D OrangeUVCoordMultiplyNode5Pos(-10250, 1474);
-        UMaterialExpressionMultiply* OrangeUVCoordMultiplyNode5 = MaterialUtils::CreateMultiplyNode(Material, OrangeUVCoordMultiplyNode5Pos);
-        Expressions.Add(OrangeUVCoordMultiplyNode5);
-        OrangeUVCoordAddNode5->B.Connect(0, OrangeUVCoordMultiplyNode5);
-        
-        // Multiply-node 6
-        const FVector2D OrangeUVCoordMultiplyNode6Pos(-10250, 1314);
-        UMaterialExpressionMultiply* OrangeUVCoordMultiplyNode6 = MaterialUtils::CreateMultiplyNode(Material, OrangeUVCoordMultiplyNode6Pos);
-        Expressions.Add(OrangeUVCoordMultiplyNode6);
-        OrangeUVCoordAddNode6->B.Connect(0, OrangeUVCoordMultiplyNode6);
-        
-        // Multiply-node 7
-        const FVector2D OrangeUVCoordMultiplyNode7Pos(-10250, 1154);
-        UMaterialExpressionMultiply* OrangeUVCoordMultiplyNode7 = MaterialUtils::CreateMultiplyNode(Material, OrangeUVCoordMultiplyNode7Pos);
-        Expressions.Add(OrangeUVCoordMultiplyNode7);
-        OrangeUVCoordAddNode7->B.Connect(0, OrangeUVCoordMultiplyNode7);
-
-
-        //* Group of Constant2Vector -nodes
-        
-        // Constant 2Vector-node 1
-        const FVector2D OrangeUVCoordConstant2VectorNode1Pos(-10480, 2054);
-        UMaterialExpressionConstant2Vector* OrangeUVCoordConstant2VectorNode1 = MaterialUtils::CreateConstant2VectorNode(Material, OrangeUVCoordConstant2VectorNode1Pos, -1.0f, -2.0f);
-        Expressions.Add(OrangeUVCoordConstant2VectorNode1);
-        OrangeUVCoordMultiplyNode1->A.Connect(2, OrangeUVCoordConstant2VectorNode1);
-
-        // Constant 2Vector-node 2
-        const FVector2D OrangeUVCoordConstant2VectorNode2Pos(-10480, 1894);
-        UMaterialExpressionConstant2Vector* OrangeUVCoordConstant2VectorNode2 = MaterialUtils::CreateConstant2VectorNode(Material, OrangeUVCoordConstant2VectorNode2Pos, -1.0f, 2.0f);
-        Expressions.Add(OrangeUVCoordConstant2VectorNode2);
-        OrangeUVCoordMultiplyNode2->A.Connect(2, OrangeUVCoordConstant2VectorNode2);
-        
-        // Constant 2Vector-node 3
-        const FVector2D OrangeUVCoordConstant2VectorNode3Pos(-10480, 1734);
-        UMaterialExpressionConstant2Vector* OrangeUVCoordConstant2VectorNode3 = MaterialUtils::CreateConstant2VectorNode(Material, OrangeUVCoordConstant2VectorNode3Pos, 1.0f, -2.0f);
-        Expressions.Add(OrangeUVCoordConstant2VectorNode3);
-        OrangeUVCoordMultiplyNode3->A.Connect(2, OrangeUVCoordConstant2VectorNode3);
-        
-        // Constant 2Vector-node 4
-        const FVector2D OrangeUVCoordConstant2VectorNode4Pos(-10480, 1574);
-        UMaterialExpressionConstant2Vector* OrangeUVCoordConstant2VectorNode4 = MaterialUtils::CreateConstant2VectorNode(Material, OrangeUVCoordConstant2VectorNode4Pos, 1.0f, 2.0f);
-        Expressions.Add(OrangeUVCoordConstant2VectorNode4);
-        OrangeUVCoordMultiplyNode4->A.Connect(2, OrangeUVCoordConstant2VectorNode4);
-            
-        // Constant 2Vector-node 5
-        const FVector2D OrangeUVCoordConstant2VectorNode5Pos(-10480, 1414);
-        UMaterialExpressionConstant2Vector* OrangeUVCoordConstant2VectorNode5 = MaterialUtils::CreateConstant2VectorNode(Material, OrangeUVCoordConstant2VectorNode5Pos, -2.0f, 0.0f);
-        Expressions.Add(OrangeUVCoordConstant2VectorNode5);
-        OrangeUVCoordMultiplyNode5->A.Connect(2, OrangeUVCoordConstant2VectorNode5);
-        
-        // Constant 2Vector-node 6
-        const FVector2D OrangeUVCoordConstant2VectorNode6Pos(-10480, 1254);
-        UMaterialExpressionConstant2Vector* OrangeUVCoordConstant2VectorNode6 = MaterialUtils::CreateConstant2VectorNode(Material, OrangeUVCoordConstant2VectorNode6Pos, 2.0f, 0.0f);
-        Expressions.Add(OrangeUVCoordConstant2VectorNode6);
-        OrangeUVCoordMultiplyNode6->A.Connect(2, OrangeUVCoordConstant2VectorNode6);
-        
-        // Constant 2Vector-node 7
-        const FVector2D OrangeUVCoordConstant2VectorNode7Pos(-10480, 1094);
-        UMaterialExpressionConstant2Vector* OrangeUVCoordConstant2VectorNode7 = MaterialUtils::CreateConstant2VectorNode(Material, OrangeUVCoordConstant2VectorNode7Pos, 0.0f, 0.0f);
-        Expressions.Add(OrangeUVCoordConstant2VectorNode7);
-        OrangeUVCoordMultiplyNode7->A.Connect(2, OrangeUVCoordConstant2VectorNode7);
-
-        /*** Orange 5.3 White inside - Get size of a pixel ***/
-
-        UE_LOG(LogTemp, Warning, TEXT("Hei? 5"));
-        
-        // Orange 5.3 inside comment box - Get size of a pixel
-        const FVector2D OrangePixelSizeCommentPos(-11330, 1474);
-        const FVector2D OrangePixelSizeCommentSize(500, 300);
-        FString OrangePixelSizeCommentText = TEXT("Get size of a pixel");
-        UMaterialExpressionComment* OrangePixelSizeComment = MaterialUtils::CreateCommentNode(Material, OrangePixelSizeCommentPos, OrangePixelSizeCommentSize, OrangePixelSizeCommentText);
-        Expressions.Add(OrangePixelSizeComment);
-
-        UE_LOG(LogTemp, Warning, TEXT("Hei? 6"));
-
-        // Divide-node
-        const FVector2D OrangePixelSizeDivideNodePos(-11030, 1594);
-        UMaterialExpressionDivide* OrangePixelSizeDivideNode = MaterialUtils::CreateDivideNode(Material, OrangePixelSizeDivideNodePos);
-        Expressions.Add(OrangePixelSizeDivideNode);
-
-        OrangeUVCoordMultiplyNode1->B.Connect(0, OrangePixelSizeDivideNode);
-        OrangeUVCoordMultiplyNode2->B.Connect(0, OrangePixelSizeDivideNode);
-        OrangeUVCoordMultiplyNode3->B.Connect(0, OrangePixelSizeDivideNode);
-        OrangeUVCoordMultiplyNode4->B.Connect(0, OrangePixelSizeDivideNode);
-        OrangeUVCoordMultiplyNode5->B.Connect(0, OrangePixelSizeDivideNode);
-        OrangeUVCoordMultiplyNode6->B.Connect(0, OrangePixelSizeDivideNode);
-        OrangeUVCoordMultiplyNode7->B.Connect(0, OrangePixelSizeDivideNode);
-
-        UE_LOG(LogTemp, Warning, TEXT("Hei? 7"));
-
-        // Constant node
-        const FVector2D OrangePixelSizeConstantNodePos(-11230, 1554);
-        UMaterialExpressionConstant* OrangePixelSizeConstantNode = MaterialUtils::CreateConstantNode(Material, OrangePixelSizeConstantNodePos, 1.0f);
-        Expressions.Add(OrangePixelSizeConstantNode);
-        OrangePixelSizeDivideNode->A.Connect(0, OrangePixelSizeConstantNode);
-
-        UE_LOG(LogTemp, Warning, TEXT("Hei? 8"));
-
-        // ScreenResolution node
-        const FVector2D OrangePixelSizeScreenResolutionNodePos(-11230, 1654);
-        UMaterialExpressionMaterialFunctionCall* OrangePixelSizeScreenResolutionNode = MaterialUtils::CreateScreenResolutionNode(Material, OrangePixelSizeScreenResolutionNodePos);
-        Expressions.Add(OrangePixelSizeScreenResolutionNode);
-        OrangePixelSizeScreenResolutionNode->UpdateFromFunctionResource();
-        OrangePixelSizeDivideNode->B.Connect(0, OrangePixelSizeScreenResolutionNode);
-
-        UE_LOG(LogTemp, Warning, TEXT("Hei? 9"));
-        
-        /**/
-
         
 
         return HeatMaskIfNode;

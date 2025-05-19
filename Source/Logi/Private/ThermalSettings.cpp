@@ -1,5 +1,6 @@
 ﻿#include "ThermalSettings.h"
 
+
 #include "AssetRegistry/AssetRegistryModule.h"
 #include "Materials/MaterialParameterCollection.h"
 #include "Materials/MaterialParameterCollectionInstance.h"
